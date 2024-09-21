@@ -1,1 +1,72 @@
-<p>menu works!</p>
+<div class="menu-container gap-25">
+    
+    <div class="menu-header-container">
+        <div class="flex-align-center gap-15">
+            <img class="workspace_logo" src="\assets\icons\workspace_logo.png" alt="">
+            <span class="header1">Devspace</span>
+        </div>
+        <button class="new-message-button"><img src="\assets\icons\edit_square.png" alt=""></button>
+    </div>
+
+    <div class="channel-container">
+
+        <div class="channel-header-container">
+            <div class="channel-header">
+                <img src="\assets\icons\arrow_drop_down.png" alt="">
+                <div class="logo-cat-container">
+                    <img src="\assets\icons\workspaces.png" alt="">
+                    <span class="header2">Channels</span>
+                </div>
+            </div>
+            <button class="plus-button"><img src="\assets\icons\add-1.png" alt=""></button>
+        </div>
+
+        <div class="added-channels">
+            <div class="channel-name">
+                <img src="\assets\icons\tag.png" alt="">
+                <span class="header3">Entwicklerteam</span>
+            </div>
+            <div class="channel-name">
+                <img src="\assets\icons\tag.png" alt="">
+                <span class="header3">Office-team</span>
+            </div>
+        </div>
+
+        <div class="add-channel">
+            <div class="add-channel-header">
+                <img src="\assets\icons\add_circle.png" alt="">
+                <span class="header3">Channel hinzufügen</span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="dm-container">
+        <div class="dm-header-container">
+            <div class="dm-header">
+                <img src="\assets\icons\arrow_drop_down.png" alt="">
+                <div class="logo-cat-container">
+                    <img src="\assets\icons\account_circle.png" alt="">
+                    <span class="header2">Direktnachrichten</span>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="user-container">
+
+            @for(user of userData; track user){
+                <div class="user">
+                    <div class="avatar-container">
+                        <img class="user-avatar" src="\assets\avatars\avatar_{{user.avatar}}.png" alt="">
+                        <div class="online-point"></div>
+                    </div>
+                    
+                    <span class="header3">{{user.name}}</span>
+                </div>
+            }
+            
+        </div>
+
+    </div>
+</div>
