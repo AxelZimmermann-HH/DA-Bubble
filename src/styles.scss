@@ -1,8 +1,8 @@
 * body {
   height: 100vh;
     margin: 0;
-    background-color: #FFFFFF;
     font-family: 'Nunito';
+    background-color: rgba(236, 238, 254, 1);
 }
 
 /* nunito-200 - latin */
@@ -69,3 +69,6 @@
     font-weight: 900;
     src: url('../src/assets/fonts/nunito-v26-latin-900.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
   }
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

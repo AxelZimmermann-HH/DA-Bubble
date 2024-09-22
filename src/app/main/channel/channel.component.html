@@ -1,1 +1,17 @@
-<p>channel works!</p>
+<div class="channel-container">
+    <div class="channel-header">
+        <button class="edit-channel" (click)="openDialogEditChannel()">
+            # Entwicklerteam
+            <img src="./assets/icons/keyboard_arrow_down.png" alt="">
+        </button>
+        <div class="add-members">
+            <div class="member-preview d-flex">
+                <img [src]="'./assets/avatars/avatar_' + user.avatar +'.png'" alt="" class="avatar"  
+                *ngFor="let user of userData"><p>{{userCount}}</p>
+            </div>
+            <button class="addUserBtn" (click)="openDialogAddUser()">
+                <img src="./assets/icons/person_add.png" alt="">
+            </button>
+        </div>
+    </div>
+</div>

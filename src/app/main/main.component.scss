@@ -1,6 +1,12 @@
 body {
     width: 100%;
-    min-height: 100vw;
+   height: 100vh;
     background-color: rgba(236, 238, 254, 1);
     margin: 0;
+}
+
+.d-flex{
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
