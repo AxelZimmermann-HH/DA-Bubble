@@ -1,0 +1,15 @@
+.adduser-container{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    width: 710px;
+height: 279px;
+
+padding: 40px;
+gap: 20px;
+border-radius: 30px ;
+opacity: 0px;
+z-index: 111;
+}

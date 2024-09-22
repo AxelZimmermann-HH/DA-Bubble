@@ -1,1 +1,18 @@
-{}
+{
+    "hosting": {
+      "public": "dist/da-bubble",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    }
+  }
+  
+  
