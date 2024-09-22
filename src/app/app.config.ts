@@ -20,5 +20,5 @@ export const appConfig: ApplicationConfig = {
     "messagingSenderId":"380502943179"})), 
     provideAuth(() => getAuth()), 
     provideFirestore(() => getFirestore()), 
-    provideAnimationsAsync()]
+    provideAnimationsAsync(), provideAnimationsAsync()]
 };
