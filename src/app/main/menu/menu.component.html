@@ -1,6 +1,8 @@
-<button class="menu-toggle-button" (click)="openCloseMenu()">
-    <span class="rotate-text header4">Workspace-Menü schließen</span>
-    <img src="\assets\icons\Hide-navigation.png" alt="">
+<button class="menu-toggle-button" (click)="openCloseMenu()"
+(mouseover)="setHoverIcon()"
+(mouseleave)="setUnhoverIcon()">
+    <span class="rotate-text header4">{{openCloseButtonText}}</span>
+    <img style="transform: rotate(90deg);" src="\assets\icons\{{openCloseIcon}}" alt="">
 </button>
 
 <div class="menu-container gap-25" *ngIf="showMenu">
@@ -29,7 +31,7 @@
                     <span class="header2">Channels</span>
                 </div>
             </div>
-            <button class="plus-button"
+            <button class="plus-button" (click)="openDialogAddChannel()"
             (mouseover)="addChannelIcon1 = 'add-2.png'"
             (mouseleave)="addChannelIcon1 = 'add-1.png'">
                 <img src="\assets\icons\{{addChannelIcon1}}" alt="">
@@ -47,8 +49,8 @@
             }
         </div>
 
-        <div class="add-channel" *ngIf="showChannel">
-            <div class="add-channel-header"
+        <div class="add-channel" *ngIf="showChannel" >
+            <div class="add-channel-header" (click)="openDialogAddChannel()"
             (mouseover)="addChannelIcon = 'add_circle-1.png'"
             (mouseleave)="addChannelIcon = 'add_circle.png'">
                 <img src="\assets\icons\{{addChannelIcon}}" alt="">

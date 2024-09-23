@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { collection, Firestore, onSnapshot } from '@angular/fire/firestore';
+import { MatDialog } from '@angular/material/dialog';
+import { DialogAddChannelComponent } from '../../dialog-add-channel/dialog-add-channel.component';
 
 @Component({
   selector: 'app-menu',
@@ -10,7 +12,7 @@ import { collection, Firestore, onSnapshot } from '@angular/fire/firestore';
   styleUrl: './menu.component.scss'
 })
 export class MenuComponent {
-  constructor(public db: Firestore){}
+  constructor(public db: Firestore, public dialog: MatDialog){}
   newDmIcon = 'edit_square.png'
   channelIcon1:string = 'arrow_drop_down.png';
   channelIcon2:string = 'workspaces.png';
@@ -19,6 +21,11 @@ export class MenuComponent {
 
   dmIcon1 ='arrow_drop_down.png'; 
   dmIcon2 = 'account_circle.png';
+
+  openCloseIcon = "Hide-navigation.png";
+  showMenu: boolean = true;
+  openCloseButtonText = 'Workspace-Menü schließen';
+
 
   userData:any[] = [];
   channelData:any[] = [];
@@ -49,7 +56,7 @@ export class MenuComponent {
           const channel = doc.data();
       
           return {
-            channelID: doc.id,
+            id: doc.id,
             channelName: channel['channelName'],
             tagIcon: channel['tagIcon'],
           };
@@ -112,13 +119,35 @@ export class MenuComponent {
     }
   }
 
-  showMenu: boolean = true;
-
   openCloseMenu(){
     if(this.showMenu){
       this.showMenu = false;
+      this.openCloseButtonText = 'Workspace-Menü öffnen';
+      this.openCloseIcon ='Hide-navigation-1.png'
     }else{
       this.showMenu = true;
+      this.openCloseButtonText = 'Workspace-Menü schließen';
+      this.openCloseIcon = 'Hide-navigation.png'
     }
+  }
+
+  setHoverIcon(){
+    if(this.showMenu){
+      this.openCloseIcon ='Frame 18.png'
+    }else{
+      this.openCloseIcon ='Frame 41.png'
+    }
+  }
+
+  setUnhoverIcon(){
+    if(this.showMenu){
+      this.openCloseIcon ='Hide-navigation.png'
+    }else{
+      this.openCloseIcon ='Hide-navigation-1.png'
+    }
+  }
+
+  openDialogAddChannel() {
+    this.dialog.open(DialogAddChannelComponent)
   }
 }

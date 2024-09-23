@@ -214,33 +214,6 @@
     position: absolute;
 }
 
-.header1{
-    font-weight: 700;
-    font-size: 24px;
-    line-height: 32.74px;
-}
-
-.header2{
-    font-weight: 700;
-    font-size: 20px;
-    line-height: 27.28px;
-}
-
-.header3{
-    font-weight: 400;
-    font-size: 18px;
-    line-height: 24.55px;
-}
-
-.header4{
-
-font-size: 20px;
-font-weight: 500;
-line-height: 24px;
-
-
-}
-
 .rotateArrow{
     transform: rotate(-90deg);
 }
@@ -267,5 +240,6 @@ line-height: 24px;
     box-shadow: 0px 4px 7px 4px rgba(0, 0, 0, 0.2);
     &:hover{
         cursor: pointer;
+        color: #535AF1;
     }
 }
