@@ -4,8 +4,8 @@
     width: 989px;
     border-radius: 30px;
     height: 940px;
-    
-
+    display: flex;
+    flex-direction: column;
 }
 .channel-header {
     width: auto;
@@ -41,7 +41,7 @@
             cursor: pointer;
 
             img {
-                content: url('./../../../assets/icons/expand_more.png');
+                content: url('./../../../assets/icons/expand_more_1.png');
             }
         }
     }
@@ -93,3 +93,25 @@
         }
     }
 }
+.channel-content{
+    height: 100%;
+position: relative;
+width: 100%;
+
+.time-separator{
+    width: 919px;
+    height: 0px;
+    gap: 0px;
+    border: 1px solid #ADB0D9;
+    align-self: center;
+    position: absolute;
+    top: 30%;
+    right: 4%;
+    }
+
+    .day-time-button{
+        width: 120px;
+        height: 45px;
+    }
+}
+
