@@ -35,7 +35,6 @@ export class MenuComponent {
     try {
       const channelsCollectionRef = collection(this.db, channels);
       this.getChannelDataOnSnapshot(channelsCollectionRef);
-      console.log(this.userData)
     } catch (error) {
       console.error('Fehler beim Aktualisieren der Daten:', error);
     }
@@ -67,7 +66,6 @@ export class MenuComponent {
     try {
       const usersCollectionRef = collection(this.db, users);
       this.getUsersDataOnSnapshot(usersCollectionRef);
-      console.log(this.userData)
     } catch (error) {
       console.error('Fehler beim Aktualisieren der Daten:', error);
     }

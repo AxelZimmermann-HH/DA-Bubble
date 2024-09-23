@@ -202,6 +202,18 @@
     position: absolute;
 }
 
+.offline-point{
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    top: 40px;
+    left: 56px;
+    border: 2px solid #FFFFFF;
+    background-color: rgba(104, 104, 104, 1);
+    z-index: 11;
+    position: absolute;
+}
+
 .header1{
     font-weight: 700;
     font-size: 24px;

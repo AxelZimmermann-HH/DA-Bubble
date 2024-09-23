@@ -79,7 +79,7 @@
                 <div class="user">
                     <div class="avatar-container">
                         <img class="user-avatar" src="\assets\avatars\avatar_{{user.avatar}}.png" alt="">
-                        <div class="online-point"></div>
+                        <div [ngClass]="{'offline-point': !user.online}" class="online-point"></div>
                     </div>
                     <span class="header3">{{user.name}}</span>
                 </div>
