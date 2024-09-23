@@ -115,35 +115,27 @@
     position: relative;
     width: 100%;
 
-    .time-separator {
-        width: 919px;
-        height: 0px;
-        gap: 0px;
-        border: 1px solid #ADB0D9;
-        align-self: center;
-        position: absolute;
-        top: 30%;
-        right: 4%;
+    .chat-table {
+        width: 100%;
+        padding: 20px;
+
+        td {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            height: 192px;
+            margin: 20px 0;
+        }
     }
 
-    .day-time-button {
-        width: 189px;
-        height: 35px;
-        border-radius: 30px;
-        padding: 5px 15px;
-        gap: 10px;
-
-        background: rgba(255, 255, 255, 1);
+    .separator-line {
+        width: 919px;
+        height: 0;
         border: 1px solid rgba(173, 176, 217, 1)
     }
 
- 
 }
-.separator-line{
-    width: 919px;
-    height: 0;
-    border: 1px solid rgba(173, 176, 217, 1)
-}
+
 .message-box {
     position: absolute;
     bottom: 20px;

@@ -17,21 +17,24 @@
     </div>
     <div class="channel-content">
         <table class="chat-table">
-          <tr *ngFor="let message of allMessages">
-            <td>
-              <strong>{{ message.user }}:</strong> {{ message.text }}
-            </td>
-          </tr>
-          <!-- Linie zwischen den Chats -->
-          <ng-container *ngFor="let message of allMessages; let i = index">
-            <tr *ngIf="i < message.length - 1">
-              <td>
+            <tr >
+                <td style="display: flex;flex-direction: column;height: 192px;">
+                </td>
                 <hr class="separator-line">
-              </td>
             </tr>
-          </ng-container>
+            <tr *ngFor="let message of allMessages">
+
+                <td >
+                   <img [src]="'./assets/avatars/avatar_'+ userData[0].avatar + '.png'" alt="" style="width: 70px;height: 70px;border-radius: 40px;">
+                   <div style="display: flex;flex-direction: column;">
+                    <strong>  {{ message.user }}</strong> {{ message.text }}
+                   </div>
+                  
+                </td>
+                <hr class="separator-line">
+            </tr>
         </table>
-      </div>
-      
+    </div>
+
     <input class="message-box" placeholder="Nachricht an #{{channel.channelName}}">
 </div>
