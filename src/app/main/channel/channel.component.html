@@ -25,9 +25,9 @@
             <tr *ngFor="let message of allMessages">
 
                 <td >
-                   <img [src]="'./assets/avatars/avatar_'+ userData[0].avatar + '.png'" alt="" style="width: 70px;height: 70px;border-radius: 40px;">
+                   <img [src]="'./assets/avatars/avatar_'+ getAvatarForUser(message.user) + '.png'" alt="" style="width: 70px;height: 70px;border-radius: 40px;">
                    <div style="display: flex;flex-direction: column;">
-                    <strong>  {{ message.user }}</strong> {{ message.text }}
+                    <strong >  {{ message.user }}</strong> {{ message.text }}
                    </div>
                   
                 </td>

@@ -111,10 +111,11 @@
 }
 
 .channel-content {
-    height: 100%;
     position: relative;
     width: 100%;
-
+    overflow-y: scroll;
+    height: 500px;
+    scrollbar-width: none;
     .chat-table {
         width: 100%;
         padding: 20px;
