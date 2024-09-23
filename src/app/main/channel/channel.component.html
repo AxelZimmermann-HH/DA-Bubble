@@ -1,13 +1,14 @@
 <div class="channel-container">
     <div class="channel-header">
         <button class="edit-channel" (click)="openDialogEditChannel()">
-            # Entwicklerteam
+            <p># {{channel.channelName}}</p>
             <img src="./assets/icons/keyboard_arrow_down_1.png" alt="">
         </button>
         <div class="add-members">
-            <div class="member-preview d-flex">
-                <img [src]="'./assets/avatars/avatar_' + user.avatar +'.png'" alt="" class="avatar"  
-                *ngFor="let user of userData"><p>{{userCount}}</p>
+            <div class="member-preview">
+                <img [src]="'./assets/avatars/avatar_' + user.avatar +'.png'" alt="" class="avatar"
+                    *ngFor="let user of userData">
+                <p>{{userCount}}</p>
             </div>
             <button class="addUserBtn" (click)="openDialogAddUser()">
                 <img src="./assets/icons/person_add.png" alt="">
@@ -15,8 +16,7 @@
         </div>
     </div>
     <div class="channel-content">
-        <div class="time-separator"></div>
-        <button class="day-time-button">time</button>
+
     </div>
-  
+    <input class="message-box" placeholder="Nachricht an #{{channel.channelName}}">
 </div>
