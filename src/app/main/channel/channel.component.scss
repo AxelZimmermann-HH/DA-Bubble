@@ -34,7 +34,9 @@
         padding: 6px 10px;
         gap: 16px;
 
-
+        p {
+            margin: 0;
+        }
 
         &:hover {
             background: #ECEEFE;
@@ -92,12 +94,14 @@
             justify-content: center;
             gap: 16px;
             border-radius: 30px;
+
             p {
                 font-size: 20px;
                 font-weight: 600;
                 margin-bottom: 0;
                 cursor: pointer;
             }
+
             &:hover {
                 color: #535AF1;
                 background: #ECEEFE;
@@ -132,8 +136,14 @@
         background: rgba(255, 255, 255, 1);
         border: 1px solid rgba(173, 176, 217, 1)
     }
-}
 
+ 
+}
+.separator-line{
+    width: 919px;
+    height: 0;
+    border: 1px solid rgba(173, 176, 217, 1)
+}
 .message-box {
     position: absolute;
     bottom: 20px;

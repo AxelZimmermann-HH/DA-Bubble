@@ -10,6 +10,7 @@ import { DialogAddUserComponent } from '../../dialog-add-user/dialog-add-user.co
 import { DialogEditChannelComponent } from '../../dialog-edit-channel/dialog-edit-channel.component';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
+import { Message } from '../../models/message.class';
 
 @Component({
   selector: 'app-channel',
@@ -24,12 +25,16 @@ export class ChannelComponent {
   user = new User();
   channel = new Channel();
   channelData: any = [];
+  message = new Message;
+  allMessages: any = [];
 
   constructor(public dialog: MatDialog, public firestore: Firestore) {
     this.getAllUsers();
     this.getAllChannels();
+    this.getAllMessages();
     //provisorisch
-    this.channel.channelName = 'Entwicklerteam'
+    this.channel.channelName = "Entwicklerteam"
+
   }
 
   getAllUsers() {
@@ -58,8 +63,21 @@ export class ChannelComponent {
     });
   }
 
-  openDialogAddUser() {
+  getAllMessages() {
+    const messageCollection = collection(this.firestore, 'messages');
+    const readMessage = onSnapshot(messageCollection, (snapshot) => {
+      this.allMessages = [];
+      snapshot.forEach((doc) => {
+        let message = ({ ...doc.data(), id: doc.id });
+        this.allMessages.push(message);
+      });
 
+      console.log('current message', this.allMessages);
+    });
+  }
+
+  openDialogAddUser() {
+    this.dialog.open(DialogAddUserComponent)
   }
   openDialogEditChannel() {
     this.dialog.open(DialogEditChannelComponent)

@@ -1,15 +1,74 @@
-.adduser-container{
+.adduser-container {
     position: fixed;
     top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-
+    left: 0;
+    transform: translate(50%, -50%);
+    border-radius: 30px 0 30px 30px;
     width: 710px;
-height: 279px;
+    height: 279px;
+    background-color: white;
+    margin: 0;
+    padding: 40px;
+    box-shadow: 0px 6px 10px 0px #00000033;
+    gap: 20px;
+    display: flex;
+    flex-direction: column;
 
-padding: 40px;
-gap: 20px;
-border-radius: 30px ;
-opacity: 0px;
-z-index: 111;
+    .addUser-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        img {
+            width: 40px;
+            height: 40px;
+            padding: 8px;
+            border-radius: 30px;
+
+            &:hover {
+                cursor: pointer;
+                background: rgba(236, 238, 254, 1);
+
+            }
+        }
+
+        p {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+        }
+    }
+}
+
+.flex-direction {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.d-flex {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.channel-name {
+    color: rgba(83, 90, 241, 1);
+}
+
+.createBtn {
+    width: 204px;
+    height: 49px;
+    border-radius: 25px;
+    background-color: rgba(68, 77, 242, 1);
+    color: rgba(255, 255, 255, 1);
+    font-size: 18px;
+    font-weight: 700;
+    align-self: flex-end;
+    border: unset;
+
+    &:hover {
+        background-color: rgba(68, 77, 242, 0.7);
+        cursor: pointer;
+    }
 }

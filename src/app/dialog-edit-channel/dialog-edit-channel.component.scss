@@ -1,4 +1,4 @@
-.channel-container{
+.channel-container {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -9,6 +9,106 @@
     background-color: white;
     margin: 0;
     padding: 20px;
-  
     box-shadow: 0px 6px 10px 0px #00000033;
+    gap: 20px;
+    display: flex;
+    flex-direction: column;
+
+
+    .channel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 24px;
+        font-weight: 700;
+        width: 100%;
+        height: 40px;
+        font-size: 18px;
+        font-weight: 700;
+
+        img {
+            width: 40px;
+            height: 40px;
+            padding: 8px;
+            border-radius: 30px;
+
+            &:hover {
+                cursor: pointer;
+                background: rgba(236, 238, 254, 1);
+
+            }
+        }
+
+        p {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+        }
+    }
+
+    .channel-name {
+        padding: 20px;
+        min-height: 114px;
+        padding: 20px;
+        border-radius: 20px;
+        border: 1px solid rgba(173, 176, 217, 1);
+        font-size: 18px;
+        font-weight: 700;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        p {
+            font-size: 18px;
+            font-weight: 400;
+            margin: 0;
+        }
+
+        .editBtn {
+            border: unset;
+            background-color: unset;
+            font-size: 18px;
+            font-weight: 600;
+
+            &:hover {
+                cursor: pointer;
+                color: rgba(83, 90, 241, 1);
+            }
+        }
+
+    }
+}
+
+.d-flex {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.userName {
+    color: rgba(83, 90, 241, 1);
+    font-size: 24px;
+    font-weight: 400;
+}
+
+.separate-line {
+    width: 739px;
+    height: 0px;
+    border: 1px solid rgba(173, 176, 217, 1);
+}
+
+.close-channel {
+    width: 204px;
+    height: 49px;
+    border-radius: 25px;
+    background-color: rgba(68, 77, 242, 1);
+    color: rgba(255, 255, 255, 1);
+    font-size: 18px;
+    font-weight: 700;
+    align-self: flex-end;
+    border: unset;
+    &:hover{
+        background-color: rgba(68, 77, 242, 0.7);
+        cursor: pointer;
+    }
 }

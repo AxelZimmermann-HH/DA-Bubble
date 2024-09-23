@@ -1,4 +1,33 @@
-
 <div class="channel-container">
-channel works
+    <div class="channel-header">
+        <div class="d-flex"><img src="./assets/icons/tag.png" alt="">
+            <p>Entwicklerteam</p>
+        </div>
+        <img src="./assets/icons/close.png" alt="" (click)="dialogRef.close()">
+    </div>
+    <div class="channel-name">
+        <div class="d-flex">
+            <div>Channel-Name</div> <button class="editBtn" (click)="toggleInputName()">bearbeiten</button>
+        </div>
+        <div style="display: flex;align-items: center;"><img src="./assets/icons/tag.png" alt="">
+            <p> {{channel.channelName}}</p>
+        </div>
+    </div>
+    <div class="channel-description channel-name">
+        <div class="d-flex">
+            <div>Beschreibung</div> <button class="editBtn">bearbeiten</button>
+        </div>
+        <br>
+        <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Necessitatibus, fuga fugiat error illo dolorum
+            suscipit iusto quo corporis provident mollitia iste nobis? Ullam, dolorem commodi aut soluta suscipit cum
+            distinctio.</p>
+        <br>
+        <hr class="separate-line">
+        <br>
+        <div>Erstellt von</div>
+        <br>
+        <div class="userName">{{user.name}}</div>
+    </div>
+    <button class="close-channel">Channel verlassen</button>
+
 </div>
