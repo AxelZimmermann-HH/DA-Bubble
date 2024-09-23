@@ -69,11 +69,19 @@ export class ChannelComponent {
       this.allMessages = [];
       snapshot.forEach((doc) => {
         let message = ({ ...doc.data(), id: doc.id });
+
+
+
         this.allMessages.push(message);
       });
 
       console.log('current message', this.allMessages);
     });
+  }
+
+  getAvatarForUser(userName: string) {
+    const user = this.userData.find((u: { name: string; }) => u.name === userName);
+    return user ? user.avatar : 'default';
   }
 
   openDialogAddUser() {
