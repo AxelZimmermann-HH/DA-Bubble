@@ -126,6 +126,11 @@
             align-items: center;
             gap: 16px;
             width: 100%;
+            &:hover{
+                width: calc(100% + 12%);
+                margin-left: -30px;
+                background-color: rgb(236, 238, 254);
+            }
         }
 
         .message-main {
@@ -165,6 +170,7 @@
                 background: rgba(236, 238, 254, 1);
                 font-size: 18px;
                 font-weight: 400;
+             
             }
 
             .label-answers {
@@ -190,18 +196,27 @@
     width: 210px;
     height: 46px;
     border-radius: 25px 25px 0 25px;
-    padding: 3px 15px 3px 20px;
+    padding: 3px  20px;
     background: rgba(255, 255, 255, 1);
     border: 1px solid rgba(173, 176, 217, 1);
     position: relative;
-    top: 0;
-    left: 50%;
-    transform: translate(50%, -50%);
-    &:hover{
-        display: block;
-    }
+    top: -125px;
+    right: -50px;
 }
-
+td:hover .reaction-hover {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    
+ img{
+    cursor: pointer;
+ }
+}
+td:hover .speech-bubble{
+    background-color: #FFFFFF !important;
+    color: black;
+  
+}
 .day-time-btn {
     position: absolute;
     top: 50%;
