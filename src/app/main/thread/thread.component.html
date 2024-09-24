@@ -1,4 +1,18 @@
 <div class="thread-container">
-    <p>thread works!</p>
-
+    <div class="thread-header">
+        Thread <span style="font-family: Nunito;font-size: 14px;font-weight: 400;color: rgba(121, 126, 243, 1);"># Entwicklerteam</span>
+    </div>
+    <div *ngFor="let message of allMessages">
+        <div class="message-main">
+            <img [src]="'./assets/avatars/avatar_'+ getAvatarForUser(message.user) + '.png'" alt="" class="avatar">
+            <div class="message-content">
+                <div class="name-time">{{ message.user }} <p class="time">14:25Uhr</p>
+                </div>
+                <div class="speech-bubble"> {{ message.text }}</div>
+                <div class="label-answers">2 Antworten <p class="time">Letzte Antwort 14:56</p>
+                </div>
+            </div>
+        </div>
+        <hr>
+    </div>
 </div>
