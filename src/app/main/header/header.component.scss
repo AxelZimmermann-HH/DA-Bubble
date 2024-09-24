@@ -39,11 +39,17 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    font-family: 'Nunito';
+    font-weight: 400;
+    font-size: 24px;
     &::placeholder {
         color: rgba(104,104,104,1);
         font-family: 'Nunito';
         font-weight: 400;
         font-size: 24px;
+    }
+    &:focus {
+        outline: none;
     }
 }
 
