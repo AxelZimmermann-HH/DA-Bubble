@@ -1,0 +1,53 @@
+.header-content{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 16px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    > img {
+       width: 70px; 
+    }
+    > p {
+        font-family: 'Nunito';
+        font-weight: 700;
+        font-size: 32px;
+        padding-top: 10px;
+    }
+}
+
+#search {
+    width: 989px;
+    height: 35px;
+    border-style: none;
+    border-radius: 42px;
+    padding: 17.5px 45px 17.5px 45px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-user {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+    > p {
+        font-family: 'Nunito';
+        font-weight: 700;
+        font-size: 32px;
+        padding-top: 10px;
+    }
+    > img {
+        height: 70px;
+        border-radius: 50%;
+    }
+}
+
+.header-menu {
+    height: 8px !important;
+}
