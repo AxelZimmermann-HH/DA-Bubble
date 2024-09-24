@@ -20,6 +20,16 @@
     }
 }
 
+.input {
+    position: relative;
+    > img {
+        position: absolute;
+        top: 23px;
+        right: 45px;
+        height: 25px;
+    }
+}
+
 #search {
     width: 989px;
     height: 35px;
@@ -29,6 +39,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    &::placeholder {
+        color: rgba(104,104,104,1);
+        font-family: 'Nunito';
+        font-weight: 400;
+        font-size: 24px;
+    }
 }
 
 .header-user {

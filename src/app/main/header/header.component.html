@@ -3,7 +3,10 @@
         <img src="../../../assets/icons/Logo.svg" alt="">
         <p>DABubble</p>
     </div>
-    <input id="search" type="text">
+    <div class="input">
+        <input id="search" type="text" placeholder="Devspace durchsuchen" (input)="onSearchInput($event)">
+        <img src="../../../assets/icons/search-2.png" alt="">
+    </div>
     <div class="header-user">
         <p>Frederick Beck</p>
         <img src="../../../assets/avatars/avatar_1.png" alt="">

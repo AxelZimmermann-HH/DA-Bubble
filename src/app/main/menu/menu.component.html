@@ -39,7 +39,7 @@
         </div>
 
         <div class="added-channels" *ngIf="showChannel">
-            @for (channel of channelData; track channel) {
+            @for (channel of filteredChannels; track channel) {
                 <div class="channel-name"
                 (mouseover)="channel.tagIcon = 'tag-1.png'"
                 (mouseleave)="channel.tagIcon = 'tag.png'">
@@ -77,7 +77,7 @@
 
         <div class="user-container" *ngIf="showUser">
 
-            @for(user of userData; track user){
+            @for(user of filteredUsers; track user){
                 <div class="user">
                     <div class="avatar-container">
                         <img class="user-avatar" src="\assets\avatars\avatar_{{user.avatar}}.png" alt="">
