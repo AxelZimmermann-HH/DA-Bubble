@@ -11,6 +11,7 @@ import { DialogEditChannelComponent } from '../../dialog-edit-channel/dialog-edi
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
+import { SharedService } from '../../services/shared.service';
 
 
 
@@ -30,14 +31,37 @@ export class ChannelComponent {
   filteredChannels: any = [];
   message = new Message;
   allMessages: any = [];
+  filteredMessages: any = [];
 
-  constructor(public dialog: MatDialog, public firestore: Firestore) {
+  constructor(public dialog: MatDialog, public firestore: Firestore, private sharedService: SharedService) {
     this.getAllUsers();
     this.getAllChannels();
     this.getAllMessages();
+    this.subscribeToSearch();
     //provisorisch
     this.channel.channelName = "Entwicklerteam"
 
+  }
+
+  subscribeToSearch() {
+    this.sharedService.searchTerm$.subscribe((term) => {
+      if (term.length >= 3) {
+        this.filterData(term);
+      } else {
+        this.resetFilteredData(); // Setze gefilterte Daten auf Original zurück
+      }
+    });
+  }
+
+  filterData(term: string) {
+    this.filteredMessages = this.allMessages.filter((message: any) =>
+      message.text.toLowerCase().includes(term.toLowerCase()) ||
+      message.user.toLowerCase().includes(term.toLowerCase())
+    );
+  }
+
+  resetFilteredData() {
+    this.filteredMessages = this.allMessages;
   }
 
   getAllUsers() {
@@ -77,7 +101,7 @@ export class ChannelComponent {
 
         this.allMessages.push(message);
       });
-
+      this.filteredMessages = this.allMessages;
       console.log('current message', this.allMessages);
     });
   }

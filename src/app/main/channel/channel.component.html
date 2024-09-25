@@ -23,7 +23,7 @@
                     <hr class="separator-line"><button class="day-time-btn">Dienstag, 14 Januar</button>
                 </div>
             </tr>
-            <tr *ngFor="let message of allMessages">
+            <tr *ngFor="let message of filteredMessages">
                 <td>
                     <div class="message-main">
                         <img [src]="'./assets/avatars/avatar_'+ getAvatarForUser(message.user) + '.png'" alt=""

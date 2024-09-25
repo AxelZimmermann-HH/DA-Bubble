@@ -80,6 +80,7 @@ export class MenuComponent {
       channelsCollectionRef,
       (snapshot: { docs: any[] }) => {
         this.channelData = [];
+        
         this.channelData = snapshot.docs.map((doc) => {
           const channel = doc.data();
       
