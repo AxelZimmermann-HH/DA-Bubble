@@ -48,7 +48,7 @@ export class ChannelComponent {
       if (term.length >= 3) {
         this.filterData(term);
       } else {
-        this.resetFilteredData(); // Setze gefilterte Daten auf Original zurück
+        this.resetFilteredData();
       }
     });
   }
@@ -101,7 +101,9 @@ export class ChannelComponent {
 
         this.allMessages.push(message);
       });
+      // Wichtig, damit ohne Suche alle Messages angezeigt werden:
       this.filteredMessages = this.allMessages;
+
       console.log('current message', this.allMessages);
     });
   }
