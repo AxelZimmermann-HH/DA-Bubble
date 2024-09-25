@@ -12,6 +12,8 @@ import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
 
+
+
 @Component({
   selector: 'app-channel',
   standalone: true,
@@ -25,6 +27,7 @@ export class ChannelComponent {
   user = new User();
   channel = new Channel();
   channelData: any = [];
+  filteredChannels: any = [];
   message = new Message;
   allMessages: any = [];
 

@@ -29,18 +29,23 @@
                         <img [src]="'./assets/avatars/avatar_'+ getAvatarForUser(message.user) + '.png'" alt=""
                             class="avatar">
                         <div class="message-content">
-                            <div class="name-time">{{ message.user }} <p class="time">14:25Uhr</p>
+                            <div class="name-time"> {{message.user}} <p class="time">14:25Uhr</p>
                             </div>
-                            <div class="speech-bubble"> {{ message.text }}</div>
-                            <div class="label-answers">2 Antworten <p class="time">Letzte Antwort 14:56</p>
+                            <div class="speech-bubble"> {{message.text}}</div>
+                            <div class="label-answers" (click)="openThread()">2 Antworten <p class="time">Letzte Antwort 14:56</p>
                             </div>
                         </div>
+                    </div>
+                    <div class="reaction-hover">
+                        <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
+                        <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png" alt="">
+                        <img src="./assets/icons/add_reaction.png" alt="">
+                        <img src="./assets/icons/comment.png" alt="">
                     </div>
                 </td>
                 <div style="position: relative;">
                     <hr class="separator-line"><button class="day-time-btn">Dienstag, 14 Januar</button>
                 </div>
-                <div class="reaction-hover"></div>
             </tr>
         </table>
     </div>
@@ -58,4 +63,3 @@
         </div>
     </div>
 </div>
-

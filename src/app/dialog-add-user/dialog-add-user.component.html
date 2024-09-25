@@ -13,6 +13,16 @@
         </div>
       </div>
       
-      <button class="createBtn" [disabled]="!selectedOption" (click)="addUser()">Erstellen</button>
+
+      <div *ngIf="selectedOption === 'user'" class="user-select">
+        <mat-form-field appearance="fill">
+            <mat-label>Wählen Sie einen Benutzer</mat-label>
+            <mat-select [(value)]="selectedUser">
+                <mat-option *ngFor="let user of userData" [value]="user">{{user.name}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+
+      <button class="createBtn" [disabled]="!selectedOption" (click)="addUser(selectedOption?.toString()!)">Erstellen</button>
       
 </div>

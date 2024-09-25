@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { collection, Firestore, onSnapshot } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogAddChannelComponent } from '../../dialog-add-channel/dialog-add-channel.component';
+import { SharedService } from '../../services/shared.service';
 
 @Component({
   selector: 'app-menu',
@@ -12,7 +13,7 @@ import { DialogAddChannelComponent } from '../../dialog-add-channel/dialog-add-c
   styleUrl: './menu.component.scss'
 })
 export class MenuComponent {
-  constructor(public db: Firestore, public dialog: MatDialog){}
+  constructor(public db: Firestore, public dialog: MatDialog, private sharedService: SharedService){}
   newDmIcon = 'edit_square.png'
   channelIcon1:string = 'arrow_drop_down.png';
   channelIcon2:string = 'workspaces.png';
@@ -28,7 +29,9 @@ export class MenuComponent {
 
 
   userData:any[] = [];
+  filteredUsers: any[] = [];
   channelData:any[] = [];
+  filteredChannels: any[] = [];
   showChannel: boolean = true;
   showUser: boolean = true;
 
@@ -36,6 +39,31 @@ export class MenuComponent {
   async ngOnInit(){
     await this.getAllChannels('channels');
     await this.getAllUsers('users');
+    this.subscribeToSearch();
+  }
+
+  subscribeToSearch() {
+    this.sharedService.searchTerm$.subscribe((term) => {
+      if (term.length >= 3) {
+        this.filterData(term);
+      } else {
+        this.resetFilteredData(); // Setze gefilterte Daten auf Original zurück
+      }
+    });
+  }
+
+  filterData(term: string) {
+    this.filteredChannels = this.channelData.filter((channel: any) =>
+      channel.channelName.toLowerCase().includes(term.toLowerCase())
+    );
+    this.filteredUsers = this.userData.filter((user: any) =>
+      user.name.toLowerCase().includes(term.toLowerCase())
+    );
+  }
+
+  resetFilteredData() {
+    this.filteredChannels = this.channelData;
+    this.filteredUsers = this.userData;
   }
 
   async getAllChannels(channels: string) {
@@ -62,6 +90,9 @@ export class MenuComponent {
           };
           
         });
+        // Standardmäßig:
+        this.filteredChannels = this.channelData;
+        this.filteredUsers = this.userData;
       },
       (error) => {
         console.error('Fehler beim laden der Channel-Daten:', error);
