@@ -3,7 +3,6 @@
     width: 485px;
     background-color: #FFFFFF;
     border-radius: 30px;
-    // padding: 32px 30px 32px 30px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -18,7 +17,20 @@
         font-weight: 700;
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: 16px;
+
+        img {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+
+            &:hover {
+                content: url('./../../../assets/icons/close-1.png');
+                border-radius: 20px;
+                background: rgba(236, 238, 254, 1);
+            }
+        }
     }
 }
 
@@ -28,6 +40,14 @@
     height: 192px;
     margin: 20px 0;
     padding: 25px 45px;
+
+    &:hover {
+        background-color: rgba(236, 238, 254, 1);
+
+        .speech-bubble {
+            background-color: #FFFFFF;
+        }
+    }
 }
 
 .avatar {
@@ -66,13 +86,108 @@
         font-size: 18px;
         font-weight: 400;
     }
+}
+
+.separator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
 
     .label-answers {
-        display: flex;
-        align-items: center;
-        gap: 16px;
         font-size: 18px;
         font-weight: 400;
         color: rgba(83, 90, 241, 1);
+        width: 30%;
+        margin: 0;
+    }
+
+    hr {
+        border: 1px solid rgb(173, 176, 217);
+        height: 0;
+        width: 70%;
+    }
+}
+
+.custom-input {
+    height: 145px;
+    width: 445px;
+    border-radius: 20px;
+    gap: 8px;
+    background: rgba(255, 255, 255, 1);
+    border: 1px solid rgba(173, 176, 217, 1);
+    font-size: 18px;
+    font-weight: 400;
+   margin: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-self: center;
+
+    .text-area {
+        border: unset;
+        font-family: nunito;
+        font-size: 18px;
+        font-weight: 400;
+        max-width: 100%;
+        min-width: 100%;
+        height: 100%;
+        overflow-y: scroll;
+        scrollbar-width: none;
+
+        &:focus {
+            outline: none;
+            border: none;
+        }
+    }
+
+    .add-reaction {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .reactions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        filter: opacity(0.5);
+        border-radius: 30px;
+        cursor: pointer;
+
+        img {
+            display: inline-block;
+            transition: transform 0.3s ease, background 0.3s ease;
+            vertical-align: middle;
+            border-radius: 40px;
+            width: 30px;
+        }
+
+        .add-icon:hover,
+        .add-emoji:hover,
+        .add-mail:hover {
+            transform: scale(1.2);
+            background: rgba(236, 238, 254, 1);
+        }
+
+        .add-icon:hover {
+            content: url('./../../../assets/icons/add-2.png');
+        }
+
+        .add-emoji:hover {
+            content: url('./../../../assets/icons/sentiment_satisfied-2.png');
+        }
+
+        .add-mail:hover {
+            content: url('./../../../assets/icons/alternate_email-2.png');
+        }
+    }
+
+    .send-icon {
+        cursor: pointer;
+
+        &:hover {
+            filter: contrast(0.5)
+        }
     }
 }

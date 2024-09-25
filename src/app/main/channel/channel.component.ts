@@ -87,7 +87,9 @@ export class ChannelComponent {
     return user ? user.avatar : 'default';
   }
 
-  sendMessage(){}
+  sendMessage() { }
+  openThread() { }
+
   openDialogAddUser() {
     this.dialog.open(DialogAddUserComponent)
   }

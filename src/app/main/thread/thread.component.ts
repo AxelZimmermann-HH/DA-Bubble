@@ -73,4 +73,5 @@ export class ThreadComponent {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
     return user ? user.avatar : 'default';
   }
+  sendMessage(){}
 }

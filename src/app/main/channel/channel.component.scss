@@ -111,28 +111,25 @@
 }
 
 .channel-content {
-    position: relative;
     width: 100%;
     overflow-y: scroll;
     height: 500px;
     scrollbar-width: none;
-
     .chat-table {
         width: 100%;
-        padding: 20px;
-
+        border-spacing: 0;
         td {
             display: flex;
             align-items: center;
             gap: 16px;
             width: 100%;
-            &:hover{
-                width: calc(100% + 12%);
-                margin-left: -30px;
+            transition: background-color 0.5s ease-in-out;
+            margin: 30px 0;
+            &:hover {
                 background-color: rgb(236, 238, 254);
+                color: black;
             }
         }
-
         .message-main {
             display: flex;
             gap: 16px;
@@ -140,7 +137,6 @@
             margin: 20px 0;
             padding: 25px 45px;
         }
-
         .message-content {
             display: flex;
             flex-direction: column;
@@ -160,7 +156,6 @@
                 color: rgba(104, 104, 104, 1);
                 margin: 0;
             }
-
             .speech-bubble {
                 width: 352px;
                 height: 55px;
@@ -170,9 +165,7 @@
                 background: rgba(236, 238, 254, 1);
                 font-size: 18px;
                 font-weight: 400;
-             
             }
-
             .label-answers {
                 display: flex;
                 align-items: center;
@@ -183,40 +176,40 @@
             }
         }
     }
-
     .separator-line {
         width: 919px;
         height: 0;
         border: 1px solid rgba(173, 176, 217, 1)
     }
 }
-
-.reaction-hover{
+.reaction-hover {
     display: none;
     width: 210px;
     height: 46px;
     border-radius: 25px 25px 0 25px;
-    padding: 3px  20px;
+    padding: 3px 20px;
     background: rgba(255, 255, 255, 1);
     border: 1px solid rgba(173, 176, 217, 1);
     position: relative;
     top: -125px;
     right: -50px;
 }
+
 td:hover .reaction-hover {
     display: flex;
     align-items: center;
     gap: 24px;
-    
- img{
-    cursor: pointer;
- }
+
+    img {
+        cursor: pointer;
+    }
 }
-td:hover .speech-bubble{
+
+td:hover .speech-bubble {
     background-color: #FFFFFF !important;
     color: black;
-  
 }
+
 .day-time-btn {
     position: absolute;
     top: 50%;
@@ -236,6 +229,7 @@ td:hover .speech-bubble{
     border-radius: 40px;
 }
 
+//Nachricht Box
 .custom-input {
     position: absolute;
     bottom: 20px;
@@ -260,12 +254,14 @@ td:hover .speech-bubble{
         font-size: 18px;
         font-weight: 400;
         max-width: 100%;
+        min-width: 100%;
         height: 100%;
         overflow-y: scroll;
         scrollbar-width: none;
-        &:focus{
+
+        &:focus {
             outline: none;
-            border: none; 
+            border: none;
         }
     }
 }
@@ -309,5 +305,11 @@ td:hover .speech-bubble{
 
     .add-mail:hover {
         content: url('./../../../assets/icons/alternate_email-2.png');
+    }
+}
+.send-icon{
+    cursor: pointer;
+    &:hover{
+        filter:contrast(0.5)
     }
 }
