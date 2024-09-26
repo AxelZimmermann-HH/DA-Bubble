@@ -42,6 +42,7 @@ export class MenuComponent {
     await this.getAllUsers('users');
    
     this.subscribeToSearch();
+    
   }
 
   subscribeToSearch() {
@@ -134,6 +135,8 @@ export class MenuComponent {
           };
           
         });
+
+        this.filteredUsers = this.userData;
       },
       (error) => {
         console.error('Fehler beim laden der User-Daten:', error);

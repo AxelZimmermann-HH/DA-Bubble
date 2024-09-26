@@ -57,14 +57,14 @@
 
             <div class="submit-area">
 
-                <button class="google-button" type="submit">
+                <button class="google-button" type="button" (click)="googleLogin()">
                     <img src="../../assets/icons/Google.svg" alt="">
                     <a href="#">Anmelden mit Google</a>
                 </button> 
 
                 <div class="login-buttons">
-                    <button class="login-button">Anmelden</button>
-                    <button class="login-button guest">Gäste-Login</button>
+                    <button class="login-button" (click)="onSubmit(ngForm)">Anmelden</button>
+                    <button class="login-button guest" (click)="guestLogin()">Gäste-Login</button>
                 </div>
             </div>
 

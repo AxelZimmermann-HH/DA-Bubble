@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SharedService } from '../../services/shared.service';
 import { DialogAddUserComponent } from '../../dialog-add-user/dialog-add-user.component';
 import { DialogLogoutComponent } from './dialog-logout/dialog-logout.component';
@@ -8,6 +8,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { UserService } from '../../services/user.service';  
+import { User } from '../../models/user.class';  
 
 @Component({
   selector: 'app-header',
@@ -16,8 +18,21 @@ import { MatIconModule } from '@angular/material/icon';
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
-export class HeaderComponent {
-  constructor(public dialog: MatDialog, private sharedService: SharedService) {}
+export class HeaderComponent implements OnInit {
+  
+  currentUser: User | null = null;
+
+  constructor(public dialog: MatDialog, private sharedService: SharedService, private userService: UserService) {}
+
+  ngOnInit() {
+    // Benutzer abonnieren und in currentUser speichern
+    this.userService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+      if (user) {
+        console.log('Angemeldeter Benutzer:', user);
+      }
+    });
+  }
 
   onSearchInput(event: any) {
     const searchTerm = event.target.value;

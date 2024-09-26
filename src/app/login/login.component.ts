@@ -3,6 +3,12 @@ import { Component, ViewChild, ElementRef } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { collection, Firestore, onSnapshot } from '@angular/fire/firestore';
 import { User } from '../models/user.class';
+import { Router } from '@angular/router'; 
+import { UserService } from '../services/user.service';  
+import { Auth, signInWithPopup, GoogleAuthProvider } from '@angular/fire/auth'; 
+
+
+
 
 @Component({
   selector: 'app-login',
@@ -20,7 +26,7 @@ export class LoginComponent {
   validMail: boolean = true;
   validPassword: boolean = true;
 
-  constructor(public firestore: Firestore) {
+  constructor(public firestore: Firestore, private router: Router, private userService: UserService, private auth: Auth) {
     this.getAllUsers();
   }
 
@@ -38,43 +44,93 @@ export class LoginComponent {
   }
 
   onSubmit(ngForm: NgForm) {
-    const enteredMail = this.user.mail;
-    const enteredPassword = this.user.password;
+    let enteredMail = this.user.mail;
+    let enteredPassword = this.user.password;
+    let user = this.userData.find((user: User) => user.mail === enteredMail);
   
-    const user = this.userData.find((user: User) => user.mail === enteredMail);
+    this.emptyValue();
   
-    // Leere in jedem Fall beide Felder
-    this.user.mail = '';  // Leeren des Mail-Feldes
-    this.user.password = '';  // Leeren des Passwort-Feldes
-  
-    // Initialisiere beide als ungültig
+    if (user) {
+      if (user.password === enteredPassword) {
+        this.handleSuccess(user, enteredMail);
+
+      } else {
+        this.falsePassword();
+      }
+    } else {
+      this.falseMail();
+    }
+    
+    this.returnError();
+  }
+
+  emptyValue() {
+    this.user.mail = '';  
+    this.user.password = '';  
+    this.validMail = true;
+    this.validPassword = true;
+  }
+
+  handleSuccess(user: User, enteredMail: string) {
     this.validMail = true;
     this.validPassword = true;
   
-    if (user) {
-      // Wenn die E-Mail korrekt ist, überprüfe das Passwort
-      if (user.password === enteredPassword) {
-        console.log('Login successful for:', enteredMail);
-        this.validMail = true;
-        this.validPassword = true;
-        // Hier kann der tatsächliche submit stattfinden
-      } else {
-        console.log('Falsches Passwort');
-        this.validMail = true;  // E-Mail korrekt
-        this.validPassword = false;  // Passwort falsch
-      }
-    } else {
-      console.log('E-Mail nicht gefunden');
-      this.validMail = false;  // E-Mail falsch
-      this.validPassword = true;  // Passwort-Fehler wird zurückgesetzt
-    }
-  
-    // Blockiere den erfolgreichen Submit, wenn eines der Felder falsch ist
-    if (!this.validMail || !this.validPassword) {
-      return;  // Verhindere den weiteren Ablauf, wenn eines ungültig ist
-    }
-  
-    // Weiterführende Logik bei erfolgreichem Submit
+    this.userService.setUser(user);
+    this.router.navigate(['/']);
   }
 
+  falsePassword() {
+    this.validMail = true;  
+    this.validPassword = false;  
+  }
+
+  falseMail() {
+    this.validMail = false;  
+    this.validPassword = true;  
+  }
+
+  returnError() {
+    if (!this.validMail || !this.validPassword) {
+      return; 
+    }
+  }
+
+  guestLogin() {
+    // Erstelle einen Gast-Benutzer (anpassbar)
+    const guestUser = new User();
+    guestUser.name = 'Gast';
+    guestUser.mail = 'guest@example.com';
+    guestUser.avatar = 1;  // Oder eine beliebige Avatar-ID
+  
+    // Rufe handleSuccess auf und simuliere den Gast-Login
+    this.handleSuccess(guestUser, guestUser.mail);
+  }
+
+  googleLogin() {
+    console.log('Google Login gestartet');
+    debugger;
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(this.auth, provider)
+      .then((result) => {
+        // Google-Userdaten erhalten
+        const googleUser = result.user;
+        console.log(googleUser);
+        debugger;
+        
+
+        // Erstelle einen neuen Benutzer aus den Google-Daten
+        const user = new User();
+        user.name = googleUser.displayName || 'Unbekannter Benutzer';
+        user.mail = googleUser.email || 'Keine E-Mail';
+        user.avatar = 1;
+
+        // Setze den Benutzer im UserService und navigiere zur MainComponent
+        
+        this.handleSuccess(user, user.mail);
+        
+      })
+      .catch((error) => {
+        console.error('Fehler bei der Google-Authentifizierung:', error);
+      });
+  }
 }
