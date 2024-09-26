@@ -13,15 +13,25 @@
         <h1>Anmeldung</h1>
         <p>Wir empfehlen dir, die E-Mail-Adresse zu nutzen, die du bei der Arbeit verwendest.</p>
 
-        <form>
+        <form #ngForm="ngForm" (ngSubmit)="onSubmit(contactForm)" #contactForm="ngForm">
+            
+            
+            
             <div class="input">
                 <img [ngStyle]="{'width': '20px'}" src="../../assets/icons/login-mail.svg" alt="">
-                <input #mailInput required placeholder="beispielname@email.com">
+                <input name="mailInput" [(ngModel)]="user.mail" #mailInput required placeholder="beispielname@email.com" 
+                pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}">
             </div>
+
+
+
             <div class="input">
                 <img [ngStyle]="{'width': '16px'}" src="../../assets/icons/login-lock.svg" alt="">
                 <input #passwordInput required placeholder="Passwort">
             </div>
+
+
+
 
             <a href="#">Passwort vergessen?</a>
             <div class="divider">
@@ -30,11 +40,15 @@
                 <div class="line"></div>
             </div>
 
+
+
             <div class="submit-area">
+
                 <button class="google-button" type="submit">
                     <img src="../../assets/icons/Google.svg" alt="">
                     <a href="#">Anmelden mit Google</a>
                 </button> 
+
                 <div class="login-buttons">
                     <button class="login-button">Anmelden</button>
                     <button class="login-button guest">Gäste-Login</button>
