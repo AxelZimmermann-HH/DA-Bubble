@@ -109,12 +109,19 @@ p {
                 border-style: none;
                 padding: 0px 32px 0px 64px;
                 box-sizing: border-box;
+                font-family: 'Nunito';
+                font-weight: 500;
+                font-size: 18px;
+                color: black;
                 &::placeholder {
                     font-family: 'Nunito';
                     font-weight: 500;
                     font-size: 18px;
                     color: #686868;
                 }
+                &.placeholder-error::placeholder {
+                    color: red;
+                  }
             }
             > img {
                 position: absolute;
@@ -166,3 +173,4 @@ p {
     border: 1px solid #444DF2;
     background-color: white;
 }
+

@@ -19,15 +19,28 @@
             
             <div class="input">
                 <img [ngStyle]="{'width': '20px'}" src="../../assets/icons/login-mail.svg" alt="">
-                <input name="mailInput" [(ngModel)]="user.mail" #mailInput required placeholder="beispielname@email.com" 
-                pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}">
+                <input 
+                    name="mailInput" 
+                    [(ngModel)]="user.mail" 
+                    #mailInput 
+                    required 
+                    placeholder="beispielname@email.com" 
+                    [placeholder]="validMail ? 'beispielname@email.com' : 'Die Mailadresse wurde nicht gefunden!'"
+                    pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
+                    [ngClass]="{'placeholder-error': !validMail}" />
             </div>
 
 
 
             <div class="input">
                 <img [ngStyle]="{'width': '16px'}" src="../../assets/icons/login-lock.svg" alt="">
-                <input #passwordInput required placeholder="Passwort">
+                <input name="passwordInput" 
+                [(ngModel)]="user.password" 
+                required 
+                placeholder="Passwort" 
+                [placeholder]="validPassword ? 'Passwort' : 'Falsches Passwort!'"
+                [ngClass]="{'placeholder-error': !validPassword}"
+                type="password" />
             </div>
 
 
