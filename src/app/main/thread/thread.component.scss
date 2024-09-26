@@ -6,6 +6,7 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    position: relative;
 
     .thread-header {
         width: auto;
@@ -29,9 +30,17 @@
                 content: url('./../../../assets/icons/close-1.png');
                 border-radius: 20px;
                 background: rgba(236, 238, 254, 1);
+                cursor: pointer;
             }
         }
     }
+}
+
+.thread-content {
+    width: 100%;
+    overflow-y: scroll;
+    height: 500px;
+    scrollbar-width: none;
 }
 
 .message-main {
@@ -111,18 +120,21 @@
 
 .custom-input {
     height: 145px;
-    width: 445px;
+    width: 380px;
     border-radius: 20px;
     gap: 8px;
-    background: rgba(255, 255, 255, 1);
-    border: 1px solid rgba(173, 176, 217, 1);
+    background: rgb(255, 255, 255);
+    border: 1px solid rgb(173, 176, 217);
     font-size: 18px;
     font-weight: 400;
-   margin: 20px;
-    display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    align-self: center;
+    justify-content: center;
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    display: flex;
+    padding: 20px;
 
     .text-area {
         border: unset;
@@ -134,6 +146,7 @@
         height: 100%;
         overflow-y: scroll;
         scrollbar-width: none;
+        line-height: 1.7;
 
         &:focus {
             outline: none;

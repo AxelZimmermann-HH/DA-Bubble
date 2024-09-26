@@ -14,6 +14,7 @@ export class User {
         this.online = obj? obj.online:'';
         this.password = obj ? obj.password : '';
         this.userId = obj? obj.userId:'';
+        this.password = obj? obj.password:'';
     }
 
     public toJson(){
