@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
-import { addDoc, collection, doc, Firestore } from '@angular/fire/firestore';
+import { addDoc, collection, doc, Firestore, setDoc } from '@angular/fire/firestore';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Channel } from '../models/channel.class';
 
@@ -31,8 +31,6 @@ export class DialogAddChannelComponent {
     const channelData = this.channel.toJson();
 
     this.saveNewChannel(channelData).then((result: any) => {
-      
-      
       this.channelName.setValue('');
       this.channelDescription.setValue('');
       this.dialogRef.close();
@@ -42,9 +40,15 @@ export class DialogAddChannelComponent {
   async saveNewChannel(channelData:any){
     try {
       const docRef = await addDoc(collection(this.firestore, 'channels'), channelData);
-      console.log("Document written with ID: ", docRef.id);
+      await this.setChannelId(docRef.id, channelData)
     }catch (error: any) {
       console.error('Fehler beim erstellen des Channels:', error);
     }
+  }
+
+  async setChannelId(id:string, channelData:any){
+    this.channel.id = id;
+    channelData = this.channel.toJson();
+    await setDoc(doc(this.firestore, "channels", id), channelData)
   }
 }
