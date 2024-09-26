@@ -12,8 +12,8 @@ import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
 import { SharedService } from '../../services/shared.service';
 
-import {MatSidenavModule} from '@angular/material/sidenav';
-import {MatToolbarModule} from '@angular/material/toolbar';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatToolbarModule } from '@angular/material/toolbar';
 import { ThreadComponent } from "../thread/thread.component";
 import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-channel.component';
 
@@ -36,6 +36,7 @@ export class ChannelComponent {
   allMessages: any = [];
   filteredMessages: any = [];
   showThread = false;
+  showPopup = false;
 
   constructor(public dialog: MatDialog, public firestore: Firestore, private sharedService: SharedService) {
     this.getAllUsers();
@@ -119,7 +120,14 @@ export class ChannelComponent {
   }
 
   sendMessage() { }
-  openUserList() { }
+
+  openUsersList() {
+    this.showPopup = true;
+  }
+
+  closePopup() {
+    this.showPopup = false;
+  }
 
   openDialogAddUser() {
     this.dialog.open(DialogAddUserComponent);
@@ -129,6 +137,5 @@ export class ChannelComponent {
   }
 
   openThread() {
-
   }
 }

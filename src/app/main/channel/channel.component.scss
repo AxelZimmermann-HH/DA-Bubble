@@ -116,9 +116,11 @@
     overflow-y: scroll;
     height: 500px;
     scrollbar-width: none;
+
     .chat-table {
         width: 100%;
         border-spacing: 0;
+
         td {
             display: flex;
             align-items: center;
@@ -126,11 +128,13 @@
             width: 100%;
             transition: background-color 0.5s ease-in-out;
             margin: 30px 0;
+
             &:hover {
                 background-color: rgb(236, 238, 254);
                 color: black;
             }
         }
+
         .message-main {
             display: flex;
             gap: 16px;
@@ -138,6 +142,7 @@
             margin: 20px 0;
             padding: 25px 45px;
         }
+
         .message-content {
             display: flex;
             flex-direction: column;
@@ -157,6 +162,7 @@
                 color: rgba(104, 104, 104, 1);
                 margin: 0;
             }
+
             .speech-bubble {
                 width: 352px;
                 height: 55px;
@@ -167,6 +173,7 @@
                 font-size: 18px;
                 font-weight: 400;
             }
+
             .label-answers {
                 display: flex;
                 align-items: center;
@@ -177,12 +184,14 @@
             }
         }
     }
+
     .separator-line {
         width: 919px;
         height: 0;
         border: 1px solid rgba(173, 176, 217, 1)
     }
 }
+
 .reaction-hover {
     display: none;
     width: 210px;
@@ -260,6 +269,7 @@ td:hover .speech-bubble {
         overflow-y: scroll;
         scrollbar-width: none;
         line-height: 1.7;
+
         &:focus {
             outline: none;
             border: none;
@@ -308,9 +318,57 @@ td:hover .speech-bubble {
         content: url('./../../../assets/icons/alternate_email-2.png');
     }
 }
-.send-icon{
+
+.send-icon {
     cursor: pointer;
-    &:hover{
-        filter:contrast(0.5)
+
+    &:hover {
+        filter: contrast(0.5)
+    }
+}
+
+/* Styles for the overlay */
+.popup-overlay {
+    z-index: 999;
+    /* Keep overlay below the popup content */
+    position: fixed;
+    top: 0;
+    /* Cover the entire viewport */
+    left: 0;
+    /* Cover the entire viewport */
+    width: 100%;
+    /* Cover the entire viewport */
+    height: 100%;
+    /* Cover the entire viewport */
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Dim background */
+}
+
+/* Styles for the popup content */
+.popup-content {
+    z-index: 1000;
+    position: fixed;
+    top: 50%;
+    right: 20%;
+    transform: translateY(-50%);
+    border-radius: 30px;
+    width: 415px;
+    height: 411px;
+    background-color: white;
+    margin: 0;
+    padding: 20px;
+    box-shadow: 0px 6px 10px 0px #00000033;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0 0;
+    }
+
+    li {
+        padding: 8px 0;
     }
 }
