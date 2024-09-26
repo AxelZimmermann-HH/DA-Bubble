@@ -14,6 +14,10 @@ import { MatDialogModule } from '@angular/material/dialog';
 })
 export class MainComponent {
 
+  selectedChannelId: string | null = null;
 
+  onChannelSelected(channel: any) {
+    this.selectedChannelId = channel.id;
+  }
 
 }

@@ -1,7 +1,7 @@
-<div class="channel-container">
+<div class="channel-container" *ngIf="selectedChannel">
     <div class="channel-header">
         <button class="edit-channel" (click)="openDialogEditChannel()">
-            <p># {{channel.channelName}}</p>
+            <p># {{selectedChannel.channelName}}</p>
             <img src="./assets/icons/keyboard_arrow_down_1.png" alt="">
         </button>
         <div class="add-members">
@@ -64,7 +64,7 @@
     </div>
 
     <div class="custom-input">
-        <textarea placeholder="Nachricht an #{{channel.channelName}}" class="text-area"></textarea>
+        <textarea placeholder="Nachricht an #{{selectedChannel.channelName}}" class="text-area"></textarea>
         <div class="add-reaction">
             <div class="reactions">
                 <img src="./assets/icons/add-1.png" alt="" class="add-icon">

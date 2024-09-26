@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { collection, Firestore, onSnapshot } from '@angular/fire/firestore';
+import { Component, Input } from '@angular/core';
+import { collection, doc, Firestore, getDoc, onSnapshot } from '@angular/fire/firestore';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -38,17 +38,39 @@ export class ChannelComponent {
   showThread = false;
   showPopup = false;
 
+  @Input() selectedChannelId: string | null = null;
+  
+  selectedChannel:  Channel | null = null;
+
   constructor(public dialog: MatDialog, public firestore: Firestore, private sharedService: SharedService) {
     this.getAllUsers();
     this.getAllChannels();
     this.getAllMessages();
     this.subscribeToSearch();
     //provisorisch
-    this.channel.channelName = "Entwicklerteam";
-
-
+  }
+  ngOnInit(): void {
+    if (this.selectedChannelId) {
+      this.loadChannel(this.selectedChannelId);
+    }
   }
 
+  ngOnChanges(): void {
+    if (this.selectedChannelId) {
+      this.loadChannel(this.selectedChannelId);
+    }
+  }
+  async loadChannel(id: string) {
+    const channelDocRef = doc(this.firestore, `channels/${id}`);
+    const channelSnapshot = await getDoc(channelDocRef);
+
+    if (channelSnapshot.exists()) {
+      const data = channelSnapshot.data();
+      this.selectedChannel = new Channel(data);
+    } else {
+      console.error('Channel not found');
+    }
+  }
   subscribeToSearch() {
     this.sharedService.searchTerm$.subscribe((term) => {
       if (term.length >= 3) {

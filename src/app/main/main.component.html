@@ -1,8 +1,8 @@
 <body>
     <app-header></app-header>
     <div class="d-flex">
-        <app-menu></app-menu>
-        <app-channel></app-channel>
+        <app-menu (channelSelected)="onChannelSelected($event)"></app-menu>
+    <app-channel [selectedChannelId]="selectedChannelId"></app-channel>
         <app-thread></app-thread>
     </div>
 </body>
