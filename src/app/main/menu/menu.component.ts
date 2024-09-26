@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { collection, doc, documentId, Firestore, getDocs, onSnapshot, query, setDoc, where } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogAddChannelComponent } from '../../dialog-add-channel/dialog-add-channel.component';
@@ -42,11 +42,14 @@ export class MenuComponent {
   myUserId = 'KwLFMSJZDdCn10znYEQ2';
   
 
+  @Output() channelSelected = new EventEmitter<any>();
 
   async ngOnInit(){
     await this.getAllChannels('channels');
     await this.getAllUsers('users');
+   
     this.subscribeToSearch();
+    
   }
 
   subscribeToSearch() {
@@ -87,6 +90,7 @@ export class MenuComponent {
       channelsCollectionRef,
       (snapshot: { docs: any[] }) => {
         this.channelData = [];
+        
         this.channelData = snapshot.docs.map((doc) => {
           const channel = doc.data();
       
@@ -99,7 +103,12 @@ export class MenuComponent {
         });
         // Standardmäßig:
         this.filteredChannels = this.channelData;
-        this.filteredUsers = this.userData;
+        if (this.filteredChannels.length > 0) {
+          this.onChannelClick(this.filteredChannels[0]); // Erster Kanal wird ausgewählt
+        } else {
+          console.warn('Keine Kanäle verfügbar');
+          // Hier könntest du z.B. einen Platzhalter anzeigen oder eine Meldung, dass keine Kanäle verfügbar sind
+        }
       },
       (error) => {
         console.error('Fehler beim laden der Channel-Daten:', error);
@@ -133,6 +142,8 @@ export class MenuComponent {
           };
           
         });
+
+        this.filteredUsers = this.userData;
       },
       (error) => {
         console.error('Fehler beim laden der User-Daten:', error);
@@ -188,6 +199,20 @@ export class MenuComponent {
   openDialogAddChannel() {
     this.dialog.open(DialogAddChannelComponent)
   }
+
+
+
+
+  //edit
+  onChannelClick(channel: any) {
+    this.channelSelected.emit(channel);  // Leitet das ausgewählte Kanal-Objekt weiter
+    console.log('channel name', channel.channelName )
+  }
+
+  trackByChannelId(index: number, channel: any): string {
+    return channel.id;  // Optimiert die Performance von *ngFor
+  }
+
 
   //>>>>> BAUSTELLE <<<<<
 

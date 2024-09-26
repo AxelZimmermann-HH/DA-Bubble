@@ -38,15 +38,17 @@
             </button>
         </div>
 
+        <!-- hier wird funktion onChannelClick() hinzugefügt und track ist bei channelId -->
         <div class="added-channels" *ngIf="showChannel">
-            @for (channel of filteredChannels; track channel) {
-                <div class="channel-name"
-                (mouseover)="channel.tagIcon = 'tag-1.png'"
-                (mouseleave)="channel.tagIcon = 'tag.png'">
-                <img [src]="'/assets/icons/' + channel.tagIcon" alt="">
-                <span class="header3">{{channel.channelName}}</span>
-            </div>
-            }
+            <div *ngFor="let channel of filteredChannels; trackBy: trackByChannelId" class="channel-name"
+     (click)="onChannelClick(channel)"
+     (mouseover)="channel.tagIcon = 'tag-1.png'"
+     (mouseleave)="channel.tagIcon = 'tag.png'">
+  <img [src]="'/assets/icons/' + channel.tagIcon" alt="Channel Icon">
+  <span class="header3">{{ channel.channelName }}</span>
+</div>
+
+            
         </div>
 
         <div class="add-channel" *ngIf="showChannel" >

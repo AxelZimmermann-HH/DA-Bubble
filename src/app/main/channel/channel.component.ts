@@ -1,23 +1,27 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { collection, Firestore, onSnapshot } from '@angular/fire/firestore';
+import { Component, Input } from '@angular/core';
+import { collection, doc, Firestore, getDoc, onSnapshot } from '@angular/fire/firestore';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { DialogAddUserComponent } from '../../dialog-add-user/dialog-add-user.component';
-import { DialogEditChannelComponent } from '../../dialog-edit-channel/dialog-edit-channel.component';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
+import { SharedService } from '../../services/shared.service';
 
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { ThreadComponent } from "../thread/thread.component";
+import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-channel.component';
 
 
 @Component({
   selector: 'app-channel',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatIconModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatIconModule, MatSidenavModule, MatToolbarModule, ThreadComponent],
   templateUrl: './channel.component.html',
   styleUrl: './channel.component.scss'
 })
@@ -30,14 +34,62 @@ export class ChannelComponent {
   filteredChannels: any = [];
   message = new Message;
   allMessages: any = [];
+  filteredMessages: any = [];
+  showThread = false;
+  showPopup = false;
 
-  constructor(public dialog: MatDialog, public firestore: Firestore) {
+  @Input() selectedChannelId: string | null = null;
+  
+  selectedChannel:  Channel | null = null;
+
+  constructor(public dialog: MatDialog, public firestore: Firestore, private sharedService: SharedService) {
     this.getAllUsers();
     this.getAllChannels();
     this.getAllMessages();
+    this.subscribeToSearch();
     //provisorisch
-    this.channel.channelName = "Entwicklerteam"
+  }
+  ngOnInit(): void {
+    if (this.selectedChannelId) {
+      this.loadChannel(this.selectedChannelId);
+    }
+  }
 
+  ngOnChanges(): void {
+    if (this.selectedChannelId) {
+      this.loadChannel(this.selectedChannelId);
+    }
+  }
+  async loadChannel(id: string) {
+    const channelDocRef = doc(this.firestore, `channels/${id}`);
+    const channelSnapshot = await getDoc(channelDocRef);
+
+    if (channelSnapshot.exists()) {
+      const data = channelSnapshot.data();
+      this.selectedChannel = new Channel(data);
+    } else {
+      console.error('Channel not found');
+    }
+  }
+  subscribeToSearch() {
+    this.sharedService.searchTerm$.subscribe((term) => {
+      if (term.length >= 3) {
+        this.filterData(term);
+      } else {
+        this.resetFilteredData();
+      }
+    });
+  }
+
+  filterData(term: string) {
+    this.filteredMessages = this.allMessages.filter((message: any) =>
+      message.text.toLowerCase().includes(term.toLowerCase()) ||
+      message.user.toLowerCase().includes(term.toLowerCase())
+    );
+  }
+
+  resetFilteredData() {
+    this.filteredMessages = this.allMessages;
   }
 
   getAllUsers() {
@@ -77,6 +129,8 @@ export class ChannelComponent {
 
         this.allMessages.push(message);
       });
+      // Wichtig, damit ohne Suche alle Messages angezeigt werden:
+      this.filteredMessages = this.allMessages;
 
       console.log('current message', this.allMessages);
     });
@@ -87,11 +141,23 @@ export class ChannelComponent {
     return user ? user.avatar : 'default';
   }
 
-  sendMessage(){}
+  sendMessage() { }
+
+  openUsersList() {
+    this.showPopup = true;
+  }
+
+  closePopup() {
+    this.showPopup = false;
+  }
+
   openDialogAddUser() {
-    this.dialog.open(DialogAddUserComponent)
+    this.dialog.open(DialogAddUserComponent);
   }
   openDialogEditChannel() {
-    this.dialog.open(DialogEditChannelComponent)
+    this.dialog.open(DialogEditChannelComponent);
+  }
+
+  openThread() {
   }
 }

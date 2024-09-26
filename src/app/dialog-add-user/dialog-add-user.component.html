@@ -1,28 +1,37 @@
 <div class="adduser-container">
-    <div class="addUser-header">
-        <p>Leute hinzufügen</p><img src="./../../assets/icons/close.png" alt="" (click)="dialogRef.close()">
+  <div class="addUser-header">
+    <p>Leute hinzufügen</p><img src="./../../assets/icons/close.png" alt="" (click)="dialogRef.close()">
+  </div>
+  <div class="flex-direction">
+    <div class="d-flex">
+      <input type="radio" name="options" (change)="selectedOption = 'channel'">
+      Alle Mitglieder von <span class="channel-name">{{channel.channelName}}</span> hinzufügen
     </div>
-    <div class="flex-direction">
-        <div class="d-flex">
-          <input type="radio" name="options" (change)="selectedOption = 'channel'">
-          Alle Mitglieder von <span class="channel-name">{{channel.channelName}}</span> hinzufügen
-        </div>
-        <div class="d-flex">
-          <input type="radio" name="options" (change)="selectedOption = 'user'">
-          Bestimmte Leute hinzufügen
-        </div>
-      </div>
-      
-
-      <div *ngIf="selectedOption === 'user'" class="user-select">
-        <mat-form-field appearance="fill">
-            <mat-label>Wählen Sie einen Benutzer</mat-label>
-            <mat-select [(value)]="selectedUser">
-                <mat-option *ngFor="let user of userData" [value]="user">{{user.name}}</mat-option>
-            </mat-select>
-        </mat-form-field>
+    <div class="d-flex">
+      <input type="radio" name="options" (change)="selectedOption = 'user'">
+      Bestimmte Leute hinzufügen
     </div>
+  </div>
 
-      <button class="createBtn" [disabled]="!selectedOption" (click)="addUser(selectedOption?.toString()!)">Erstellen</button>
-      
+
+
+
+  <div class="custom-dropdown" *ngIf="selectedOption === 'user'">
+    <div class="dropdown-selected" (click)="toggleDropdown()" style="display: flex; align-items: center;">
+      <img *ngIf="selectedUser" [src]="'./assets/avatars/avatar_' + selectedUser.avatar + '.png'" alt=""
+        style="width: 40px; height: 40px; border-radius: 30px; margin-right: 8px;">
+      <span>{{ selectedUser ? selectedUser.name : 'Name eingeben' }}</span>
+    </div>
+    <ul *ngIf="dropdownOpen" class="dropdown-options">
+      <li *ngFor="let user of userData" (click)="selectUser(user)"
+        style="display: flex; align-items: center; gap: 8px;">
+        <img [src]="'./assets/avatars/avatar_' + user.avatar + '.png'" alt=""
+          style="width: 40px; height: 40px; border-radius: 30px;">
+        {{ user.name }}
+      </li>
+    </ul>
+  </div>
+
+  <button class="createBtn" [disabled]="!selectedOption"
+    (click)="addUser(selectedOption?.toString()!)">Hinzufügen</button>
 </div>

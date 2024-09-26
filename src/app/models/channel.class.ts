@@ -19,5 +19,4 @@ export class Channel {
             tagIcon:this.tagIcon
         }
     }
-
 } 

@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Firestore } from '@angular/fire/firestore';
 import { MatDialogRef } from '@angular/material/dialog';
-import { Channel } from '../models/channel.class';
-import { User } from '../models/user.class';
+import { Channel } from '../../../models/channel.class';
+import { User } from '../../../models/user.class';
 import { FormsModule } from '@angular/forms';
 
 @Component({
