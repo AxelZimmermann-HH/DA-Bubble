@@ -4,11 +4,12 @@ import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
 import { collection, Firestore, onSnapshot } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-thread',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule,MatDialogModule],
   templateUrl: './thread.component.html',
   styleUrl: './thread.component.scss'
 })
@@ -18,7 +19,7 @@ export class ThreadComponent {
   channel = new Channel();
   channelData: any = [];
   message = new Message();
-  allMessages: any = []
+  allMessages: any = [];
 
 
 

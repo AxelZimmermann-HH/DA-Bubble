@@ -1,0 +1,52 @@
+<div class="channel-container">
+    <div class="channel-header">
+        <div class="d-flex"><img src="./assets/icons/tag.png" alt="">
+            <p>Entwicklerteam</p>
+        </div>
+        <img src="./assets/icons/close.png" alt="" (click)="dialogRef.close()" class="closebtn">
+    </div>
+
+
+    <div class="channel-name" [ngClass]="{ 'editing': isEditing }">
+        <div class="d-flex">
+            <div *ngIf="!isEditing">{{ channelData[0]?.channelName }}</div>
+            <button class="editBtn" (click)="isEditing ? editChannelName() : toggleInputName()"
+                [ngClass]="{ 'a-self': isEditing }">
+                {{ isEditing ? 'Speichern' : 'Bearbeiten' }}
+            </button>
+        </div>
+        <input *ngIf="isEditing" placeholder="{{ channelData[0]?.channelName }}" class="edit-input" type="text"
+            [(ngModel)]="newChannelName" />
+        <div *ngIf="!isEditing" style="display: flex; align-items: center;">
+            <img src="./assets/icons/tag.png" alt="">
+            <p>{{  channelData[0]?.channelName }}</p>
+        </div>
+    </div>
+
+    <div class="channel-description" [ngClass]="{ 'editing': isEditingDescription }">
+        <div class="d-flex">
+            <div>Beschreibung</div>
+            <button class="editBtn" (click)="isEditingDescription ? saveChannelDescription() : toggleDescriptionEdit()">
+                {{ isEditingDescription ? 'Speichern' : 'Bearbeiten' }}
+            </button>
+        </div>
+
+        <input *ngIf="isEditingDescription" type="text" class="edit-textarea" placeholder="Beschreibung eingeben"
+            [(ngModel)]="newChannelDescription" (keydown.enter)="saveChannelDescription()">
+        
+        <p *ngIf="!isEditingDescription" class="edit-description">
+            {{ channelData[0]?.channelDescription }}
+        </p>
+
+        <hr class="separate-line">
+
+        <div style="display: flex;flex-direction: column;gap: 18px;">Erstellt von
+            <div class="userName">{{user.name}}</div>
+        </div>
+
+
+    </div>
+
+    <button class="close-channel" (click)="dialogRef.close()">Channel verlassen</button>
+
+</div>

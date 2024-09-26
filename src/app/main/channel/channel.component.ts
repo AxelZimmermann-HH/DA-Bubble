@@ -7,18 +7,21 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { DialogAddUserComponent } from '../../dialog-add-user/dialog-add-user.component';
-import { DialogEditChannelComponent } from '../../dialog-edit-channel/dialog-edit-channel.component';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
 import { SharedService } from '../../services/shared.service';
 
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatToolbarModule} from '@angular/material/toolbar';
+import { ThreadComponent } from "../thread/thread.component";
+import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-channel.component';
 
 
 @Component({
   selector: 'app-channel',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatIconModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatIconModule, MatSidenavModule, MatToolbarModule, ThreadComponent],
   templateUrl: './channel.component.html',
   styleUrl: './channel.component.scss'
 })
@@ -32,6 +35,7 @@ export class ChannelComponent {
   message = new Message;
   allMessages: any = [];
   filteredMessages: any = [];
+  showThread = false;
 
   constructor(public dialog: MatDialog, public firestore: Firestore, private sharedService: SharedService) {
     this.getAllUsers();
@@ -39,7 +43,8 @@ export class ChannelComponent {
     this.getAllMessages();
     this.subscribeToSearch();
     //provisorisch
-    this.channel.channelName = "Entwicklerteam"
+    this.channel.channelName = "Entwicklerteam";
+
 
   }
 
@@ -114,12 +119,16 @@ export class ChannelComponent {
   }
 
   sendMessage() { }
-  openThread() { }
+  openUserList() { }
 
   openDialogAddUser() {
-    this.dialog.open(DialogAddUserComponent)
+    this.dialog.open(DialogAddUserComponent);
   }
   openDialogEditChannel() {
-    this.dialog.open(DialogEditChannelComponent)
+    this.dialog.open(DialogEditChannelComponent);
+  }
+
+  openThread() {
+
   }
 }

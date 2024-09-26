@@ -45,6 +45,7 @@
 
             img {
                 content: url('./../../../assets/icons/expand_more_1.png');
+                cursor: pointer;
             }
         }
     }
@@ -97,7 +98,7 @@
 
             p {
                 font-size: 20px;
-                font-weight: 600;
+                font-weight: 700;
                 margin-bottom: 0;
                 cursor: pointer;
             }
@@ -258,7 +259,7 @@ td:hover .speech-bubble {
         height: 100%;
         overflow-y: scroll;
         scrollbar-width: none;
-
+        line-height: 1.7;
         &:focus {
             outline: none;
             border: none;

@@ -4,30 +4,33 @@
                 Entwicklerteam</span></div>
         <img src="./assets/icons/close.png" alt="">
     </div>
-    <div *ngFor="let message of allMessages">
-        <div class="message-main">
-            <img [src]="'./assets/avatars/avatar_'+ getAvatarForUser(message.user) + '.png'" alt="" class="avatar">
-            <div class="message-content">
-                <div class="name-time">{{ message.user }} <p class="time">14:25Uhr</p>
+    <div class="thread-content">
+        <div *ngFor="let message of allMessages">
+            <div class="message-main">
+                <img [src]="'./assets/avatars/avatar_'+ getAvatarForUser(message.user) + '.png'" alt="" class="avatar">
+                <div class="message-content">
+                    <div class="name-time">{{ message.user }} <p class="time">14:25Uhr</p>
+                    </div>
+                    <div class="speech-bubble"> {{ message.text }}</div>
                 </div>
-                <div class="speech-bubble"> {{ message.text }}</div>
+            </div>
+            <div class="separator">
+                <p class="label-answers">2 Antworten</p>
+                <hr>
             </div>
         </div>
-        <div class="separator">
-            <p class="label-answers">2 Antworten</p>
-            <hr>
-        </div>
-    </div>
-    <div class="custom-input">
-        <textarea placeholder="Nachricht an #{{channel.channelName}}" class="text-area"></textarea>
-        <div class="add-reaction">
-            <div class="reactions">
-                <img src="./assets/icons/add-1.png" alt="" class="add-icon">
-                <div style="height: 50px;width: 1px;background-color:  rgba(104, 104, 104, 1);;"></div>
-                <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji">
-                <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail">
+        <div class="custom-input">
+            <textarea placeholder="Antworten..." class="text-area"></textarea>
+            <div class="add-reaction">
+                <div class="reactions">
+                    <img src="./assets/icons/add-1.png" alt="" class="add-icon">
+                    <div style="height: 50px;width: 1px;background-color:  rgba(104, 104, 104, 1);;"></div>
+                    <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji">
+                    <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail">
+                </div>
+                <img src="./assets/icons/Send icon.png" (click)="sendMessage()" class="send-icon">
             </div>
-            <img src="./assets/icons/Send icon.png" (click)="sendMessage()" class="send-icon">
         </div>
     </div>
+
 </div>
