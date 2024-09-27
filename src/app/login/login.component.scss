@@ -146,6 +146,13 @@ p {
     justify-content: center;
     gap: 20px;
     align-items: center;
+    cursor: pointer;
+    > p {
+        margin: 0;
+        font-weight: 400;
+        font-size: 18px;
+        color: #797EF3;
+    }
 }
 
 .login-buttons {
