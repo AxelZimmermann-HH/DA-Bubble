@@ -19,8 +19,11 @@ export class MainComponent {
 
   selectedChannelId: string | null = null;
 
+  showChat: boolean = true;
+
   onChannelSelected(channel: any) {
     this.selectedChannelId = channel.id;
+  
   }
 
 }

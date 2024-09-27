@@ -1,0 +1,13 @@
+<div class="dialog-user-profil">
+ <div class="profil-header">Profil <img src="./assets/icons/close.png" alt="" class="closebtn" (click)="dialogRef.close()"></div>
+ <img [src]="'./assets/avatars/avatar_' + user.avatar +'.png'" alt="" class="profilImg">
+ <div class="user-info">
+    <div class="user-name">{{user.name}} <img src="" alt=""></div>
+    <div class="d-flex"><div [ngClass]="{'offline-point': !user.online}" class="online-point"></div><span>{{ user.online ? 'Aktiv' : 'Abwesend' }}</span></div>
+    <div class="email">
+        <img src="./assets/icons/mail.png" alt="">E-mail-Adresse 
+    </div>
+    <span style="color: rgba(83, 90, 241, 1);">{{user.mail}}</span>
+ </div>
+ <button class="nachrichtBtn"><img src="./assets/icons/mode_comment.png" alt="">Nachricht</button>
+</div>

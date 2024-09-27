@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { collection, doc, Firestore, getDoc, onSnapshot } from '@angular/fire/firestore';
+import { collection, doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -16,12 +16,13 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { ThreadComponent } from "../thread/thread.component";
 import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-channel.component';
+import { AddChannelUserComponent } from './add-channel-user/add-channel-user.component';
 
 
 @Component({
   selector: 'app-channel',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatIconModule, MatSidenavModule, MatToolbarModule, ThreadComponent],
+  imports: [CommonModule, FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatIconModule, MatSidenavModule, MatToolbarModule, ThreadComponent,AddChannelUserComponent],
   templateUrl: './channel.component.html',
   styleUrl: './channel.component.scss'
 })
@@ -47,19 +48,19 @@ export class ChannelComponent {
     this.getAllChannels();
     this.getAllMessages();
     this.subscribeToSearch();
-    //provisorisch
-  }
-  ngOnInit(): void {
     if (this.selectedChannelId) {
       this.loadChannel(this.selectedChannelId);
     }
+    this.updateChannel();
   }
+
 
   ngOnChanges(): void {
     if (this.selectedChannelId) {
       this.loadChannel(this.selectedChannelId);
     }
   }
+
   async loadChannel(id: string) {
     const channelDocRef = doc(this.firestore, `channels/${id}`);
     const channelSnapshot = await getDoc(channelDocRef);
@@ -71,6 +72,7 @@ export class ChannelComponent {
       console.error('Channel not found');
     }
   }
+
   subscribeToSearch() {
     this.sharedService.searchTerm$.subscribe((term) => {
       if (term.length >= 3) {
@@ -118,23 +120,30 @@ export class ChannelComponent {
     });
   }
 
+
   getAllMessages() {
     const messageCollection = collection(this.firestore, 'messages');
     const readMessage = onSnapshot(messageCollection, (snapshot) => {
       this.allMessages = [];
       snapshot.forEach((doc) => {
         let message = ({ ...doc.data(), id: doc.id });
-
-
-
         this.allMessages.push(message);
       });
-      // Wichtig, damit ohne Suche alle Messages angezeigt werden:
       this.filteredMessages = this.allMessages;
-
       console.log('current message', this.allMessages);
     });
   }
+
+  async updateChannel() {
+    const channelDocRef = doc(this.firestore, `channels/${this.channel.id}`);
+    try {
+      await updateDoc(channelDocRef, this.channelData);
+      console.log('Channel successfully updated!', this.channelData);
+    } catch (error) {
+      console.error('Error updating channel: ', error);
+    }
+  }
+  
 
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
@@ -144,20 +153,13 @@ export class ChannelComponent {
   sendMessage() { }
 
   openUsersList() {
-    this.showPopup = true;
-  }
-
-  closePopup() {
-    this.showPopup = false;
+   this.dialog.open(AddChannelUserComponent)
   }
 
   openDialogAddUser() {
     this.dialog.open(DialogAddUserComponent);
   }
-  openDialogEditChannel() {
-    this.dialog.open(DialogEditChannelComponent);
-  }
-
-  openThread() {
+  openDialogEditChannel(channel:any) {
+    this.dialog.open(DialogEditChannelComponent,{data:channel});
   }
 }

@@ -109,14 +109,10 @@ export class LoginComponent {
   googleLogin() {
     console.log('Google Login gestartet');
     debugger;
-    const provider = new GoogleAuthProvider();
-    signInWithPopup(this.auth, provider)
+    signInWithPopup(this.auth, new GoogleAuthProvider())
       .then((result) => {
-        // Google-Userdaten erhalten
         const googleUser = result.user;
         console.log(googleUser);
-        debugger;
-        
 
         // Erstelle einen neuen Benutzer aus den Google-Daten
         const user = new User();
