@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { collection, doc, Firestore, getDoc, onSnapshot } from '@angular/fire/firestore';
+import { collection, doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -51,6 +51,7 @@ export class ChannelComponent {
     if (this.selectedChannelId) {
       this.loadChannel(this.selectedChannelId);
     }
+    this.updateChannel();
   }
 
 
@@ -119,6 +120,7 @@ export class ChannelComponent {
     });
   }
 
+
   getAllMessages() {
     const messageCollection = collection(this.firestore, 'messages');
     const readMessage = onSnapshot(messageCollection, (snapshot) => {
@@ -131,6 +133,17 @@ export class ChannelComponent {
       console.log('current message', this.allMessages);
     });
   }
+
+  async updateChannel() {
+    const channelDocRef = doc(this.firestore, `channels/${this.channel.id}`);
+    try {
+      await updateDoc(channelDocRef, this.channelData);
+      console.log('Channel successfully updated!', this.channelData);
+    } catch (error) {
+      console.error('Error updating channel: ', error);
+    }
+  }
+  
 
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
@@ -149,5 +162,4 @@ export class ChannelComponent {
   openDialogEditChannel(channel:any) {
     this.dialog.open(DialogEditChannelComponent,{data:channel});
   }
-
 }
