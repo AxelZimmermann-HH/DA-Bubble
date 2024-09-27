@@ -1,6 +1,6 @@
 <div class="channel-container" *ngIf="selectedChannel">
     <div class="channel-header">
-        <button class="edit-channel" (click)="openDialogEditChannel()">
+        <button class="edit-channel" (click)="openDialogEditChannel(selectedChannel)">
             <p># {{selectedChannel.channelName}}</p>
             <img src="./assets/icons/keyboard_arrow_down_1.png" alt="">
         </button>
@@ -9,17 +9,6 @@
                 <img [src]="'./assets/avatars/avatar_' + user.avatar +'.png'" alt="" class="avatar"
                     *ngFor="let user of userData">
                 <p>{{userCount}}</p>
-            </div>
-            <div class="popup-overlay" *ngIf="showPopup" (click)="closePopup()"></div>
-            <div class="popup-content" *ngIf="showPopup">
-                <div style="display: flex;align-items: center;justify-content: space-between;font-weight: 700;">Mitglieder<img src="./assets/icons/close-1.png" (click)="closePopup()"></div>
-                <ul *ngIf="showPopup">
-                    <li *ngFor="let user of userData" style="display: flex; align-items: center; gap: 8px;">
-                        <img [src]="'./assets/avatars/avatar_' + user.avatar + '.png'" alt=""
-                            style="width: 40px; height: 40px; border-radius: 30px;">
-                        {{ user.name }}
-                    </li>
-                </ul>
             </div>
 
             <button class="addUserBtn" (click)="openDialogAddUser()">

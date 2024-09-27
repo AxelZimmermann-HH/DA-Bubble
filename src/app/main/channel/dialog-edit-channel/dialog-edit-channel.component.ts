@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { collection, doc, Firestore, onSnapshot, updateDoc } from '@angular/fire/firestore';
 
 import { CommonModule } from '@angular/common';
@@ -19,7 +19,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
   styleUrl: './dialog-edit-channel.component.scss'
 })
 export class DialogEditChannelComponent {
-  channel = new Channel();
+ 
   channelData: any = [];
   channelId!: string;
   userData: any = [];
@@ -29,7 +29,7 @@ export class DialogEditChannelComponent {
   newChannelName!: string;
   newChannelDescription!: string;
 
-  constructor(public dialogRef: MatDialogRef<DialogEditChannelComponent>, public firestore: Firestore) {
+  constructor(public dialogRef: MatDialogRef<DialogEditChannelComponent>, public firestore: Firestore, @Inject(MAT_DIALOG_DATA) public channel: Channel) {
 
     //provisorisch
     // this.channel.channelName = 'Entwicklerteam';
@@ -69,10 +69,11 @@ export class DialogEditChannelComponent {
     if (this.newChannelName.trim()) {  // Only update if input is not empty
       if (this.newChannelName.trim()) {
         // Update the channel description in Firestore
-        const channelDocRef = doc(this.firestore, 'channels', this.channelData[0].id);
+        const channelDocRef = doc(this.firestore, 'channels', this.channel.id);
         updateDoc(channelDocRef, { channelName: this.newChannelName })
           .then(() => {
             console.log('Channel description updated successfully');
+            this.channel.channelName = this.newChannelName
           })
           .catch((error) => {
             console.error('Error updating channel description: ', error);
@@ -87,10 +88,11 @@ export class DialogEditChannelComponent {
   saveChannelDescription() {
     if (this.newChannelDescription.trim()) {
       // Update the channel description in Firestore
-      const channelDocRef = doc(this.firestore, 'channels', this.channelData[0].id);
+      const channelDocRef = doc(this.firestore, 'channels', this.channel.id);
       updateDoc(channelDocRef, { channelDescription: this.newChannelDescription })
         .then(() => {
           console.log('Channel description updated successfully');
+          this.channel.channelDescription = this.newChannelDescription
         })
         .catch((error) => {
           console.error('Error updating channel description: ', error);

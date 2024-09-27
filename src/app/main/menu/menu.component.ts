@@ -44,6 +44,7 @@ export class MenuComponent {
 
   @Output() channelSelected = new EventEmitter<any>();
 
+
   async ngOnInit(){
     await this.getAllChannels('channels');
     await this.getAllUsers('users');
@@ -201,18 +202,17 @@ export class MenuComponent {
   }
 
 
-
-
   //edit
   onChannelClick(channel: any) {
     this.channelSelected.emit(channel);  // Leitet das ausgewählte Kanal-Objekt weiter
     console.log('channel name', channel.channelName )
   }
+ 
 
   trackByChannelId(index: number, channel: any): string {
     return channel.id;  // Optimiert die Performance von *ngFor
   }
-
+ 
 
   //>>>>> BAUSTELLE <<<<<
 
