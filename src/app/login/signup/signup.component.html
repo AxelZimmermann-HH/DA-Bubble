@@ -1,0 +1,65 @@
+<div class="header">
+    <div class="logo">
+        <img src="../../../assets/icons/Logo.svg" alt="">
+        <p>DABubble</p>
+    </div>
+</div>
+
+<div class="login-content">
+    <h1>Anmeldung</h1>
+    <p>Wir empfehlen dir, die E-Mail-Adresse zu nutzen, die du bei der Arbeit verwendest.</p>
+
+    <form>
+        
+        <div class="input">
+            <img [ngStyle]="{'width': '20px'}" src="../../assets/icons/login-mail.svg" alt="">
+            <input 
+                name="mailInput" 
+                
+                #mailInput 
+                required 
+                placeholder="beispielname@email.com" 
+                
+                pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
+                />
+        </div>
+
+
+
+        <div class="input">
+            <img [ngStyle]="{'width': '16px'}" src="../../assets/icons/login-lock.svg" alt="">
+            <input 
+            required 
+            placeholder="Passwort" 
+    
+            type="password" />
+        </div>
+
+
+
+
+        <a href="#">Passwort vergessen?</a>
+        <div class="divider">
+            <div class="line"></div>
+            <p>ODER</p>
+            <div class="line"></div>
+        </div>
+
+
+
+        <div class="submit-area">
+
+            <button class="google-button" type="button" >
+                <img src="../../assets/icons/Google.svg" alt="">
+                <p>Anmelden mit Google</p>
+            </button> 
+
+            <div class="login-buttons">
+                <button class="login-button" >Anmelden</button>
+                <button class="login-button guest" >Gäste-Login</button>
+            </div>
+        </div>
+
+
+    </form>
+</div>
