@@ -1,5 +1,5 @@
 export class User {
-    avatar!: number;
+    avatar!: number | string;
     mail!: string;
     name!: string;
     online!: boolean;

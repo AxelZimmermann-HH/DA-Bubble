@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-import { collection, Firestore, onSnapshot } from '@angular/fire/firestore';
+import { collection, Firestore, onSnapshot, doc, getDoc, setDoc } from '@angular/fire/firestore';
 import { User } from '../models/user.class';
 import { Router } from '@angular/router'; 
 import { UserService } from '../services/user.service';  
@@ -108,25 +108,80 @@ export class LoginComponent {
 
   googleLogin() {
     console.log('Google Login gestartet');
-    debugger;
     signInWithPopup(this.auth, new GoogleAuthProvider())
-      .then((result) => {
+      .then(async (result) => {
         const googleUser = result.user;
         console.log(googleUser);
-
-        // Erstelle einen neuen Benutzer aus den Google-Daten
-        const user = new User();
-        user.name = googleUser.displayName || 'Unbekannter Benutzer';
-        user.mail = googleUser.email || 'Keine E-Mail';
-        user.avatar = 1;
-
-        // Setze den Benutzer im UserService und navigiere zur MainComponent
-        
-        this.handleSuccess(user, user.mail);
-        
+  
+        // E-Mail und User-ID von Google-Authentifizierung extrahieren
+        const googleMail = googleUser.email;
+        const googleUserId = googleUser.uid;
+  
+        if (googleMail && googleUserId) {
+          // Firestore-Referenz auf das User-Dokument basierend auf der userId
+          const userDocRef = doc(this.firestore, 'users', googleUserId);
+  
+          try {
+            // Prüfen, ob Benutzer mit dieser userId bereits existiert
+            const docSnapshot = await getDoc(userDocRef);
+  
+            if (docSnapshot.exists()) {
+              // Benutzer existiert bereits, bestehende Daten verwenden
+              const existingUser = docSnapshot.data() as User;
+              console.log('Benutzer existiert bereits:', existingUser);
+  
+              // Benutzer im UserService setzen und zur MainComponent navigieren
+              this.handleSuccess(existingUser, googleMail);
+            } else {
+              // Neuer Benutzer wird angelegt
+              const newUser = new User();
+              newUser.name = googleUser.displayName || 'Unbekannter Benutzer';
+              newUser.mail = googleMail;
+              newUser.avatar = googleUser.photoURL || 1; // Google-Profilbild als Avatar oder Standard-Avatar
+              newUser.online = true;
+              newUser.userId = googleUserId;
+  
+              // Neuen Benutzer in Firestore speichern mit userId als Dokument-ID
+              await setDoc(userDocRef, newUser.toJson());
+              console.log('Neuer Benutzer angelegt:', newUser);
+  
+              // Benutzer im UserService setzen und zur MainComponent navigieren
+              this.handleSuccess(newUser, googleMail);
+            }
+          } catch (error) {
+            console.error('Fehler bei der Firestore-Abfrage oder beim Anlegen des neuen Benutzers:', error);
+          }
+        } else {
+          console.error('Keine gültige E-Mail oder userId von Google erhalten');
+        }
       })
       .catch((error) => {
         console.error('Fehler bei der Google-Authentifizierung:', error);
       });
   }
+  
+
+//   googleLogin() {
+//     console.log('Google Login gestartet');
+//     debugger;
+//     signInWithPopup(this.auth, new GoogleAuthProvider())
+//       .then((result) => {
+//         const googleUser = result.user;
+//         console.log(googleUser);
+
+//         // Erstelle einen neuen Benutzer aus den Google-Daten
+//         const user = new User();
+//         user.name = googleUser.displayName || 'Unbekannter Benutzer';
+//         user.mail = googleUser.email || 'Keine E-Mail';
+//         user.avatar = 1;
+
+//         // Setze den Benutzer im UserService und navigiere zur MainComponent
+        
+//         this.handleSuccess(user, user.mail);
+        
+//       })
+//       .catch((error) => {
+//         console.error('Fehler bei der Google-Authentifizierung:', error);
+//       });
+//   }
 }
