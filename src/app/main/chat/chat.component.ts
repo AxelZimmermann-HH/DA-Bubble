@@ -2,11 +2,15 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
 import { CommonModule } from '@angular/common';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { DialogUserProfilComponent } from '../../dialog-user-profil/dialog-user-profil.component';
+import { User } from '../../models/user.class';
+
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, MatDialogModule],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
 })
@@ -15,19 +19,19 @@ export class ChatComponent {
 
   directMessage = new FormControl('', [Validators.required, Validators.minLength(2)])
   myUser:any;
-  user:any;
+  user = new User();
   chat:any;
  
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
 
-  constructor(public chatService: ChatService){}
+  constructor(public chatService: ChatService, public dialog:MatDialog){}
 
   async ngOnInit(){
     
     this.chatService.user$.subscribe((userData) => {
       if(userData){
         this.user = userData;
-        //console.log(this.user)
+        console.log(this.user)
       }
     });
     
@@ -73,7 +77,7 @@ export class ChatComponent {
 
   }
 
-  openUserProfile(){
-
+  openUserProfil(user:any){
+    this.dialog.open(DialogUserProfilComponent,{data: user});
   }
 }

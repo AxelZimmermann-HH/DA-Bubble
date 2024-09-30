@@ -125,7 +125,7 @@ export class ChatService {
     this.newDirectMessage.dayDateMonth = await this.getFormattedDate();
     
     const dmData = this.newDirectMessage.toJson();
-    console.log('Neuer Chat erstellt', dmData)
+    console.log('Neuer Nachricht erstellt', dmData)
     this.saveNewDirectMessage(dmData);
     this.chatSubject.next(dmData); 
   }

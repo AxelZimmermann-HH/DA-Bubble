@@ -1,6 +1,6 @@
 <div class="channel-container" *ngIf="user">
     <div class="channel-header">
-        <div class="user" (click)="openUserProfile()">
+        <div class="user" (click)="openUserProfil(user)">
             <div class="avatar-container">
                 <img class="user-avatar" src="\assets\avatars\avatar_{{user.avatar}}.png" alt="">
                 <div [ngClass]="{'offline-point': !user.online}" class="online-point"></div>
