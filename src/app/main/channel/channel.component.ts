@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { collection, doc, Firestore, getDoc, onSnapshot } from '@angular/fire/firestore';
+import { collection, doc, Firestore, getDoc, getDocs, onSnapshot } from '@angular/fire/firestore';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,46 +17,49 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { ThreadComponent } from "../thread/thread.component";
 import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-channel.component';
 import { AddChannelUserComponent } from './add-channel-user/add-channel-user.component';
+import { Answer } from '../../models/answer.class';
 
 
 @Component({
   selector: 'app-channel',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatIconModule, MatSidenavModule, MatToolbarModule, ThreadComponent,AddChannelUserComponent],
+  imports: [CommonModule, FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatIconModule, MatSidenavModule, MatToolbarModule, ThreadComponent, AddChannelUserComponent],
   templateUrl: './channel.component.html',
   styleUrl: './channel.component.scss'
 })
 export class ChannelComponent {
   userCount: number = 0;
+
   userData: any = [];
   user = new User();
+
   channel = new Channel();
   channelData: any = [];
   filteredChannels: any = [];
+
   message = new Message;
   allMessages: any = [];
   filteredMessages: any = [];
-  showThread = false;
-  showPopup = false;
+
+  answer = new Answer();
+  allAnswers: any = [];
 
   @Input() selectedChannelId: string | null = null;
-  
-  selectedChannel:  Channel | null = null;
+
+  selectedChannel: Channel | null = null;
 
   constructor(public dialog: MatDialog, public firestore: Firestore, private sharedService: SharedService) {
     this.getAllUsers();
     this.getAllChannels();
     this.getAllMessages();
     this.subscribeToSearch();
-    if (this.selectedChannelId) {
-      this.loadChannel(this.selectedChannelId);
-    }
   }
-
 
   ngOnChanges(): void {
     if (this.selectedChannelId) {
-      this.loadChannel(this.selectedChannelId);
+      this.loadChannel(this.selectedChannelId).then(() => {
+        this.getAllMessages(); // Call after loading the channel
+      });
     }
   }
 
@@ -120,16 +123,36 @@ export class ChannelComponent {
   }
 
   getAllMessages() {
-    const messageCollection = collection(this.firestore, 'messages');
-    const readMessage = onSnapshot(messageCollection, (snapshot) => {
-      this.allMessages = [];
+    const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
+    const readMessages = onSnapshot(messagesCollection, (snapshot) => {
+      this.allMessages = []; 
+
       snapshot.forEach((doc) => {
-        let message = ({ ...doc.data(), id: doc.id });
+        let message = new Message({ ...doc.data(), id: doc.id });
         this.allMessages.push(message);
+
+        this.getAllAnswersForMessage(message.id);
       });
-      this.filteredMessages = this.allMessages;
-      console.log('current message', this.allMessages);
+      console.log('Current messages in the channel:', this.allMessages);
     });
+  }
+
+   getAllAnswersForMessage(messageId: string) {
+
+    const answersCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}/answers`);
+  
+  const readAnswers = onSnapshot(answersCollection, (snapshot) => {
+    this.allAnswers = []
+
+    snapshot.forEach((doc) => {
+      let answer = new Answer({ ...doc.data() });
+      this.allAnswers.push(answer);
+    });
+
+  
+
+    console.log(`Current answers for message ${messageId}:`, this.answer);
+  });
   }
 
   getAvatarForUser(userName: string) {
@@ -140,14 +163,14 @@ export class ChannelComponent {
   sendMessage() { }
 
   openUsersList() {
-   this.dialog.open(AddChannelUserComponent)
+    this.dialog.open(AddChannelUserComponent)
   }
 
   openDialogAddUser() {
     this.dialog.open(DialogAddUserComponent);
   }
-  openDialogEditChannel(channel:any) {
-    this.dialog.open(DialogEditChannelComponent,{data:channel});
+  openDialogEditChannel(channel: any) {
+    this.dialog.open(DialogEditChannelComponent, { data: channel });
   }
 
 }

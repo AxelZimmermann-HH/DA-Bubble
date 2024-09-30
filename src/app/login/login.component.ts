@@ -100,7 +100,7 @@ export class LoginComponent {
     const guestUser = new User();
     guestUser.name = 'Gast';
     guestUser.mail = 'guest@example.com';
-    guestUser.avatar = 1;  // Oder eine beliebige Avatar-ID
+    guestUser.avatar = "1";  // Oder eine beliebige Avatar-ID
   
     // Rufe handleSuccess auf und simuliere den Gast-Login
     this.handleSuccess(guestUser, guestUser.mail);
@@ -118,7 +118,7 @@ export class LoginComponent {
         const user = new User();
         user.name = googleUser.displayName || 'Unbekannter Benutzer';
         user.mail = googleUser.email || 'Keine E-Mail';
-        user.avatar = 1;
+        user.avatar = "1";
 
         // Setze den Benutzer im UserService und navigiere zur MainComponent
         
