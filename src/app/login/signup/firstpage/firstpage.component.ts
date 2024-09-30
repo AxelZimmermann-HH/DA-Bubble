@@ -1,0 +1,65 @@
+import { CommonModule } from '@angular/common';
+import { Component, ViewChild, ElementRef, Input, Output, EventEmitter } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
+import { collection, Firestore, onSnapshot, doc, getDoc, setDoc } from '@angular/fire/firestore';
+import { User } from '../../../models/user.class';
+import { Router } from '@angular/router'; 
+import { UserService } from '../../../services/user.service';  
+
+@Component({
+  selector: 'app-firstpage',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './firstpage.component.html',
+  styleUrl: './firstpage.component.scss'
+})
+export class FirstpageComponent {
+  user = new User();
+  validName: boolean = true;
+  validMail: boolean = true;
+  checked: boolean = false;
+  buttonEnabled: boolean = false;
+
+  validateName(): void {
+    const nameParts = this.user.name.trim().split(/\s+/);
+    if (nameParts.length < 2) {
+      this.validName = false;
+      this.user.name = ''; 
+      setTimeout(() => {
+        this.validName = true; 
+      }, 2000);
+    } else {
+      this.validName = true;
+    }
+  }
+
+  validateMail(): void {
+    let emailPattern = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+
+    if (!emailPattern.test(this.user.mail)) {
+      this.validMail = false;
+      this.user.mail = ''; 
+      setTimeout(() => {
+        this.validMail = true; 
+      }, 2000);
+    } else {
+      this.validMail = true;
+    }
+  }
+
+  togglePrivacy(): void {
+    this.checked = !this.checked;
+    this.activateButton();
+  }
+
+  activateButton(): void {
+    // Button aktivieren, wenn Name, Mail, Passwort valide sind und die Checkbox angeklickt ist
+    this.buttonEnabled = this.validName && this.validMail && this.user.password.trim().length > 0 && this.checked;
+    console.log(this.buttonEnabled);
+  }
+
+  onSubmit(ngForm: NgForm) {
+
+  }
+
+}

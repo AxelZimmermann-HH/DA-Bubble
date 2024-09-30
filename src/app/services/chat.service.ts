@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 
-import { collection, doc, documentId, Firestore, getDocs, query, setDoc, where } from '@angular/fire/firestore';
+import { addDoc, collection, doc, documentId, Firestore, getDocs, onSnapshot, query, setDoc, where } from '@angular/fire/firestore';
 import { User } from '../models/user.class';
 import { BehaviorSubject } from 'rxjs';
+import { directMessage } from '../models/directMessage.class';
 
 
 @Injectable({
@@ -25,12 +26,14 @@ export class ChatService {
  
   chatId = '';
   myUserId = '';
+  userId = '';
   user:any[] = []
   chatMessages:any[] = [];
 
   chatIsEmpty:boolean = true
 
   async getUserData(userId:string){
+    this.userId = userId;
     const findUser = query(collection(this.firestore, "users"), where(documentId(), "==", userId));
     const querySnapshot = await getDocs(findUser);
     querySnapshot.forEach((doc) => {
@@ -48,41 +51,49 @@ export class ChatService {
     });
   }
 
-  async getChatData(chatId: string){
+  async getChatData(chatId: string) {
+    this.chatId = chatId;
+
+    const chatDocRef = doc(this.firestore, "chats", chatId);
+
+    onSnapshot(chatDocRef, async (chatDoc) => {
+      if (chatDoc.exists()) {
+        const chat = chatDoc.data();
   
-    // LADE CHAT MIT CHAT_ID
-    const loadChat = query(collection(this.firestore, "chats"), where(documentId(), "==", chatId));
-    const chatSnapshot = await getDocs(loadChat);
+        // MESSAGES COLLECTION:
+        const messagesCollection = collection(this.firestore, `chats/${chatDoc.id}/messages`);
   
-    chatSnapshot.forEach(async (chatDoc) => {
-      const chat = chatDoc.data();
+        onSnapshot(messagesCollection, (messagesSnapshot) => {
+          this.chatMessages = [];
+
+          messagesSnapshot.forEach((messageDoc) => {
+            const messageData = messageDoc.data();
   
-      // MESSAGES COLLECTION
-      const messagesCollection = collection(this.firestore, `chats/${chatDoc.id}/messages`);
-      const messagesSnapshot = await getDocs(messagesCollection);
+            const chatData = {
+              chatId: chatDoc.id,
+              messageId: messageDoc.id,
+              senderId: messageData['senderID'],
+              receiverId: messageData['receiverID'],
+              timestamp: messageData['timestamp'],
+              time: messageData['time'],
+              dayDateMonth: messageData['dayDateMonth'],
+              text: messageData['text'],
+            };
   
-      
-      messagesSnapshot.forEach((messageDoc) => {
-        const messageData = messageDoc.data();
+            this.chatMessages.push(chatData);
+          });
   
-        const chatData = {
-          chatId: chatDoc.id,
-          messageId: messageDoc.id,
-          senderId: messageData['senderID'],
-          receiverId: messageData['receiverID'],
-          timestamp: messageData['timestamp'],
-          time: messageData['time'],
-          dayDateMonth: messageData ['dayDateMonth'],
-          text: messageData['text'],
-        };
+          this.chatMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
   
-        this.chatSubject.next(chatData);
-      });
+          this.chatSubject.next(this.chatMessages);
+        });
+      }
     });
   }
   
 
   async getMyUserData(myUserId:string){
+    this.myUserId = myUserId;
     const findUser = query(collection(this.firestore, "users"), where(documentId(), "==", myUserId));
     const querySnapshot = await getDocs(findUser);
     querySnapshot.forEach((doc) => {
@@ -98,5 +109,58 @@ export class ChatService {
       
       this.meSubject.next(myUserData);
     });
+  }
+
+  newDirectMessage: directMessage = new directMessage();
+
+  async setChatData(newDm: string){
+   
+    console.log(newDm, this.chatId)
+
+    this.newDirectMessage.senderID = this.myUserId;
+    this.newDirectMessage.receiverID  = this.userId;
+    this.newDirectMessage.text = newDm;
+    this.newDirectMessage.timestamp = await this.getTimeStamp();
+    this.newDirectMessage.time = this.newDirectMessage.timestamp.split('T')[1].slice(0, 5);
+    this.newDirectMessage.dayDateMonth = await this.getFormattedDate();
+    
+    const dmData = this.newDirectMessage.toJson();
+    console.log('Neuer Chat erstellt', dmData)
+    this.saveNewDirectMessage(dmData);
+    this.chatSubject.next(dmData); 
+  }
+
+  async saveNewDirectMessage(dmData:any){
+    try {
+      const docRef = await addDoc(collection(this.firestore, 'chats', this.chatId, 'messages'), dmData);
+      
+      //await this.setChannelId(docRef.id, dmData)
+    }catch (error: any) {
+      console.error('Fehler beim erstellen des Channels:', error);
+    }
+  }
+
+  async getTimeStamp(){
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+  }
+
+  async getFormattedDate(): Promise<string> {
+    const now = new Date();
+    const daysOfWeek = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+    const months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+  
+    const dayOfWeek = daysOfWeek[now.getDay()]; // Wochentag
+    const day = now.getDate(); // Tag
+    const month = months[now.getMonth()]; // Monat
+  
+    return `${dayOfWeek}, ${day}. ${month}`;
   }
 }

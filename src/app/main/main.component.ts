@@ -3,14 +3,15 @@ import { ChannelComponent } from './channel/channel.component';
 import { HeaderComponent } from './header/header.component';
 import { MenuComponent } from './menu/menu.component';
 import { ThreadComponent } from './thread/thread.component';
-import { MatDialogModule } from '@angular/material/dialog';
+import { RouterOutlet } from '@angular/router';
 import { ChatComponent } from "./chat/chat.component";
-import { CommonModule } from '@angular/common';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-main',
   standalone: true,
-  imports: [CommonModule, MenuComponent, ChannelComponent, HeaderComponent, ThreadComponent, MatDialogModule, ChatComponent],
+  imports: [MenuComponent, ChannelComponent, HeaderComponent, ThreadComponent, RouterOutlet, ChatComponent, MatDialogModule],
+
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss'
 })

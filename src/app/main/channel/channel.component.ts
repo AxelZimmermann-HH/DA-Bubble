@@ -1,6 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
+<<<<<<< HEAD
 import { collection, doc, Firestore, getDoc, getDocs, onSnapshot } from '@angular/fire/firestore';
+=======
+import { collection, doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
+>>>>>>> b02bec0afb9cc71f1ae046377ed6be2e77caa741
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -53,6 +57,13 @@ export class ChannelComponent {
     this.getAllChannels();
     this.getAllMessages();
     this.subscribeToSearch();
+<<<<<<< HEAD
+=======
+    if (this.selectedChannelId) {
+      this.loadChannel(this.selectedChannelId);
+    }
+    this.updateChannel();
+>>>>>>> b02bec0afb9cc71f1ae046377ed6be2e77caa741
   }
 
   ngOnChanges(): void {
@@ -122,6 +133,7 @@ export class ChannelComponent {
     });
   }
 
+
   getAllMessages() {
     const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
     const readMessages = onSnapshot(messagesCollection, (snapshot) => {
@@ -137,6 +149,7 @@ export class ChannelComponent {
     });
   }
 
+<<<<<<< HEAD
    getAllAnswersForMessage(messageId: string) {
 
     const answersCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}/answers`);
@@ -154,6 +167,18 @@ export class ChannelComponent {
     console.log(`Current answers for message ${messageId}:`, this.answer);
   });
   }
+=======
+  async updateChannel() {
+    const channelDocRef = doc(this.firestore, `channels/${this.channel.id}`);
+    try {
+      await updateDoc(channelDocRef, this.channelData);
+      console.log('Channel successfully updated!', this.channelData);
+    } catch (error) {
+      console.error('Error updating channel: ', error);
+    }
+  }
+  
+>>>>>>> b02bec0afb9cc71f1ae046377ed6be2e77caa741
 
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
@@ -172,5 +197,4 @@ export class ChannelComponent {
   openDialogEditChannel(channel: any) {
     this.dialog.open(DialogEditChannelComponent, { data: channel });
   }
-
 }
