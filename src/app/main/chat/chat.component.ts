@@ -41,13 +41,14 @@ export class ChatComponent {
 
     //CHAT LADEN
     this.chatService.chat$.subscribe((chatSubject) => {
-      
-      if(chatSubject){
-        this.chatService.chatIsEmpty = false;
-        this.chat = chatSubject;
-        this.chatService.chatMessages.push(chatSubject)
+      debugger
+      if(chatSubject !== null){
+        if(chatSubject.length > 0){
+          this.chatService.chatIsEmpty = false;
+          this.chat = chatSubject;
+          this.chatService.chatMessages.push(chatSubject)
+        }
       }
-  
       this.chatService.chatMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
     });
   }
