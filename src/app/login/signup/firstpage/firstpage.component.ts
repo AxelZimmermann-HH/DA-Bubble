@@ -27,9 +27,13 @@ export class FirstpageComponent {
       this.user.name = ''; 
       setTimeout(() => {
         this.validName = true; 
+        this.activateButton();  // Buttonstatus nach Timeout erneut prüfen
+
       }, 2000);
     } else {
       this.validName = true;
+      this.activateButton();  // Direkt nach erfolgreicher Validierung den Buttonstatus prüfen
+
     }
   }
 
@@ -41,21 +45,29 @@ export class FirstpageComponent {
       this.user.mail = ''; 
       setTimeout(() => {
         this.validMail = true; 
+        this.activateButton();  // Buttonstatus nach Timeout erneut prüfen
+
       }, 2000);
     } else {
       this.validMail = true;
+      this.activateButton();  // Direkt nach erfolgreicher Validierung den Buttonstatus prüfen
+
     }
   }
 
   togglePrivacy(): void {
     this.checked = !this.checked;
-    this.activateButton();
+    this.activateButton();  // Buttonstatus direkt nach der Checkbox-Änderung prüfen
   }
 
   activateButton(): void {
+    console.log('Valid Name:', this.validName);
+  console.log('Valid Mail:', this.validMail);
+  console.log('Password length >= 5:', this.user.password.length >= 5); // Prüfen, ob Passwort mindestens 5 Zeichen lang ist
+  console.log('Checked:', this.checked);
     // Button aktivieren, wenn Name, Mail, Passwort valide sind und die Checkbox angeklickt ist
-    this.buttonEnabled = this.validName && this.validMail && this.user.password.trim().length > 0 && this.checked;
-    console.log(this.buttonEnabled);
+    this.buttonEnabled = this.validName && this.validMail && this.user.password.length >= 5 && this.checked;
+    console.log('Button enabled:', this.buttonEnabled);  // Für Debugging-Zwecke
   }
 
   onSubmit(ngForm: NgForm) {

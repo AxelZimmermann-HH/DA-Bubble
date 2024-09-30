@@ -36,9 +36,13 @@
         <div class="input">
             <img [ngStyle]="{'width': '16px'}" src="../../assets/icons/login-lock.svg" alt="">
             <input 
+            name="passwordInput"
+            [(ngModel)]="user.password"
             required 
-            placeholder="Passwort" 
+            placeholder="Passwort (min. 5 Zeichen)" 
             type="password" 
+            (blur)="activateButton()"
+            (input)="activateButton()"
             />
         </div>
 
@@ -54,7 +58,7 @@
             <div class="login-buttons">
                 <button class="next-button" 
                 [disabled]="!buttonEnabled" 
-                [ngStyle]="{'background-color': buttonEnabled ? 'b70d20' : '#686868'}">Weiter</button>
+                [ngStyle]="{'background-color': buttonEnabled ? '#444df2' : '#686868'}">Weiter</button>
             </div>
         </div>
 
