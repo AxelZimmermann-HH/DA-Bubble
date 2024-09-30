@@ -6,5 +6,8 @@
 </div>
 
 @if (firstPage) {
-    <app-firstpage></app-firstpage>
+    <app-firstpage (closeFirstPage)="firstPage = $event"></app-firstpage>
+}
+@if (avatar) {
+    <app-choose-avatar></app-choose-avatar>
 }

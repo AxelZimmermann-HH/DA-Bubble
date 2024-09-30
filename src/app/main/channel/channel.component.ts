@@ -1,24 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { collection, doc, Firestore, getDoc, onSnapshot } from '@angular/fire/firestore';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatIconModule } from '@angular/material/icon';
 import { DialogAddUserComponent } from '../../dialog-add-user/dialog-add-user.component';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
 import { SharedService } from '../../services/shared.service';
-
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { ThreadComponent } from "../thread/thread.component";
 import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-channel.component';
 import { AddChannelUserComponent } from './add-channel-user/add-channel-user.component';
 import { Answer } from '../../models/answer.class';
 import { ActivatedRoute } from '@angular/router';
+import { collection, doc, Firestore, getDoc, onSnapshot } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-channel',
@@ -26,11 +20,6 @@ import { ActivatedRoute } from '@angular/router';
   imports: [CommonModule,
     FormsModule,
     MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatIconModule,
-    MatSidenavModule,
-    MatToolbarModule,
     ThreadComponent,
     AddChannelUserComponent],
   templateUrl: './channel.component.html',
@@ -167,6 +156,8 @@ export class ChannelComponent {
       console.log(`Current answers for message ${messageId}:`, this.allAnswers);
     });
   }
+
+  
 
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
