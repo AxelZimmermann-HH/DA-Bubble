@@ -8,12 +8,12 @@ export class User {
     
 
     constructor(obj?:any){
-        this.avatar = obj? obj.avatar:'';
-        this.mail = obj? obj.mail:'';
-        this.name = obj? obj.name:'';
-        this.online = obj? obj.online:'';
-        this.password = obj ? obj.password : '';
-        this.userId = obj? obj.userId:'';
+        this.avatar = obj && obj.avatar !== undefined ? obj.avatar : '';  // Sicherstellen, dass avatar einen gültigen Wert hat
+        this.mail = obj && obj.mail !== undefined ? obj.mail : '';
+        this.name = obj && obj.name !== undefined ? obj.name : '';
+        this.online = obj && obj.online !== undefined ? obj.online : false;
+        this.password = obj && obj.password !== undefined ? obj.password : '';
+        this.userId = obj && obj.userId !== undefined ? obj.userId : '';
     }
 
     public toJson(){

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ViewChild, ElementRef, Input, Output, EventEmitter } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-import { collection, Firestore, onSnapshot, doc, getDoc, setDoc } from '@angular/fire/firestore';
+import { collection, addDoc, Firestore, onSnapshot, doc, getDoc, setDoc } from '@angular/fire/firestore';
 import { User } from '../../../models/user.class';
 import { Router } from '@angular/router'; 
 import { UserService } from '../../../services/user.service';  
@@ -14,11 +14,16 @@ import { UserService } from '../../../services/user.service';
   styleUrl: './firstpage.component.scss'
 })
 export class FirstpageComponent {
+  @Output() closeFirstPage = new EventEmitter<boolean>();  // EventEmitter erstellen
+
   user = new User();
   validName: boolean = true;
   validMail: boolean = true;
   checked: boolean = false;
   buttonEnabled: boolean = false;
+
+  constructor(private firestore: Firestore) {}
+
 
   validateName(): void {
     const nameParts = this.user.name.trim().split(/\s+/);
@@ -70,8 +75,29 @@ export class FirstpageComponent {
     console.log('Button enabled:', this.buttonEnabled);  // Für Debugging-Zwecke
   }
 
-  onSubmit(ngForm: NgForm) {
+  async onSubmit(ngForm: NgForm) {
+    if (this.buttonEnabled) {
+      try {
+        // Die User-Daten aus dem Formular setzen
+        const newUser = new User({
+          name: this.user.name,
+          mail: this.user.mail,
+          password: this.user.password,
+        });
 
+        // Den neuen User in Firestore anlegen
+        const userCollection = collection(this.firestore, 'users');
+        const docRef = await addDoc(userCollection, newUser.toJson());
+
+        // Erfolgsmeldung und Ausgabe des erstellten Users
+        console.log('User created with ID: ', docRef.id);
+        console.log('Created User: ', newUser);
+        this.closeFirstPage.emit(false);  // Setzt firstPage auf false in der übergeordneten Komponente
+
+      } catch (error) {
+        console.error('Error adding document: ', error);
+      }
+    }
   }
 
 }
