@@ -1,9 +1,5 @@
 export class User {
-<<<<<<< HEAD
-    avatar!: string;
-=======
-    avatar!: number | string;
->>>>>>> b02bec0afb9cc71f1ae046377ed6be2e77caa741
+    avatar!:  string;
     mail!: string;
     name!: string;
     online!: boolean;

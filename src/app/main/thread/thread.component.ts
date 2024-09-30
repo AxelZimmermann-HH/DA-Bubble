@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
 import { collection, Firestore, onSnapshot } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-thread',
@@ -21,9 +21,9 @@ export class ThreadComponent {
   message = new Message();
   allMessages: any = [];
 
+  @Output() threadClosed = new EventEmitter<void>();
 
-
-  constructor(public firestore: Firestore) {
+  constructor(public firestore: Firestore, public dialog:MatDialog) {
     this.getAllUsers();
     this.getAllChannels();
     this.getAllMessages();
@@ -75,4 +75,8 @@ export class ThreadComponent {
     return user ? user.avatar : 'default';
   }
   sendMessage(){}
+
+  closeThread() {
+    this.threadClosed.emit();
+  }
 }

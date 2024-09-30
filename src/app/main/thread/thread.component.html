@@ -2,7 +2,7 @@
     <div class="thread-header">
         <div>Thread <span style="font-family: Nunito;font-size: 14px;font-weight: 400;color: rgba(121, 126, 243, 1);">#
                 Entwicklerteam</span></div>
-        <img src="./assets/icons/close.png" alt="">
+        <img src="./assets/icons/close.png" alt="" (click)="closeThread()">
     </div>
     <div class="thread-content">
         <div *ngFor="let message of allMessages">

@@ -1,10 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-<<<<<<< HEAD
-import { collection, doc, Firestore, getDoc, getDocs, onSnapshot } from '@angular/fire/firestore';
-=======
-import { collection, doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
->>>>>>> b02bec0afb9cc71f1ae046377ed6be2e77caa741
+import { collection, doc, Firestore, getDoc, onSnapshot } from '@angular/fire/firestore';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -22,12 +18,21 @@ import { ThreadComponent } from "../thread/thread.component";
 import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-channel.component';
 import { AddChannelUserComponent } from './add-channel-user/add-channel-user.component';
 import { Answer } from '../../models/answer.class';
-
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-channel',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatIconModule, MatSidenavModule, MatToolbarModule, ThreadComponent, AddChannelUserComponent],
+  imports: [CommonModule,
+    FormsModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    MatSidenavModule,
+    MatToolbarModule,
+    ThreadComponent,
+    AddChannelUserComponent],
   templateUrl: './channel.component.html',
   styleUrl: './channel.component.scss'
 })
@@ -51,19 +56,19 @@ export class ChannelComponent {
   @Input() selectedChannelId: string | null = null;
 
   selectedChannel: Channel | null = null;
+  isThreadOpen: boolean = true;
 
-  constructor(public dialog: MatDialog, public firestore: Firestore, private sharedService: SharedService) {
+  constructor(public dialog: MatDialog, public firestore: Firestore, private sharedService: SharedService, private route: ActivatedRoute) {
     this.getAllUsers();
     this.getAllChannels();
     this.getAllMessages();
     this.subscribeToSearch();
-<<<<<<< HEAD
-=======
-    if (this.selectedChannelId) {
-      this.loadChannel(this.selectedChannelId);
-    }
-    this.updateChannel();
->>>>>>> b02bec0afb9cc71f1ae046377ed6be2e77caa741
+
+    this.route.params.subscribe(params => {
+      const userId = params['userId'];
+      console.log("Benutzer-ID:", userId);
+    });
+
   }
 
   ngOnChanges(): void {
@@ -133,11 +138,10 @@ export class ChannelComponent {
     });
   }
 
-
   getAllMessages() {
     const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
     const readMessages = onSnapshot(messagesCollection, (snapshot) => {
-      this.allMessages = []; 
+      this.allMessages = [];
 
       snapshot.forEach((doc) => {
         let message = new Message({ ...doc.data(), id: doc.id });
@@ -149,42 +153,25 @@ export class ChannelComponent {
     });
   }
 
-<<<<<<< HEAD
-   getAllAnswersForMessage(messageId: string) {
+  getAllAnswersForMessage(messageId: string) {
 
     const answersCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}/answers`);
-  
-  const readAnswers = onSnapshot(answersCollection, (snapshot) => {
-    this.allAnswers = []
+    const readAnswers = onSnapshot(answersCollection, (snapshot) => {
+      this.allAnswers = []
 
-    snapshot.forEach((doc) => {
-      let answer = new Answer({ ...doc.data() });
-      this.allAnswers.push(answer);
+      snapshot.forEach((doc) => {
+        let answer = new Answer({ ...doc.data() });
+        this.allAnswers.push(answer);
+      });
+
+      console.log(`Current answers for message ${messageId}:`, this.allAnswers);
     });
-
-  
-
-    console.log(`Current answers for message ${messageId}:`, this.answer);
-  });
   }
-=======
-  async updateChannel() {
-    const channelDocRef = doc(this.firestore, `channels/${this.channel.id}`);
-    try {
-      await updateDoc(channelDocRef, this.channelData);
-      console.log('Channel successfully updated!', this.channelData);
-    } catch (error) {
-      console.error('Error updating channel: ', error);
-    }
-  }
-  
->>>>>>> b02bec0afb9cc71f1ae046377ed6be2e77caa741
 
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
     return user ? user.avatar : 'default';
   }
-
   sendMessage() { }
 
   openUsersList() {
@@ -197,4 +184,8 @@ export class ChannelComponent {
   openDialogEditChannel(channel: any) {
     this.dialog.open(DialogEditChannelComponent, { data: channel });
   }
+  onThreadClosed() {
+    this.isThreadOpen = false;
+  }
+  openThread() { this.isThreadOpen = true; }
 }

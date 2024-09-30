@@ -25,7 +25,7 @@ export class HeaderComponent implements OnInit {
   constructor(public dialog: MatDialog, private sharedService: SharedService, private userService: UserService) {}
 
   isNumber(value: any): boolean {
-    return typeof value === 'number';
+    return typeof value === 'string';
   }
 
   ngOnInit() {

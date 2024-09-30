@@ -1,3 +1,4 @@
+<div style="display: flex; align-items: center; gap: 16px;">
 <div class="channel-container" *ngIf="selectedChannel">
     <div class="channel-header">
         <button class="edit-channel" (click)="openDialogEditChannel(selectedChannel)">
@@ -33,7 +34,7 @@
                             <div class="name-time"> {{message.user}} <p class="time">14:25Uhr</p>
                             </div>
                             <div class="speech-bubble"> {{message.text}}</div>
-                            <div class="label-answers">2 Antworten <p class="time">Letzte
+                            <div class="label-answers" (click)="openThread()">{{this.allAnswers.length}} Antworten <p class="time">Letzte
                                     Antwort 14:56</p>
                             </div>
                         </div>
@@ -65,4 +66,7 @@
         </div>
     </div>
 
+</div>
+
+<app-thread *ngIf="isThreadOpen" (threadClosed)="onThreadClosed()"></app-thread>
 </div>

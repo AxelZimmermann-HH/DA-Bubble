@@ -5,11 +5,12 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { Channel } from '../../../models/channel.class';
 import { User } from '../../../models/user.class';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-dialog-add-user',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule,RouterLink],
   templateUrl: './dialog-logout.component.html',
   styleUrl: './dialog-logout.component.scss'
 })
@@ -21,7 +22,8 @@ export class DialogLogoutComponent {
   user = new User();
   selectedOption: string | null = null;
 
-  constructor(public firestore: Firestore, public dialogRef: MatDialogRef<DialogLogoutComponent>) {
+
+  constructor(public firestore: Firestore, public dialogRef: MatDialogRef<DialogLogoutComponent>, private route: Router) {
     //provisorisch
     this.channel.channelName = "Entwicklerteam";
     this.user.name = "Noah";
@@ -31,4 +33,8 @@ export class DialogLogoutComponent {
     this.dialogRef.close();
   }
 
+  logOut() {
+
+    this.dialogRef.close();
+  }
 }

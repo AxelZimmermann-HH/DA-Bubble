@@ -47,11 +47,11 @@ export class SigninComponent {
     let user = this.userData.find((user: User) => user.mail === enteredMail);
   
     this.emptyValue();
-  
+ 
     if (user) {
       if (user.password === enteredPassword) {
         this.handleSuccess(user, enteredMail);
-
+        this.router.navigate(['/login', user.userId]);
       } else {
         this.falsePassword();
       }
@@ -74,7 +74,9 @@ export class SigninComponent {
     this.validPassword = true;
   
     this.userService.setUser(user);
-    this.router.navigate(['/']);
+    this.router.navigate(['/login',user.userId]);
+    console.log('let user id',user.userId);
+    
   }
 
   falsePassword() {
@@ -98,7 +100,7 @@ export class SigninComponent {
     const guestUser = new User();
     guestUser.name = 'Gast';
     guestUser.mail = 'guest@example.com';
-    guestUser.avatar = 1;  // Oder eine beliebige Avatar-ID
+    guestUser.avatar = "1";  // Oder eine beliebige Avatar-ID
   
     // Rufe handleSuccess auf und simuliere den Gast-Login
     this.handleSuccess(guestUser, guestUser.mail);
@@ -146,7 +148,7 @@ export class SigninComponent {
     const newUser = new User();
     newUser.name = googleUser.displayName || 'Unbekannter Benutzer';
     newUser.mail = email;
-    newUser.avatar = googleUser.photoURL || 1;
+    newUser.avatar = googleUser.photoURL || "1";
     newUser.online = true;
     newUser.userId = userId;
   

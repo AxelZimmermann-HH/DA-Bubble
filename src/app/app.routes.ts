@@ -4,6 +4,8 @@ import { LoginComponent } from './login/login.component';
 
 export const routes: Routes = [
 
-    {path: '', component: MainComponent},
-    {path: 'login', component: LoginComponent}
+    { path: '', component: MainComponent },
+    { path: 'login/:userId', component: MainComponent },
+    { path: 'login', component: LoginComponent },
+    
 ];
