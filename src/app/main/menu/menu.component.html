@@ -73,7 +73,7 @@
         <div class="user-container" *ngIf="showUser">
 
             @for(user of filteredUsers; track user){
-            <div class="user" (click)="this.openDirectMessage(myUserId, user.userId)">
+            <div class="user" (click)="this.openDirectMessage(myUserId, user.userId); selectChat()">
                 <div class="avatar-container">
                     <img class="user-avatar" src="\assets\avatars\avatar_{{user.avatar}}.png" alt="">
                     <div [ngClass]="{'offline-point': !user.online}" class="online-point"></div>

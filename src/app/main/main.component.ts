@@ -19,13 +19,17 @@ import { CommonModule } from '@angular/common';
 export class MainComponent {
 
   selectedChannelId: string | null = null;
-
-
+  showChannel = true;
+  showChat = true;
 
   onChannelSelected(channel: any) {
     this.selectedChannelId = channel.id;
-  
+    this.showChannel = true;
+    this.showChat = false;
   }
 
-
+  onChatSelected() {
+    this.showChannel = false;
+    this.showChat = true;
+  }
 }

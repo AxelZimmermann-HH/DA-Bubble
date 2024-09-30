@@ -43,6 +43,7 @@ export class MenuComponent {
   
 
   @Output() channelSelected = new EventEmitter<any>();
+  @Output() chatSelected = new EventEmitter<void>();
 
 
   async ngOnInit(){
@@ -212,12 +213,12 @@ export class MenuComponent {
   trackByChannelId(index: number, channel: any): string {
     return channel.id;  // Optimiert die Performance von *ngFor
   }
- 
-
-  //>>>>> BAUSTELLE <<<<<
 
 
-  
+  selectChat() {
+    this.chatSelected.emit();
+  }
+
   
   async openDirectMessage(myUserId:string, userId:string){
     this.chatService.chatIsEmpty = true;

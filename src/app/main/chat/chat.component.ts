@@ -41,7 +41,6 @@ export class ChatComponent {
 
     //CHAT LADEN
     this.chatService.chat$.subscribe((chatSubject) => {
-      debugger
       if(chatSubject !== null){
         if(chatSubject.length > 0){
           this.chatService.chatIsEmpty = false;
