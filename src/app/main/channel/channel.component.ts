@@ -46,6 +46,8 @@ export class ChannelComponent {
 
   selectedChannel: Channel | null = null;
   isThreadOpen: boolean = true;
+  selectedMessage: Message | null = null; // Selected message for the thread
+  selectedAnswers: Answer[] = [];
 
   constructor(public dialog: MatDialog, public firestore: Firestore, private sharedService: SharedService, private route: ActivatedRoute) {
     this.getAllUsers();
@@ -157,7 +159,7 @@ export class ChannelComponent {
     });
   }
 
-  
+
 
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
@@ -175,8 +177,14 @@ export class ChannelComponent {
   openDialogEditChannel(channel: any) {
     this.dialog.open(DialogEditChannelComponent, { data: channel });
   }
+
   onThreadClosed() {
     this.isThreadOpen = false;
+    this.selectedMessage = null;
+    this.selectedAnswers = [];
   }
-  openThread() { this.isThreadOpen = true; }
+  
+  openThread(message: Message, answers: Answer[]) { 
+    this.isThreadOpen = true; 
+  }
 }

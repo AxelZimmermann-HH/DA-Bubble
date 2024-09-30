@@ -34,7 +34,7 @@
                             <div class="name-time"> {{message.user}} <p class="time">14:25Uhr</p>
                             </div>
                             <div class="speech-bubble"> {{message.text}}</div>
-                            <div class="label-answers" (click)="openThread()">{{this.allAnswers.length}} Antworten <p class="time">Letzte
+                            <div class="label-answers" (click)="openThread(message, allAnswers)">{{this.allAnswers.length}} Antworten <p class="time">Letzte
                                     Antwort 14:56</p>
                             </div>
                         </div>
@@ -68,5 +68,10 @@
 
 </div>
 
-<app-thread *ngIf="isThreadOpen" (threadClosed)="onThreadClosed()"></app-thread>
+<app-thread *ngIf="isThreadOpen"
+            [message]="selectedMessage"
+            [answer]="selectedAnswers"
+            [selectedChannelId]="selectedChannelId"
+            (threadClosed)="onThreadClosed()">
+</app-thread>
 </div>
