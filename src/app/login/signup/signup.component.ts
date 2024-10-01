@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FirstpageComponent } from './firstpage/firstpage.component';
 import { ChooseAvatarComponent } from './choose-avatar/choose-avatar.component';
+import { User } from '../../models/user.class';  // User-Klasse importieren
+
 
 @Component({
   selector: 'app-signup',
@@ -11,6 +13,7 @@ import { ChooseAvatarComponent } from './choose-avatar/choose-avatar.component';
   styleUrl: './signup.component.scss'
 })
 export class SignupComponent {
-  firstPage: boolean = false;
-  avatar: boolean = true;
+  firstPage: boolean = true;
+  avatar: boolean = false;
+  createdUser!: User;
 }

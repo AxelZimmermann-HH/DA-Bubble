@@ -101,6 +101,12 @@
     }
 }
 
+.selected-avatar {
+    width: 168px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
 .upload-area {
     width: 100%;
     display: flex;

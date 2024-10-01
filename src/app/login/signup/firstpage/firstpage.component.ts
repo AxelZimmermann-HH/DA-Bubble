@@ -15,6 +15,11 @@ import { UserService } from '../../../services/user.service';
 })
 export class FirstpageComponent {
   @Output() closeFirstPage = new EventEmitter<boolean>();  // EventEmitter erstellen
+  @Output() openAvatarPage = new EventEmitter<boolean>();
+  @Output() userCreated = new EventEmitter<User>();  // Neuer Emitter für den erstellten Benutzer
+
+
+
 
   user = new User();
   validName: boolean = true;
@@ -89,10 +94,15 @@ export class FirstpageComponent {
         const userCollection = collection(this.firestore, 'users');
         const docRef = await addDoc(userCollection, newUser.toJson());
 
+        newUser.userId = docRef.id;
+
+
         // Erfolgsmeldung und Ausgabe des erstellten Users
         console.log('User created with ID: ', docRef.id);
         console.log('Created User: ', newUser);
         this.closeFirstPage.emit(false);  // Setzt firstPage auf false in der übergeordneten Komponente
+        this.userCreated.emit(newUser);  // Benutzer übergeben
+        this.openAvatarPage.emit(true);
 
       } catch (error) {
         console.error('Error adding document: ', error);

@@ -6,8 +6,8 @@
 </div>
 
 @if (firstPage) {
-    <app-firstpage (closeFirstPage)="firstPage = $event"></app-firstpage>
+    <app-firstpage (closeFirstPage)="firstPage = $event" (userCreated)="createdUser = $event" (openAvatarPage)="avatar = $event"></app-firstpage>
 }
 @if (avatar) {
-    <app-choose-avatar></app-choose-avatar>
+    <app-choose-avatar [user]="createdUser"></app-choose-avatar>
 }
