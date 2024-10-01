@@ -15,7 +15,8 @@
     </div>
     <div class="upload-area">
         <p>eigenes Bild verwenden</p>
-        <button class="next-button guest" >Datei hochladen</button>
+        <input type="file" (change)="onFileSelected($event)" />  <!-- Datei-Upload -->
+        <button class="next-button guest" (click)="uploadFile()" [disabled]="!selectedFile">Datei hochladen</button>
 
     </div>
 
