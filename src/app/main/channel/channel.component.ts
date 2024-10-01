@@ -30,6 +30,7 @@ export class ChannelComponent {
 
   userData: any = [];
   user = new User();
+  userId!:string;
 
   channel = new Channel();
   channelData: any = [];
@@ -56,8 +57,8 @@ export class ChannelComponent {
     this.subscribeToSearch();
 
     this.route.params.subscribe(params => {
-      const userId = params['userId'];
-      console.log("Benutzer-ID:", userId);
+    this.userId = params['userId'];
+      console.log("Benutzer-ID:", this.userId);
     });
 
   }
@@ -165,6 +166,12 @@ export class ChannelComponent {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
     return user ? user.avatar : 'default';
   }
+
+  isCurrentUser(currentUser:string):boolean{
+    const user = this.userData.find((u:any) => u.userId === this.userId );
+    return user ? user.name === currentUser : false;
+  }
+
   sendMessage() { }
 
   openUsersList() {

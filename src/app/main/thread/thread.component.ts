@@ -6,6 +6,7 @@ import { collection, Firestore, onSnapshot } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Answer } from '../../models/answer.class';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-thread',
@@ -17,10 +18,12 @@ import { Answer } from '../../models/answer.class';
 export class ThreadComponent {
 
   user = new User();
-  channel = new Channel();
+  userId!:string;
   userData: User[] = [];
-  channelData: Channel[] = [];
-  allMessages: Message[] = [];
+
+  channel = new Channel();
+  channelData: any= [];
+  allMessages: any = [];
   allAnswers: Answer[] = [];
 
   @Output() threadClosed = new EventEmitter<void>();
@@ -35,10 +38,15 @@ export class ThreadComponent {
     }
   }
   
-  constructor(public firestore: Firestore, public dialog: MatDialog) {
+  constructor(public firestore: Firestore, public dialog: MatDialog, private route : ActivatedRoute) {
     this.getAllUsers();
     this.getAllChannels();
     this.getAllMessages();
+
+    this.route.params.subscribe(params => {
+      this.userId = params['userId'];
+        console.log("Benutzer-ID:", this.userId);
+      });
   }
 
   getAllUsers() {
@@ -109,6 +117,12 @@ export class ThreadComponent {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
     return user ? user.avatar : 'default';
   }
+
+  isCurrentUser(currentUser:string):boolean{
+    const user = this.userData.find((u:any) => u.userId === this.userId );
+    return user ? user.name === currentUser : false;
+  }
+  
   sendMessage() { }
 
   closeThread() {

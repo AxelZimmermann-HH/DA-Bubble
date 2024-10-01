@@ -26,15 +26,15 @@
                 </div>
             </tr>
             <tr *ngFor="let message of allMessages">
-                <td>
-                    <div class="message-main">
+                <td [ngClass]="{'current-user':isCurrentUser(message.user)}">
+                    <div class="message-main" [ngClass]="{'current-user':isCurrentUser(message.user)}">
                         <img [src]="'./assets/avatars/avatar_'+ getAvatarForUser(message.user) + '.png'" alt=""
                             class="avatar">
                         <div class="message-content">
-                            <div class="name-time"> {{message.user}} <p class="time">14:25Uhr</p>
+                            <div class="name-time" [ngClass]="{'current-user':isCurrentUser(message.user)}"> {{message.user}} <p class="time">14:25Uhr</p>
                             </div>
-                            <div class="speech-bubble"> {{message.text}}</div>
-                            <div class="label-answers" (click)="openThread(message, allAnswers)">{{this.allAnswers.length}} Antworten <p class="time">Letzte
+                            <div class="speech-bubble" [ngClass]="{'b-radius': isCurrentUser(message.user)}"> {{message.text}}</div>
+                            <div class="label-answers" (click)="openThread(message, allAnswers)" *ngIf="this.allAnswers.length>0">{{this.allAnswers.length}} Antworten <p class="time">Letzte
                                     Antwort 14:56</p>
                             </div>
                         </div>
@@ -44,6 +44,7 @@
                         <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png" alt="">
                         <img src="./assets/icons/add_reaction.png" alt="">
                         <img src="./assets/icons/comment.png" alt="">
+                        <img src="./assets/icons/Answer.png" alt="" *ngIf="isCurrentUser(message.user)">
                     </div>
                 </td>
                 <div style="position: relative;">

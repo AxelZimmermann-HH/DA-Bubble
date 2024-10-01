@@ -4,14 +4,14 @@
                 Entwicklerteam</span></div>
         <img src="./assets/icons/close.png" alt="" (click)="closeThread()">
     </div>
-    <div class="thread-content">
-        <div *ngFor="let message of allMessages">
-            <div class="message-main">
+    <div class="thread-content" >
+        <div *ngFor="let message of allMessages" >
+            <div class="message-main" [ngClass]="{'current-user':isCurrentUser(message.user)}">
                 <img [src]="'./assets/avatars/avatar_'+ getAvatarForUser(message.user) + '.png'" alt="" class="avatar">
-                <div class="message-content">
-                    <div class="name-time">{{ message.user }} <p class="time">14:25Uhr</p>
+                <div class="message-content" [ngClass]="{'a-items': isCurrentUser(message.user)}">
+                    <div class="name-time" [ngClass]="{'current-user':isCurrentUser(message.user)}">{{ message.user }} <p class="time">14:25Uhr</p>
                     </div>
-                    <div class="speech-bubble"> {{ message.text }}</div>
+                    <div class="speech-bubble" [ngClass]="{'b-radius': isCurrentUser(message.user)}"> {{ message.text }}</div>
                 </div>
             </div>
             <div class="separator">
