@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, Output, EventEmitter } from '@angular/core';
 import { FirstpageComponent } from './firstpage/firstpage.component';
 import { ChooseAvatarComponent } from './choose-avatar/choose-avatar.component';
 import { User } from '../../models/user.class';  // User-Klasse importieren
@@ -13,7 +13,12 @@ import { User } from '../../models/user.class';  // User-Klasse importieren
   styleUrl: './signup.component.scss'
 })
 export class SignupComponent {
+  @Output() switchToSignin = new EventEmitter<void>();
   firstPage: boolean = true;
   avatar: boolean = false;
   createdUser!: User;
+
+  handleSwitchToSignin() {
+    this.switchToSignin.emit();  // Event an die login-Komponente weiterleiten
+  }
 }

@@ -9,9 +9,6 @@ import { Auth, signInWithPopup, GoogleAuthProvider } from '@angular/fire/auth';
 import { SigninComponent } from "./signin/signin.component"; 
 import { SignupComponent } from './signup/signup.component';
 
-
-
-
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -24,5 +21,9 @@ export class LoginComponent {
 
   onSignUpChange(newSignUpValue: boolean) {
     this.signUp = newSignUpValue; // aktualisiert die Variable in der Parent-Komponente
+  }
+
+  handleSwitchToSignin() {
+    this.signUp = false;  // Schaltet zu Signin um
   }
 }

@@ -22,11 +22,7 @@ export class HeaderComponent implements OnInit {
 
   currentUser: User | null = null;
 
-  constructor(public dialog: MatDialog, private sharedService: SharedService, private userService: UserService) {}
-
-  isNumber(value: any): boolean {
-    return typeof value === 'string';
-  }
+  constructor(public dialog: MatDialog, private sharedService: SharedService, public userService: UserService) {}
 
   ngOnInit() {
     // Benutzer abonnieren und in currentUser speichern

@@ -18,4 +18,8 @@ export class UserService {
   getUser(): User | null {
     return this.currentUserSubject.getValue();
   }
+
+  isNumber(value: any): boolean {
+    return typeof value === 'number';
+  }
 }

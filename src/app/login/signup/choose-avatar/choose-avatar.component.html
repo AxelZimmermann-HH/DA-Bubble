@@ -4,7 +4,7 @@
         <h1>Wähle deinen Avatar</h1>
     </div>
     <img class="selected-avatar" [src]="selectedAvatar" alt="Selected Avatar">
-    <h2>Axel Zimmermann</h2>
+    <h2>{{user.name}}</h2>
     <div class="text-right">
         <p>Aus der Liste wählen</p>
     </div>
@@ -14,10 +14,18 @@
         }
     </div>
     <div class="upload-area">
-        <p>eigenes Bild verwenden</p>
-        <input type="file" (change)="onFileSelected($event)" />  <!-- Datei-Upload -->
-        <button class="next-button guest" (click)="uploadFile()" [disabled]="!selectedFile">Datei hochladen</button>
-
+        <label for="file-upload" class="custom-file-upload">
+            eigenes Bild auswählen
+          </label>
+          
+        <input id="file-upload" type="file" (change)="onFileSelected($event)" />  <!-- Datei-Upload -->
+        @if (selectedFile) {
+            <button class="next-button" [ngStyle]="{'background-color': '#444df2'}" (click)="uploadFile()" [disabled]="!selectedFile">Datei hochladen</button>
+        }
+    </div>
+    <div class="file-name" [ngClass]="{'file-name-visible': selectedFileName}" 
+        [ngStyle]="{'margin-top': selectedFileName ? '10px' : '0px'}">
+        <p *ngIf="selectedFileName">>  {{ selectedFileName }}</p>
     </div>
 
     <form #ngForm="ngForm" (ngSubmit)="onSubmit(contactForm)" #contactForm="ngForm">
@@ -35,3 +43,11 @@
 
     </form>
 </div>
+
+@if (success) {
+    <div class="success-dialog">
+        <div class="success-inner-dialog">
+            <p>Konto erfolgreich erstellt!</p>
+        </div>
+    </div>
+}

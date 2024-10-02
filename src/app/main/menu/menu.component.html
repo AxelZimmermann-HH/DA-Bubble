@@ -75,7 +75,11 @@
             @for(user of filteredUsers; track user){
             <div class="user" (click)="this.openDirectMessage(myUserId, user.userId); selectChat()">
                 <div class="avatar-container">
-                    <img class="user-avatar" src="\assets\avatars\avatar_{{user.avatar}}.png" alt="">
+                    @if (userService.isNumber(user.avatar)) {
+                        <img class="user-avatar" src="\assets\avatars\avatar_{{user.avatar}}.png" alt="">
+                    } @else {
+                        <img class="user-avatar" src={{user.avatar}} alt="">
+                    }
                     <div [ngClass]="{'offline-point': !user.online}" class="online-point"></div>
                 </div>
                 <span class="header3">{{user.name}}</span>

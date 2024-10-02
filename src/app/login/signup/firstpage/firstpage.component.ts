@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ViewChild, ElementRef, Input, Output, EventEmitter } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-import { collection, addDoc, Firestore, onSnapshot, doc, getDoc, setDoc } from '@angular/fire/firestore';
+import { collection, addDoc, updateDoc, Firestore, onSnapshot, doc, getDoc, setDoc } from '@angular/fire/firestore';
 import { User } from '../../../models/user.class';
 import { Router } from '@angular/router'; 
 import { UserService } from '../../../services/user.service';  
@@ -18,9 +18,6 @@ export class FirstpageComponent {
   @Output() openAvatarPage = new EventEmitter<boolean>();
   @Output() userCreated = new EventEmitter<User>();  // Neuer Emitter für den erstellten Benutzer
 
-
-
-
   user = new User();
   validName: boolean = true;
   validMail: boolean = true;
@@ -28,7 +25,6 @@ export class FirstpageComponent {
   buttonEnabled: boolean = false;
 
   constructor(private firestore: Firestore) {}
-
 
   validateName(): void {
     const nameParts = this.user.name.trim().split(/\s+/);
@@ -38,30 +34,25 @@ export class FirstpageComponent {
       setTimeout(() => {
         this.validName = true; 
         this.activateButton();  // Buttonstatus nach Timeout erneut prüfen
-
       }, 2000);
     } else {
       this.validName = true;
       this.activateButton();  // Direkt nach erfolgreicher Validierung den Buttonstatus prüfen
-
     }
   }
 
   validateMail(): void {
     let emailPattern = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
-
     if (!emailPattern.test(this.user.mail)) {
       this.validMail = false;
       this.user.mail = ''; 
       setTimeout(() => {
         this.validMail = true; 
         this.activateButton();  // Buttonstatus nach Timeout erneut prüfen
-
       }, 2000);
     } else {
       this.validMail = true;
       this.activateButton();  // Direkt nach erfolgreicher Validierung den Buttonstatus prüfen
-
     }
   }
 
@@ -96,6 +87,9 @@ export class FirstpageComponent {
 
         newUser.userId = docRef.id;
 
+        // userId auch im Firestore-Dokument aktualisieren
+        const userDocRef = doc(this.firestore, `users/${docRef.id}`);
+        await updateDoc(userDocRef, { userId: docRef.id });
 
         // Erfolgsmeldung und Ausgabe des erstellten Users
         console.log('User created with ID: ', docRef.id);

@@ -9,5 +9,5 @@
     <app-firstpage (closeFirstPage)="firstPage = $event" (userCreated)="createdUser = $event" (openAvatarPage)="avatar = $event"></app-firstpage>
 }
 @if (avatar) {
-    <app-choose-avatar [user]="createdUser"></app-choose-avatar>
+    <app-choose-avatar [user]="createdUser" (switchToSignin)="handleSwitchToSignin()"></app-choose-avatar>
 }

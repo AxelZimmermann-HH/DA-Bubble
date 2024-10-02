@@ -11,7 +11,7 @@
 
         @if (currentUser) {
             <p>{{ currentUser.name }}</p>
-            @if (isNumber(currentUser.avatar)) {
+            @if (userService.isNumber(currentUser.avatar)) {
                 <img [src]="'../../../assets/avatars/avatar_' + currentUser.avatar + '.png'" alt="User Avatar">
               } @else {
                 <img [src]="currentUser.avatar" alt="Google User Avatar">
