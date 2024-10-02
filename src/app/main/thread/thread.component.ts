@@ -24,7 +24,7 @@ export class ThreadComponent {
   channel = new Channel();
   channelData: any= [];
   allMessages: any = [];
-  allAnswers: Answer[] = [];
+  allAnswers: any = [];
 
   @Output() threadClosed = new EventEmitter<void>();
   @Input() message: Message | null = null;
@@ -57,7 +57,6 @@ export class ThreadComponent {
         let user = new User({ ...doc.data(), id: doc.id });
         this.userData.push(user);
       });
-      console.log('current users', this.userData);
     });
   }
 
@@ -69,8 +68,6 @@ export class ThreadComponent {
         let channel = new Channel({ ...doc.data(), id: doc.id });
         this.channelData.push(channel);
       });
-
-      console.log('current channel', this.channelData);
     });
   }
 
@@ -78,16 +75,14 @@ export class ThreadComponent {
     const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
     const readMessages = onSnapshot(messagesCollection, (snapshot) => {
       this.allMessages = [];
-
       snapshot.forEach((doc) => {
         let message = new Message({ ...doc.data(), id: doc.id });
         this.allMessages.push(message);
-
         this.getAllAnswersForMessage(message.id);
       });
-      console.log('Current messages in the channel:', this.allMessages);
     });
   }
+
   getMessagesForChannel(channelId: string){ const messageCollection = collection(this.firestore, `channels/${channelId}/messages`);
   const readMessages = onSnapshot(messageCollection, (snapshot) => {
     this.allMessages = [];
@@ -95,21 +90,16 @@ export class ThreadComponent {
       let message = new Message({ ...doc.data(), id: doc.id });
       this.allMessages.push(message);
     });
-
-    console.log('Messages in thread for channel', this.allMessages);
   });}
-  getAllAnswersForMessage(messageId: string) {
 
+  getAllAnswersForMessage(messageId: string) {
     const answersCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}/answers`);
     const readAnswers = onSnapshot(answersCollection, (snapshot) => {
       this.allAnswers = []
-
       snapshot.forEach((doc) => {
         let answer = new Answer({ ...doc.data() });
         this.allAnswers.push(answer);
       });
-
-      console.log(`Current answers for message ${messageId}:`, this.allAnswers);
     });
   }
 

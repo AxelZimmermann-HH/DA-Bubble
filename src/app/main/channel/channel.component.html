@@ -6,13 +6,13 @@
             <img src="./assets/icons/keyboard_arrow_down_1.png" alt="">
         </button>
         <div class="add-members">
-            <div class="member-preview" (click)="openUsersList()">
-                <img [src]="'./assets/avatars/avatar_' + user.avatar +'.png'" alt="" class="avatar"
-                    *ngFor="let user of userData">
-                <p>{{userCount}}</p>
+            <div class="member-preview" (click)="openUsersList(selectedChannelId!)">
+                <img  [src]="'./assets/avatars/avatar_' + member.avatar +'.png'" alt="" class="avatar"
+                    *ngFor="let member of selectedChannel.members">
+                <p *ngIf="selectedChannel.members.length>0">{{selectedChannel.members.length}}</p>
             </div>
 
-            <button class="addUserBtn" (click)="openDialogAddUser()">
+            <button class="addUserBtn" (click)="openDialogAddUser(selectedChannelId!)">
                 <img src="./assets/icons/person_add.png" alt="">
             </button>
         </div>

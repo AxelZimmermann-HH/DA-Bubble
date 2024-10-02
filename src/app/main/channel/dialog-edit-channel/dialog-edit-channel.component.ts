@@ -31,8 +31,6 @@ export class DialogEditChannelComponent {
 
   constructor(public dialogRef: MatDialogRef<DialogEditChannelComponent>, public firestore: Firestore, @Inject(MAT_DIALOG_DATA) public channel: Channel) {
 
-    //provisorisch
-    // this.channel.channelName = 'Entwicklerteam';
     this.user.name = 'Noah Braun';
     this.getAllChannels();
     this.newChannelName = this.channel.channelName;
@@ -50,22 +48,10 @@ export class DialogEditChannelComponent {
         let channel = new Channel({ ...doc.data(), id: doc.id });
         this.channelData.push(channel);
       });
-
-      console.log('current channel', this.channelData);
     });
   }
   async editChannelName() {
-    // try {
-    //   const channelDocRef = doc(this.firestore, 'channels', this.channelId);
-    //   await updateDoc(channelDocRef, { channelName: this.channel.channelName });
-    //   console.log('channel successfully updated');
-    // } catch (error) {
-    //   console.error('Error updating channel: ', error);
-    // }
-    // finally {
-    //   this.isEditing = false;
-    //   this.dialogRef.close();
-    // }
+
     if (this.newChannelName.trim()) {  // Only update if input is not empty
       if (this.newChannelName.trim()) {
         // Update the channel description in Firestore

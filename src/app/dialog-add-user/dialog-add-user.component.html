@@ -1,23 +1,15 @@
-<div class="adduser-container">
+<div class="addUser-content">
   <div class="addUser-header">
     <p>Leute hinzufügen</p><img src="./../../assets/icons/close.png" alt="" (click)="dialogRef.close()">
   </div>
-  <div class="flex-direction">
-    <div class="d-flex">
-      <input type="radio" name="options" (change)="selectedOption = 'channel'">
-      Alle Mitglieder von <span class="channel-name">{{channel.channelName}}</span> hinzufügen
-    </div>
-    <div class="d-flex">
-      <input type="radio" name="options" (change)="selectedOption = 'user'">
-      Bestimmte Leute hinzufügen
-    </div>
-  </div>
+  <p style="color: rgba(121, 126, 243, 1);font-size: 18px;font-weight: 400;"># {{data.channel.channelName}}</p>
 
-  <div class="custom-dropdown" *ngIf="selectedOption === 'user'">
-    <div class="dropdown-selected" (click)="toggleDropdown()" style="display: flex; align-items: center;">
+  <div class="custom-dropdown">
+    <div class="dropdown-selected" (click)="toggleDropdown()" [ngClass]="{'selected-user': selectedUser}">
       <img *ngIf="selectedUser" [src]="'./assets/avatars/avatar_' + selectedUser.avatar + '.png'" alt=""
         style="width: 40px; height: 40px; border-radius: 30px; margin-right: 8px;">
       <span>{{ selectedUser ? selectedUser.name : 'Name eingeben' }}</span>
+      <img src="./assets/icons/close.png" alt="" *ngIf="selectedUser" (click)="removeSelectedUser($event)">
     </div>
     <ul *ngIf="dropdownOpen" class="dropdown-options">
       <li *ngFor="let user of userData" (click)="selectUser(user)"
@@ -28,7 +20,5 @@
       </li>
     </ul>
   </div>
-
-  <button class="createBtn" [disabled]="!selectedOption"
-    (click)="addUser(selectedOption?.toString()!)">Hinzufügen</button>
+  <button class="createBtn" [disabled]="!selectedUser" (click)="addMember(selectedUser)">Hinzufügen</button>
 </div>

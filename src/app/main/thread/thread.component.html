@@ -9,7 +9,7 @@
             <div class="message-main" [ngClass]="{'current-user': isCurrentUser(message.user)}">
                 <img [src]="'./assets/avatars/avatar_'+ getAvatarForUser(message.user) + '.png'" alt="" class="avatar">
                 <div class="message-content" [ngClass]="{'a-flex': isCurrentUser(message.user)}">
-                    <div class="name-time"  [ngClass]="{'current-user': isCurrentUser(message.user)}">{{ message.user }} <p class="time">14:25Uhr</p>
+                    <div class="name-time"  [ngClass]="{'current-user': isCurrentUser(message.user)}">{{ message.user}} <p class="time">14:25Uhr</p>
                     </div>
                     <div class="speech-bubble"  [ngClass]="{'border-radius': isCurrentUser(message.user)}"> {{ message.text }}</div>
                 </div>

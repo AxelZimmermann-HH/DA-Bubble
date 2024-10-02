@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { collection, Firestore, onSnapshot } from '@angular/fire/firestore';
-import { MatDialogRef } from '@angular/material/dialog';
+import { Component, Inject } from '@angular/core';
+import { arrayUnion, collection, doc, Firestore, onSnapshot, updateDoc } from '@angular/fire/firestore';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Channel } from '../models/channel.class';
 import { User } from '../models/user.class';
 import { FormsModule } from '@angular/forms';
@@ -21,19 +21,22 @@ export class DialogAddUserComponent {
   channel = new Channel();
   channelData: any = [];
   channelId!: string;
+
   userData: any = [];
   user = new User();
+
   selectedOption: string | null = null;
   selectedUser: any;
   dropdownOpen = false;
 
-  constructor(public firestore: Firestore, public dialogRef: MatDialogRef<DialogAddUserComponent>) {
+  constructor(public firestore: Firestore, public dialogRef: MatDialogRef<DialogAddUserComponent>, @Inject(MAT_DIALOG_DATA) public data: any) {
+    this.channel = new Channel(data.channel); // Initialisiere das Channel-Objekt
+    console.log('Channel:', this.channel);
+    this.getAllUsers();
 
-    this.getAllUsers()
-    //provisorisch
-    this.channel.channelName = "Entwicklerteam";
     this.user.name = "Noah";
   }
+
   getAllUsers() {
     const userCollection = collection(this.firestore, 'users');
     const readUsers = onSnapshot(userCollection, (snapshot) => {
@@ -46,25 +49,46 @@ export class DialogAddUserComponent {
     });
   }
 
-  onSubmit() { }
 
-  addUser(option: string, user?: any) {
-    if (option === 'channel') {
-      // Logic to add all users to the channel
-      
-      
-    } else if (option === 'user' && user) {
-      // Logic to add the selected user to the channel
-  
-    }
-
-    this.dialogRef.close();
+  toggleDropdown() {
+    this.dropdownOpen = !this.dropdownOpen;
   }
 
-
-  toggleDropdown() { this.dropdownOpen = !this.dropdownOpen; }
   selectUser(user: any) {
     this.selectedUser = user;
     this.dropdownOpen = false;
+  }
+
+  removeSelectedUser(event: Event) {
+    event.stopPropagation();
+    this.selectedUser = null;
+  }
+
+  async addMember(user :User) {
+    if (user) {
+      const channelRef = doc(this.firestore,'channels', this.channel.id);
+      try {
+        const currentMembers = this.channel.members || []; 
+        const isMemberAlready = currentMembers.some(member => member.userId === user.userId);
+
+        if (isMemberAlready) {
+            console.log(`${user.name} ist bereits ein Mitglied des Channels.`);
+            this.dialogRef.close(false);
+            return; 
+        }
+        await updateDoc(channelRef, {
+          members: [...currentMembers, user.toJson()] 
+        });
+
+        console.log(`${user.name} wurde zum Channel hinzugefügt.`);
+
+      } catch (error) {
+        console.error('Fehler beim Hinzufügen des Mitglieds:', error);
+      }
+    }
+  }
+
+  closeDialog() {
+    this.dialogRef.close();
   }
 }

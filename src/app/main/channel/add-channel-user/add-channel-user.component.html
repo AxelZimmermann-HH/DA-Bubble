@@ -1,11 +1,11 @@
 <div class="channel-users">
     <div class="members-header">Mitglieder<img src="./assets/icons/close.png" (click)="dialogRef.close()"></div>
     <ul class="users-menu">
-        <li *ngFor="let user of userData" class="usersList" (click)="openUserProfil(user)">
-            <img [src]="'./assets/avatars/avatar_' + user.avatar + '.png'" alt=""
+        <li *ngFor="let member of channel.members" class="usersList" (click)="openUserProfil(member)">
+            <img [src]="'./assets/avatars/avatar_' + member.avatar + '.png'" alt=""
                 style="width: 50px; height: 50px; border-radius: 30px;">
-            <div [ngClass]="{'offline-point': !user.online}" class="online-point"></div>
-            {{ user.name }}
+            <div [ngClass]="{'offline-point': !member.online}" class="online-point"></div>
+            {{ member.name }}
 
         </li>
     </ul>

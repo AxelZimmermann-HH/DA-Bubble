@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { collection, Firestore, onSnapshot } from '@angular/fire/firestore';
-import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { User } from '../../../models/user.class';
 import { DialogUserProfilComponent } from '../../../dialog-user-profil/dialog-user-profil.component';
+import { Channel } from '../../../models/channel.class';
 
 @Component({
   selector: 'app-add-channel-user',
@@ -15,10 +16,17 @@ import { DialogUserProfilComponent } from '../../../dialog-user-profil/dialog-us
 export class AddChannelUserComponent {
   userData: any = [];
   user = new User();
+  channel = new Channel();
 
-  constructor(public firestore: Firestore, public dialogRef: MatDialogRef<AddChannelUserComponent>, public dialog:MatDialog) {
+  channelUsers = [];
+
+  constructor(public firestore: Firestore, public dialogRef: MatDialogRef<AddChannelUserComponent>, public dialog: MatDialog, @Inject(MAT_DIALOG_DATA) public data: any) {
     this.getAllUsers();
+    this.channel = new Channel(data.channel);
+    console.log('hallo', this.channel.members);
+
   }
+
   getAllUsers() {
     const userCollection = collection(this.firestore, 'users');
     const readUsers = onSnapshot(userCollection, (snapshot) => {
@@ -31,7 +39,8 @@ export class AddChannelUserComponent {
     });
   }
 
-  openUserProfil(user:string){
-    this.dialog.open(DialogUserProfilComponent,{data:user});
+  openUserProfil(member: any) {
+    this.dialog.open(DialogUserProfilComponent, { data: member });
+    this.dialogRef.close();
   }
 }

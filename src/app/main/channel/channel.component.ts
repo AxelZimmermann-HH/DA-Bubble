@@ -26,15 +26,12 @@ import { collection, doc, Firestore, getDoc, onSnapshot } from '@angular/fire/fi
   styleUrl: './channel.component.scss'
 })
 export class ChannelComponent {
-  userCount: number = 0;
-
   userData: any = [];
   user = new User();
-  userId!:string;
+  userId!: string;
 
   channel = new Channel();
   channelData: any = [];
-  filteredChannels: any = [];
 
   message = new Message;
   allMessages: any = [];
@@ -42,6 +39,8 @@ export class ChannelComponent {
 
   answer = new Answer();
   allAnswers: any = [];
+
+  channelMembers: any = [];
 
   @Input() selectedChannelId: string | null = null;
 
@@ -52,21 +51,21 @@ export class ChannelComponent {
 
   constructor(public dialog: MatDialog, public firestore: Firestore, private sharedService: SharedService, private route: ActivatedRoute) {
     this.getAllUsers();
-    this.getAllChannels();
-    this.getAllMessages();
     this.subscribeToSearch();
-
     this.route.params.subscribe(params => {
-    this.userId = params['userId'];
-      console.log("Benutzer-ID:", this.userId);
+      this.userId = params['userId'];
     });
-
+  console.log('channels', this.selectedChannel);
+  
   }
 
   ngOnChanges(): void {
     if (this.selectedChannelId) {
       this.loadChannel(this.selectedChannelId).then(() => {
-        this.getAllMessages(); // Call after loading the channel
+        this.getAllMessages();
+        
+      }).catch(error => {
+        console.error('Fehler beim Laden des Channels:', error);
       });
     }
   }
@@ -77,7 +76,7 @@ export class ChannelComponent {
 
     if (channelSnapshot.exists()) {
       const data = channelSnapshot.data();
-      this.selectedChannel = new Channel(data);
+      this.selectedChannel = new Channel({ ...data, id });
     } else {
       console.error('Channel not found');
     }
@@ -112,8 +111,6 @@ export class ChannelComponent {
         let user = new User({ ...doc.data(), id: doc.id });
         this.userData.push(user);
       });
-      this.userCount = this.userData.length;
-      console.log('current users', this.userData);
     });
   }
 
@@ -125,8 +122,21 @@ export class ChannelComponent {
         let channel = new Channel({ ...doc.data(), id: doc.id });
         this.channelData.push(channel);
       });
+    });
+  }
 
-      console.log('current channel', this.channelData);
+  async getChannelData(channelId: string) {
+    const channelDocRef = doc(this.firestore, 'channels', channelId);
+
+    return getDoc(channelDocRef).then((doc) => {
+      if (doc.exists()) {
+        return new Channel({ ...doc.data(), id: doc.id });
+      } else {
+        throw new Error('Channel not found');
+      }
+    }).catch((error) => {
+      console.error("Error fetching channel data:", error);
+      throw error;
     });
   }
 
@@ -134,53 +144,68 @@ export class ChannelComponent {
     const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
     const readMessages = onSnapshot(messagesCollection, (snapshot) => {
       this.allMessages = [];
-
       snapshot.forEach((doc) => {
         let message = new Message({ ...doc.data(), id: doc.id });
         this.allMessages.push(message);
-
         this.getAllAnswersForMessage(message.id);
       });
-      console.log('Current messages in the channel:', this.allMessages);
     });
   }
 
   getAllAnswersForMessage(messageId: string) {
-
     const answersCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}/answers`);
     const readAnswers = onSnapshot(answersCollection, (snapshot) => {
       this.allAnswers = []
-
       snapshot.forEach((doc) => {
         let answer = new Answer({ ...doc.data() });
         this.allAnswers.push(answer);
       });
-
-      console.log(`Current answers for message ${messageId}:`, this.allAnswers);
     });
   }
 
+  getChannelMembers() {
 
+  }
 
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
     return user ? user.avatar : 'default';
   }
 
-  isCurrentUser(currentUser:string):boolean{
-    const user = this.userData.find((u:any) => u.userId === this.userId );
+  isCurrentUser(currentUser: string): boolean {
+    const user = this.userData.find((u: any) => u.userId === this.userId);
     return user ? user.name === currentUser : false;
   }
 
   sendMessage() { }
 
-  openUsersList() {
-    this.dialog.open(AddChannelUserComponent)
+  openUsersList(channelId: string) {
+   
+    this.getChannelData(channelId).then(channelData => {
+      this.dialog.open(AddChannelUserComponent, {
+        data: {
+          channelId: channelId,
+          channel: channelData  // Übergabe des Channel-Objekts
+        }
+      });
+    }).catch(error => {
+      console.error("Error fetching channel data:", error);
+    });
   }
 
-  openDialogAddUser() {
-    this.dialog.open(DialogAddUserComponent);
+  openDialogAddUser(channelId: string) {
+    this.getChannelData(channelId).then(channelData => {
+      this.dialog.open(DialogAddUserComponent, {
+        data: {
+          channelId: channelId,
+          channel: channelData  // Übergabe des Channel-Objekts
+        }
+      });
+    }).catch(error => {
+      console.error("Error fetching channel data:", error);
+    });
   }
+
   openDialogEditChannel(channel: any) {
     this.dialog.open(DialogEditChannelComponent, { data: channel });
   }
@@ -190,8 +215,8 @@ export class ChannelComponent {
     this.selectedMessage = null;
     this.selectedAnswers = [];
   }
-  
-  openThread(message: Message, answers: Answer[]) { 
-    this.isThreadOpen = true; 
+
+  openThread(message: Message, answers: Answer[]) {
+    this.isThreadOpen = true;
   }
 }

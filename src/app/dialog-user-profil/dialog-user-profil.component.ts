@@ -3,6 +3,7 @@ import { Firestore } from '@angular/fire/firestore';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { User } from '../models/user.class';
 import { CommonModule } from '@angular/common';
+import { Channel } from '../models/channel.class';
 
 @Component({
   selector: 'app-dialog-user-profil',
@@ -12,7 +13,11 @@ import { CommonModule } from '@angular/common';
   styleUrl: './dialog-user-profil.component.scss'
 })
 export class DialogUserProfilComponent {
-constructor(public dialogRef: MatDialogRef<DialogUserProfilComponent>, public firestore: Firestore, @Inject(MAT_DIALOG_DATA) public user: User){
 
-}
+  channel = new Channel();
+ 
+
+  constructor(public dialogRef: MatDialogRef<DialogUserProfilComponent>, public firestore: Firestore, @Inject(MAT_DIALOG_DATA) public user: User) {
+    
+  }
 }
