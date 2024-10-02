@@ -31,11 +31,11 @@
                         <img [src]="'./assets/avatars/avatar_'+ getAvatarForUser(message.user) + '.png'" alt=""
                             class="avatar">
                         <div class="message-content">
-                            <div class="name-time" [ngClass]="{'current-user':isCurrentUser(message.user)}"> {{message.user}} <p class="time">14:25Uhr</p>
+                            <div class="name-time" [ngClass]="{'current-user':isCurrentUser(message.user)}"> {{message.user}} <p class="time">{{message.timestamp}}</p>
                             </div>
                             <div class="speech-bubble" [ngClass]="{'b-radius': isCurrentUser(message.user)}"> {{message.text}}</div>
                             <div class="label-answers" (click)="openThread(message, allAnswers)" *ngIf="this.allAnswers.length>0">{{this.allAnswers.length}} Antworten <p class="time">Letzte
-                                    Antwort 14:56</p>
+                                    Antwort 15:00</p>
                             </div>
                         </div>
                     </div>

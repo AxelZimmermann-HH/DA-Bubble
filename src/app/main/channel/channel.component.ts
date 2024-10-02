@@ -127,20 +127,7 @@ export class ChannelComponent {
     });
   }
 
-  async getChannelData(channelId: string) {
-    const channelDocRef = doc(this.firestore, 'channels', channelId);
-
-    return getDoc(channelDocRef).then((doc) => {
-      if (doc.exists()) {
-        return new Channel({ ...doc.data(), id: doc.id });
-      } else {
-        throw new Error('Channel not found');
-      }
-    }).catch((error) => {
-      console.error("Error fetching channel data:", error);
-      throw error;
-    });
-  }
+ 
 
   getAllMessages() {
     const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
@@ -165,10 +152,6 @@ export class ChannelComponent {
     });
   }
 
-  getChannelMembers() {
-
-  }
-
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
     return user ? user.avatar : 'default';
@@ -181,33 +164,44 @@ export class ChannelComponent {
 
   sendMessage() { }
 
+  async getChannelData(channelId: string): Promise<Channel> {
+    const channelDocRef = doc(this.firestore, 'channels', channelId);
+  
+    try {
+      const docSnap = await getDoc(channelDocRef);
+      if (docSnap.exists()) {
+        return new Channel({ ...docSnap.data(), id: docSnap.id });
+      } else {
+        throw new Error('Channel not found');
+      }
+    } catch (error) {
+      console.error('Error fetching channel data:', error);
+      throw error;
+    }
+  }
+  
+  openDialog(component: any, channelId: string) {
+    this.getChannelData(channelId).then(channelData => {
+      this.dialog.open(component, {
+        data: {
+          channelId: channelId,
+          channel: channelData  // Pass the Channel object
+        }
+      });
+    }).catch(error => {
+      console.error("Error opening dialog:", error);
+    });
+  }
+  
   openUsersList(channelId: string) {
-   
-    this.getChannelData(channelId).then(channelData => {
-      this.dialog.open(AddChannelUserComponent, {
-        data: {
-          channelId: channelId,
-          channel: channelData  // Übergabe des Channel-Objekts
-        }
-      });
-    }).catch(error => {
-      console.error("Error fetching channel data:", error);
-    });
+    this.openDialog(AddChannelUserComponent, channelId);
   }
-
+  
   openDialogAddUser(channelId: string) {
-    this.getChannelData(channelId).then(channelData => {
-      this.dialog.open(DialogAddUserComponent, {
-        data: {
-          channelId: channelId,
-          channel: channelData  // Übergabe des Channel-Objekts
-        }
-      });
-    }).catch(error => {
-      console.error("Error fetching channel data:", error);
-    });
+    this.openDialog(DialogAddUserComponent, channelId);
   }
-
+  
+ 
   openDialogEditChannel(channel: any) {
     this.dialog.open(DialogEditChannelComponent, { data: channel });
   }
