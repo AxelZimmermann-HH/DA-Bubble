@@ -52,6 +52,10 @@
 
     &:hover {
         background-color: rgba(236, 238, 254, 1);
+
+        .speech-bubble {
+            background-color: #FFFFFF;
+        }
     }
 }
 
@@ -65,7 +69,8 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-align-items: flex-start;
+    align-items: flex-start;
+
     .name-time {
         font-size: 18px;
         font-weight: 700;
@@ -80,18 +85,10 @@ align-items: flex-start;
         color: rgba(104, 104, 104, 1);
         margin: 0;
     }
-}
-.speech-bubble {
-    width: 100%;
-    height: 55px;
-    padding: 15px;
-    gap: 8px;
-    border-radius: 0px 30px 30px 30px;
-    background: rgba(236, 238, 254, 1);
-    font-size: 18px;
-    font-weight: 400;
+
 
 }
+
 .separator {
     display: flex;
     align-items: center;
@@ -200,21 +197,33 @@ align-items: flex-start;
     }
 }
 
-.current-user{
+.speech-bubble {
+    width: 100%;
+    height: 55px;
+    padding: 15px;
+    gap: 8px;
+    border-radius: 0px 30px 30px 30px;
+    background: rgba(236, 238, 254, 1);
+    font-size: 18px;
+    font-weight: 400;
+}
+
+.current-user {
     flex-direction: row-reverse;
+    /* Spiegeln der Nachrichtenrichtung */
 }
-.a-items{
+
+.border-radius {
+    border-radius: 30px 0px 30px 30px;
+    background: rgba(121, 126, 243, 1);
+    color: rgba(255, 255, 255, 1);
+
+}
+
+.current-user:hover .border-radius {
+    background-color: rgba(121, 126, 243, 1) !important;
+    color: rgba(255, 255, 255, 1);
+}
+.a-flex{
     align-items: flex-end;
-}
-
-.b-radius{ border-radius: 30px 0px 30px 30px;
-    background: #797EF3;
-    color:#FFFFFF}
-
-.message-content:hover .b-radius  {
-    background: #797EF3 !important;
-    color:#FFFFFF;
-}
-.message-content:hover .speech-bubble{
-    background-color: #FFFFFF !important;
 }
