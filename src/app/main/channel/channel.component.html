@@ -7,8 +7,13 @@
         </button>
         <div class="add-members">
             <div class="member-preview" (click)="openUsersList(selectedChannelId!)">
-                <img  [src]="'./assets/avatars/avatar_' + member.avatar +'.png'" alt="" class="avatar"
-                    *ngFor="let member of selectedChannel.members">
+                @for (member of selectedChannel.members; track member.name) {
+                    @if (userService.isNumber(member.avatar)) {
+                        <img  [src]="'./assets/avatars/avatar_' + member.avatar +'.png'" alt="" class="avatar">
+                    } @else {
+                        <img [src]="member.avatar" alt="Google User Avatar" class="avatar">
+                    }
+                }
                 <p *ngIf="selectedChannel.members.length>0">{{selectedChannel.members.length}}</p>
             </div>
 
