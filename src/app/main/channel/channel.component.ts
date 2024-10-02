@@ -13,6 +13,8 @@ import { AddChannelUserComponent } from './add-channel-user/add-channel-user.com
 import { Answer } from '../../models/answer.class';
 import { ActivatedRoute } from '@angular/router';
 import { collection, doc, Firestore, getDoc, onSnapshot } from '@angular/fire/firestore';
+import { UserService } from '../../services/user.service';  
+
 
 @Component({
   selector: 'app-channel',
@@ -50,7 +52,7 @@ export class ChannelComponent {
   selectedMessage: Message | null = null; // Selected message for the thread
   selectedAnswers: Answer[] = [];
 
-  constructor(public dialog: MatDialog, public firestore: Firestore, private sharedService: SharedService, private route: ActivatedRoute) {
+  constructor(public dialog: MatDialog, public firestore: Firestore, private sharedService: SharedService, public userService: UserService, private route: ActivatedRoute) {
     this.getAllUsers();
     this.getAllChannels();
     this.getAllMessages();

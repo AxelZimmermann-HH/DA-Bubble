@@ -5,6 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DialogAddChannelComponent } from '../../dialog-add-channel/dialog-add-channel.component';
 import { SharedService } from '../../services/shared.service';
 import { ChatService } from '../../services/chat.service';
+import { UserService } from '../../services/user.service';  
 
 
 @Component({
@@ -15,7 +16,7 @@ import { ChatService } from '../../services/chat.service';
   styleUrl: './menu.component.scss'
 })
 export class MenuComponent {
-  constructor(public firestore: Firestore, public dialog: MatDialog, private sharedService: SharedService, public chatService: ChatService){}
+  constructor(public firestore: Firestore, public dialog: MatDialog, private sharedService: SharedService, public chatService: ChatService, public userService: UserService){}
 
   newDmIcon = 'edit_square.png'
   channelIcon1:string = 'arrow_drop_down.png';

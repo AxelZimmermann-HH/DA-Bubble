@@ -7,8 +7,13 @@
         </button>
         <div class="add-members">
             <div class="member-preview" (click)="openUsersList()">
-                <img [src]="'./assets/avatars/avatar_' + user.avatar +'.png'" alt="" class="avatar"
-                    *ngFor="let user of userData">
+                @for (user of userData; track user.name) {
+                    @if (userService.isNumber(user.avatar)) {
+                        <img [src]="'./assets/avatars/avatar_' + user.avatar +'.png'" alt="" class="avatar">
+                    } @else {
+                        <img [src]="user.avatar" alt="" class="avatar">
+                    }
+                }
                 <p>{{userCount}}</p>
             </div>
 

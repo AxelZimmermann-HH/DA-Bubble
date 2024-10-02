@@ -2,6 +2,6 @@
     @if (!signUp) {
         <app-signin [signUp]="signUp" (signUpChange)="onSignUpChange($event)"></app-signin>
     } @else {
-        <app-signup></app-signup>
+        <app-signup (switchToSignin)="handleSwitchToSignin()"></app-signup>
     }
 </div>
