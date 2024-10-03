@@ -96,14 +96,23 @@ export class SigninComponent {
   }
 
   guestLogin() {
-    // Erstelle einen Gast-Benutzer (anpassbar)
+    const userCollection = collection(this.firestore, 'users');
+    const guestUserDocRef = doc(userCollection);
+    // Erstelle einen Gast-Benutzer mit einer zufälligen ID
     const guestUser = new User();
     guestUser.name = 'Gast';
     guestUser.mail = 'guest@example.com';
-    guestUser.avatar = "1";  // Oder eine beliebige Avatar-ID
+    guestUser.avatar = 1;  // Oder eine beliebige Avatar-ID
+    guestUser.userId = guestUserDocRef.id;  // Generiere eine zufällige ID
+
+    setDoc(guestUserDocRef, guestUser.toJson()).then(() => {
+      console.log('Gastbenutzer angelegt:', guestUser);
   
-    // Rufe handleSuccess auf und simuliere den Gast-Login
-    this.handleSuccess(guestUser, guestUser.mail);
+      // Rufe handleSuccess auf und simuliere den Gast-Login
+      this.handleSuccess(guestUser, guestUser.mail);
+    }).catch((error) => {
+      console.error('Fehler beim Anlegen des Gastbenutzers:', error);
+    });
   }
 
   googleLogin() {
