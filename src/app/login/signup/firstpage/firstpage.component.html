@@ -1,5 +1,9 @@
 <div class="login-content">
-    <h1>Konto erstellen</h1>
+    <div class="header">
+        <img (click)="getBack()" src="../../../../assets/icons/arrow_back.png" alt="">
+        <h1>Konto erstellen</h1>
+    </div>
+    
     <p>Mit deinem Namen und deiner E-Mail-Adresse hast du dein neues DABubble-Konto.</p>
 
     <form #ngForm="ngForm" (ngSubmit)="onSubmit(contactForm)" #contactForm="ngForm">

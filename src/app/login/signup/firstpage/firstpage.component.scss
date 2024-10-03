@@ -71,6 +71,24 @@
     }
 }
 
+.header {
+    display: flex;
+    // justify-content: space-between;
+    gap: 85px;
+    align-items: center;
+    width: 100%;
+    > h1 {
+        font-family: 'Nunito';
+        font-weight: 700;
+        font-size: 46px;
+        color: #444DF2;
+        padding-bottom: 30px;
+    }
+    > img {
+        padding-bottom: 40px;
+    }
+}
+
 .check-area {
     width: 100%;
     display: flex;

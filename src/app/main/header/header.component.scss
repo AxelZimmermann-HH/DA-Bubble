@@ -67,9 +67,16 @@
     > img {
         height: 70px;
         border-radius: 50%;
+        object-fit: cover; 
+        object-position: center;
+        overflow: hidden;   
     }
 }
 
 .header-menu {
     height: 8px !important;
+}
+
+.test {
+    width: 70px;
 }

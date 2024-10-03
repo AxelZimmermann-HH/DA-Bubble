@@ -12,9 +12,9 @@
         @if (currentUser) {
             <p>{{ currentUser.name }}</p>
             @if (userService.isNumber(currentUser.avatar)) {
-                <img [src]="'../../../assets/avatars/avatar_' + currentUser.avatar + '.png'" alt="User Avatar">
+                <img class="test" [src]="'../../../assets/avatars/avatar_' + currentUser.avatar + '.png'" alt="User Avatar">
               } @else {
-                <img [src]="currentUser.avatar" alt="Google User Avatar">
+                <img class="test" [src]="currentUser.avatar" alt="Google User Avatar">
               }
             
         } @else {

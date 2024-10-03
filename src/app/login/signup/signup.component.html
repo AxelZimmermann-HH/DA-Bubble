@@ -6,8 +6,18 @@
 </div>
 
 @if (firstPage) {
-    <app-firstpage (closeFirstPage)="firstPage = $event" (userCreated)="createdUser = $event" (openAvatarPage)="avatar = $event"></app-firstpage>
+    <app-firstpage 
+        [user]="createdUser" 
+        (switchToSignin)="handleSwitchToSignin()"
+        (closeFirstPage)="firstPage = $event" 
+        (userCreated)="createdUser = $event" 
+        (openAvatarPage)="avatar = $event"></app-firstpage>
 }
 @if (avatar) {
-    <app-choose-avatar [user]="createdUser" (switchToSignin)="handleSwitchToSignin()"></app-choose-avatar>
+    <app-choose-avatar 
+        [user]="createdUser" 
+        (switchToSignin)="handleSwitchToSignin()"
+        (closeAvatarPage)="avatar = $event"
+        (openFirstPage)="firstPage = $event"
+        ></app-choose-avatar>
 }

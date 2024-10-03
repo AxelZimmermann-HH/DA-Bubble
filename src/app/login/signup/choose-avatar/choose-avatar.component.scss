@@ -103,8 +103,11 @@
 
 .selected-avatar {
     width: 168px;
+    height: 168px;
     border-radius: 50%;
-    cursor: pointer;
+    object-fit: cover; 
+    object-position: center;
+    overflow: hidden;
 }
 
 .upload-area {

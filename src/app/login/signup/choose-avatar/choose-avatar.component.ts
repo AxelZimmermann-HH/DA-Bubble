@@ -17,6 +17,9 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from '@angular/fire/stor
 export class ChooseAvatarComponent {
   @Input() user!: User;  // Empfange den User als Input
   @Output() switchToSignin = new EventEmitter<void>();
+
+  @Output() closeAvatarPage = new EventEmitter<boolean>();  // EventEmitter erstellen
+  @Output() openFirstPage = new EventEmitter<boolean>();
   
   buttonEnabled: boolean = false;
   selectedFile: File | null = null;
@@ -82,6 +85,12 @@ export class ChooseAvatarComponent {
     } catch (error) {
       console.error('Fehler beim Hochladen der Datei:', error);
     }
+  }
+
+  getBack() {
+    this.openFirstPage.emit(true);
+    this.closeAvatarPage.emit(false);
+    console.log('check');
   }
 
   onSubmit(ngForm: NgForm) {

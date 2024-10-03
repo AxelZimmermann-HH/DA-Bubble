@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ViewChild, ElementRef, Input, Output, EventEmitter } from '@angular/core';
+import { Component, ViewChild, ElementRef, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { collection, addDoc, updateDoc, Firestore, onSnapshot, doc, getDoc, setDoc } from '@angular/fire/firestore';
 import { User } from '../../../models/user.class';
@@ -13,12 +13,19 @@ import { UserService } from '../../../services/user.service';
   templateUrl: './firstpage.component.html',
   styleUrl: './firstpage.component.scss'
 })
-export class FirstpageComponent {
+export class FirstpageComponent implements OnInit {
+  @Input() user: User = new User();  // Standardwert für user, falls keiner übergeben wird
+  @Output() switchToSignin = new EventEmitter<void>();
   @Output() closeFirstPage = new EventEmitter<boolean>();  // EventEmitter erstellen
   @Output() openAvatarPage = new EventEmitter<boolean>();
   @Output() userCreated = new EventEmitter<User>();  // Neuer Emitter für den erstellten Benutzer
-
-  user = new User();
+  
+  ngOnInit(): void {
+    if (!this.user) {
+      this.user = new User();  // Falls der User noch nicht gesetzt ist, initialisiere ihn
+    }
+  }
+  // user = new User();
   validName: boolean = true;
   validMail: boolean = true;
   checked: boolean = false;
@@ -74,34 +81,54 @@ export class FirstpageComponent {
   async onSubmit(ngForm: NgForm) {
     if (this.buttonEnabled) {
       try {
-        // Die User-Daten aus dem Formular setzen
-        const newUser = new User({
-          name: this.user.name,
-          mail: this.user.mail,
-          password: this.user.password,
-        });
-
-        // Den neuen User in Firestore anlegen
-        const userCollection = collection(this.firestore, 'users');
-        const docRef = await addDoc(userCollection, newUser.toJson());
-
-        newUser.userId = docRef.id;
-
-        // userId auch im Firestore-Dokument aktualisieren
-        const userDocRef = doc(this.firestore, `users/${docRef.id}`);
-        await updateDoc(userDocRef, { userId: docRef.id });
-
-        // Erfolgsmeldung und Ausgabe des erstellten Users
-        console.log('User created with ID: ', docRef.id);
-        console.log('Created User: ', newUser);
-        this.closeFirstPage.emit(false);  // Setzt firstPage auf false in der übergeordneten Komponente
-        this.userCreated.emit(newUser);  // Benutzer übergeben
-        this.openAvatarPage.emit(true);
-
+        if (this.user.userId) {
+          await this.updateExistingUser();
+        } else {
+          await this.addNewUser();
+        }
+        this.handleSuccess();
       } catch (error) {
-        console.error('Error adding document: ', error);
+        console.error('Error saving document: ', error);
       }
     }
+  }
+  
+  async updateExistingUser() {
+    const userDocRef = doc(this.firestore, `users/${this.user.userId}`);
+    await updateDoc(userDocRef, {
+      name: this.user.name,
+      mail: this.user.mail,
+      password: this.user.password
+    });
+    console.log('User updated with ID: ', this.user.userId);
+  }
+  
+  async addNewUser() {
+    const newUser = new User({
+      name: this.user.name,
+      mail: this.user.mail,
+      password: this.user.password,
+    });
+  
+    const userCollection = collection(this.firestore, 'users');
+    const docRef = await addDoc(userCollection, newUser.toJson());
+    newUser.userId = docRef.id;
+  
+    const userDocRef = doc(this.firestore, `users/${docRef.id}`);
+    await updateDoc(userDocRef, { userId: docRef.id });
+  
+    console.log('User created with ID: ', docRef.id);
+    this.user = newUser;
+  }
+  
+  handleSuccess() {
+    this.closeFirstPage.emit(false);  // Setzt firstPage auf false in der übergeordneten Komponente
+    this.userCreated.emit(this.user);  // Benutzer übergeben
+    this.openAvatarPage.emit(true);  // Leitet zur Avatar-Seite weiter
+  }
+
+  getBack() {
+    this.switchToSignin.emit();
   }
 
 }
