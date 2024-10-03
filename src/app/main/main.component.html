@@ -1,9 +1,11 @@
 <body>
+
   <app-header></app-header>
+  
   <div class="d-flex">
     <app-menu (channelSelected)="onChannelSelected($event)" (chatSelected)="onChatSelected()"></app-menu>
     <app-channel *ngIf="showChannel" [selectedChannelId]="selectedChannelId"></app-channel>
-    <app-chat *ngIf="showChat"></app-chat>
+    <app-chat *ngIf="showChat" class="chat-container"></app-chat>
   </div>
   
 </body>

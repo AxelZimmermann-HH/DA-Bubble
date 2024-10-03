@@ -40,8 +40,8 @@ export class MenuComponent {
   showUser: boolean = true;
   openChatWithID:string = '';
 
-  myUserId = 'KwLFMSJZDdCn10znYEQ2';
-  
+  currentUserId:string = '';
+  currentUser:any;
 
   @Output() channelSelected = new EventEmitter<any>();
   @Output() chatSelected = new EventEmitter<void>();
@@ -50,9 +50,16 @@ export class MenuComponent {
   async ngOnInit(){
     await this.getAllChannels('channels');
     await this.getAllUsers('users');
-   
     this.subscribeToSearch();
-    
+
+    // Benutzer abonnieren und in currentUser speichern
+    this.userService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+      if (user) {
+        //console.log('Angemeldeter Benutzer:', user);
+        this.currentUserId = user.userId;
+      }
+    });
   }
 
   subscribeToSearch() {
@@ -79,6 +86,8 @@ export class MenuComponent {
     this.filteredUsers = this.userData;
   }
 
+
+  //Channel-Abruf
   async getAllChannels(channels: string) {
     try {
       const channelsCollectionRef = collection(this.firestore, channels);
@@ -88,6 +97,8 @@ export class MenuComponent {
     }
   }
   
+
+  //Channel-Daten abrufen und speichern
   getChannelDataOnSnapshot(channelsCollectionRef: any) {
     onSnapshot(
       channelsCollectionRef,
@@ -119,6 +130,8 @@ export class MenuComponent {
     );
   }
 
+
+  //User-Abfruf
   async getAllUsers(users: string) {
     try {
       const usersCollectionRef = collection(this.firestore, users);
@@ -128,6 +141,8 @@ export class MenuComponent {
     }
   }
   
+
+  //User-Daten abspeichern
   getUsersDataOnSnapshot(usersCollectionRef: any) {
     onSnapshot(
       usersCollectionRef,
@@ -154,6 +169,8 @@ export class MenuComponent {
     );
   }
 
+
+  //öffnet und schließt die Untermenüs im Menü-Panel
   openCloseDiv(div: string){
     if(div == 'showChannel'){
       if(this.showChannel == true){
@@ -171,6 +188,8 @@ export class MenuComponent {
     }
   }
 
+
+  //öffnet und schließt das Menü-Panel
   openCloseMenu(){
     if(this.showMenu){
       this.showMenu = false;
@@ -181,24 +200,30 @@ export class MenuComponent {
       this.openCloseButtonText = 'Workspace-Menü schließen';
       this.openCloseIcon = 'Hide-navigation.png'
     }
-  }
+  };
 
+
+  //tauscht das Icon beim hovern
   setHoverIcon(){
     if(this.showMenu){
       this.openCloseIcon ='Frame 18.png'
     }else{
       this.openCloseIcon ='Frame 41.png'
     }
-  }
+  };
 
+
+  //tauscht das Icon beim hovern
   setUnhoverIcon(){
     if(this.showMenu){
       this.openCloseIcon ='Hide-navigation.png'
     }else{
       this.openCloseIcon ='Hide-navigation-1.png'
     }
-  }
+  };
 
+
+  //öffnet den Channel hinzufügen Dialog
   openDialogAddChannel() {
     this.dialog.open(DialogAddChannelComponent)
   }
@@ -207,7 +232,7 @@ export class MenuComponent {
   //edit
   onChannelClick(channel: any) {
     this.channelSelected.emit(channel);  // Leitet das ausgewählte Kanal-Objekt weiter
-    console.log('channel name', channel.channelName )
+    //console.log('channel name', channel.channelName )
   }
  
 
@@ -221,54 +246,51 @@ export class MenuComponent {
   }
 
   
-  async openDirectMessage(myUserId:string, userId:string){
+  //öffnet den PvP Chat
+  async openDirectMessage(currentUserId:string, userId:string){
     this.chatService.chatIsEmpty = true;
     this.chatService.chatMessages = []
-    const chatId = await this.createChatID(myUserId, userId);
+    const chatId = await this.createChatID(currentUserId, userId);
     const checkIfChatExists = query(collection(this.firestore, "chats"), where(documentId(), "==", chatId));
     const querySnapshot = await getDocs(checkIfChatExists);
     
     if (querySnapshot.empty) {
 
-      // FUNKTION ZUM ANLEGEN DES NEUEN CHATS
-      await this.createNewChat(chatId, myUserId, userId);
+      //legt neuen Chat an, wenn kein Chat existiert
+      await this.createNewChat(chatId, currentUserId, userId);
       console.log('chat nicht gefunden');
 
     } else {
 
-      // FUNKTION ZUM ÖFFNEN DES VORHANDENEN CHATS
+      //öffnet den vorhanden Chat
       querySnapshot.forEach((doc) => {
         this.chatService.getChatData(chatId);
         console.log('chat gefunden:', doc.id, '=>', doc.data());
       });
 
     }
-
-    this.chatService.getMyUserData(myUserId);
     this.chatService.getUserData(userId);
   };
 
 
+  //erstellt eine Chat-ID aus den Nutzer ID's
   async createChatID(myUserId:string, userId:string){
     return [myUserId, userId].sort().join('_');
   };
 
 
+  //erstellt einen neuen Chat
   async createNewChat(chatId: string, myUserId: string, userId:string){
 
     const collectionRef = "chats"; 
     try {
       const docRef = doc(this.firestore, collectionRef, chatId);
-
       await setDoc(docRef, {
         users: [myUserId, userId]
       });
-
-      //console.log("Chat erfolgreich hinzugefügt mit der ID:", chatId);
+      console.log("Chat erfolgreich hinzugefügt mit der ID:", chatId);
     } catch (error) {
       console.error("Fehler beim Hinzufügen des Chats: ", error);
     };
   };
-  
-
-  }
+};

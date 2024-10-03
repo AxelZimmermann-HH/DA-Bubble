@@ -45,7 +45,7 @@ export class ThreadComponent {
 
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
-        console.log("Benutzer-ID:", this.userId);
+        //console.log("Benutzer-ID:", this.userId);
       });
   }
 

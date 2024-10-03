@@ -1,11 +1,12 @@
 .channel-container {
     background-color: #FFFFFF;
-    width: 989px;
+    //width: 989px;
     border-radius: 30px;
     height: 940px;
     display: flex;
     flex-direction: column;
     position: relative;
+    margin-right: 16px
 }
 
 .channel-header {
@@ -326,7 +327,7 @@
     position: absolute;
     bottom: 20px;
     height: 145px;
-    width: 919px;
+    width: 90%;
     border-radius: 20px;
     padding: 20px;
     gap: 8px;

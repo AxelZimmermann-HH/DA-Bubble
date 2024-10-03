@@ -57,7 +57,7 @@ export class ChannelComponent {
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
     });
-  console.log('channels', this.selectedChannel);
+  //console.log('channels', this.selectedChannel);
   
   }
 

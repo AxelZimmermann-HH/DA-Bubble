@@ -37,7 +37,7 @@ export class SigninComponent {
         this.userData.push(user);
       });
       this.userCount = this.userData.length;
-      console.log('current users', this.userData);
+      //console.log('current users', this.userData);
     });
   }
 
@@ -76,7 +76,7 @@ export class SigninComponent {
     await updateDoc(userDocRef, { online: true });
     this.userService.setUser(user);
     this.router.navigate(['/login',user.userId]);
-    console.log('let user id',user.userId);
+    //console.log('let user id',user.userId);
   }
 
   falsePassword() {

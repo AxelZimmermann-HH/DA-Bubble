@@ -1,16 +1,16 @@
 export class directMessage {
 
     text!: string;
-    senderID!: string;
-    receiverID!: string;
+    senderId!: string;
+    receiverId!: string;
     dayDateMonth!: string;
     time!: string;
     timestamp!: string;
 
     constructor(obj?: any) {
         this.text = obj ? obj.text : '';
-        this.senderID = obj ? obj.senderID : '';
-        this.receiverID = obj ? obj.receiverID : '';
+        this.senderId = obj ? obj.senderID : '';
+        this.receiverId = obj ? obj.receiverID : '';
         this.dayDateMonth = obj ? obj.dayDateMonth : '';
         this.time = obj ? obj.time : '';
         this.timestamp = obj ? obj.timestamp : '';
@@ -19,8 +19,8 @@ export class directMessage {
     public toJson(){
         return{
             text:this.text,
-            senderID:this.senderID,
-            receiverID:this.receiverID,
+            senderID:this.senderId,
+            receiverID:this.receiverId,
             dayDateMonth:this.dayDateMonth,
             time:this.time,
             timestamp:this.timestamp,

@@ -2,103 +2,101 @@
     <div class="channel-header">
         <div class="user" (click)="openUserProfil(user)">
             <div class="avatar-container">
-                <img class="user-avatar" src="\assets\avatars\avatar_{{user.avatar}}.png" alt="">
+                <img class="user-avatar" [src]="'/assets/avatars/avatar_' + user.avatar + '.png'" alt="">
                 <div [ngClass]="{'offline-point': !user.online}" class="online-point"></div>
             </div>
-            <span class="header1">{{user.name}}</span>
+            <span class="header1">{{ user.name }}</span>
+        </div>
+    </div>
+    <div  class="channel-content" #chatContainer>
+
+        <!-- Gruppierte Nachrichten anzeigen -->
+        <div *ngFor="let group of chatService.groupedMessages | keyvalue; let i = index">
+            <div style="position: relative;">
+                <hr class="separator-line">
+                <button class="day-time-btn">{{ isToday(group.value[0].timestamp) ? 'Heute' : group.value[0].dayDateMonth }}</button>
+            </div>
+
+            <div *ngIf="!chatService.chatIsEmpty" >
+                <div *ngFor="let message of group.value; let j = index">
+                    <!-- Nachricht des anderen Benutzers -->
+                    <div *ngIf="message.senderId == user.userId">
+                        <table class="chat-table">
+                            <tr>
+                                <td>
+                                    <div class="message-main">
+                                        <img [src]="'/assets/avatars/avatar_' + user.avatar + '.png'" alt="" class="avatar">
+                                        <div class="message-content">
+                                            <div class="name-time"> {{ user.name }}
+                                                <p class="time">{{ message.time }} Uhr</p>
+                                            </div>
+                                            <div class="speech-bubble">{{ message.text }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="reaction-hover">
+                                        <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
+                                        <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png" alt="">
+                                        <img src="./assets/icons/add_reaction.png" alt="">
+                                        <img src="./assets/icons/comment.png" alt="">
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Nachricht des aktuellen Benutzers -->
+                    <div *ngIf="message.senderId == currentUser.userId">
+                        <table class="chat-table-sender">
+                            <tr>
+                                <td>
+                                    <div class="reaction-hover">
+                                        <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
+                                        <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png" alt="">
+                                        <img src="./assets/icons/add_reaction.png" alt="">
+                                        <img src="./assets/icons/comment.png" alt="">
+                                    </div>
+                                    <div class="message-main">
+                                        <div class="message-content">
+                                            <div class="name-time">
+                                                <p class="time">{{ message.time }} Uhr</p> {{ currentUser.name }}
+                                            </div>
+                                            <div class="speech-bubble">{{ message.text }}</div>
+                                        </div>
+                                        <img [src]="'/assets/avatars/avatar_' + currentUser.avatar + '.png'" alt="" class="avatar">
+                                    </div>
+
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="channel-content" *ngIf="!this.chatService.chatIsEmpty" #chatContainer>
-        @for (message of this.chatService.chatMessages; track $index) {
-            @if(message.senderId == user.userId){
-
-                <div style="position: relative;">
-                    <hr class="separator-line"><button class="day-time-btn">{{message.dayDateMonth}}</button>
-                </div>
-
-                <table class="chat-table">
-                    <tr>
-                        <td>
-                            <div class="message-main">
-                                <img [src]="'./assets/avatars/avatar_'+ user.avatar + '.png'" alt=""
-                                    class="avatar">
-                                <div class="message-content">
-                                    <div class="name-time"> {{user.name}} <p class="time">{{message.time}} Uhr</p>
-                                    </div>
-                                    <div class="speech-bubble"> {{message.text}} </div>
-                                </div>
-                            </div>
-                            <div class="reaction-hover">
-                                <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
-                                <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png" alt="">
-                                <img src="./assets/icons/add_reaction.png" alt="">
-                                <img src="./assets/icons/comment.png" alt="">
-                            </div>
-                        </td> 
-                    </tr>
-                </table>
-            }
-            @if(message.senderId == myUser.userId){
-                <div style="position: relative;">
-                    <hr class="separator-line"><button class="day-time-btn">{{message.dayDateMonth}}</button>
-                </div>
-
-                <table class="chat-table-sender">
-                    <tr>
-                        <td>
-                            <div>
-                                <div class="reaction-hover">
-                                    <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
-                                    <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png" alt="">
-                                    <img src="./assets/icons/add_reaction.png" alt="">
-                                    <img src="./assets/icons/comment.png" alt="">
-                                </div>
-                            </div>
-                            <div class="message-main">
-                                
-                                <div class="message-content">
-                                    <div class="name-time"><p class="time">{{message.time}} Uhr</p> {{myUser.name}} Absender
-                                    </div>
-                                    <div class="speech-bubble"> {{message.text}} </div>
-                                </div>
-                                <img [src]="'./assets/avatars/avatar_'+ myUser.avatar + '.png'" alt=""
-                                    class="avatar">
-                            </div>
-
-
-                        </td> 
-                    </tr>
-                </table>
-            }
-        }
-    </div>
-
-    <div class="new-chat-info-container" *ngIf="this.chatService.chatIsEmpty">
+    <!-- Wenn keine Nachrichten vorhanden sind -->
+    <div class="new-chat-info-container" *ngIf="chatService.chatIsEmpty">
         <div class="new-chat-user-avatar-container">
-            <img class="new-chat-user-avatar" src="\assets\avatars\avatar_{{user.avatar}}.png" alt="">
-            <span class="header1">{{user.name}}</span>
+            <img class="new-chat-user-avatar" [src]="'/assets/avatars/avatar_' + user.avatar + '.png'" alt="">
+            <span class="header1">{{ user.name }}</span>
         </div>
-    
-        <span class="info header6">Diese Unterhaltung findet nur zwischen <span class="name-colored">&#64;{{user.name}}</span> und dir statt.</span>
+        <span class="info header6">Diese Unterhaltung findet nur zwischen <span class="name-colored">&#64;{{ user.name }}</span> und dir statt.</span>
     </div>
 
+    <!-- Nachrichteneingabe -->
     <div class="custom-input">
-        <textarea placeholder="Nachricht an {{user.name}}" class="text-area" [formControl]="directMessage"></textarea>
+        <textarea placeholder="Nachricht an {{ user.name }}" class="text-area" [formControl]="directMessage"></textarea>
         <div class="add-reaction">
             <div class="reactions">
                 <img src="./assets/icons/add-1.png" alt="" class="add-icon">
-                <div style="height: 50px;width: 1px;background-color:  rgba(104, 104, 104, 1);;"></div>
+                <div style="height: 50px; width: 1px; background-color: rgba(104, 104, 104, 1);"></div>
                 <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji">
                 <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail">
             </div>
 
             <button (click)="sendDirectMessage()" [disabled]="directMessage.invalid">
-                <img src="./assets/icons/Send icon.png" >
+                <img src="./assets/icons/Send icon.png">
             </button>
-            
         </div>
     </div>
 </div>
-
-
