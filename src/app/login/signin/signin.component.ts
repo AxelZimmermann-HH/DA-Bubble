@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ViewChild, ElementRef, Input, Output, EventEmitter } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-import { collection, Firestore, onSnapshot, doc, getDoc, setDoc } from '@angular/fire/firestore';
+import { collection, Firestore, onSnapshot, doc, updateDoc, getDoc, setDoc } from '@angular/fire/firestore';
 import { User } from '../../models/user.class';
 import { Router } from '@angular/router'; 
 import { UserService } from '../../services/user.service';  
@@ -69,14 +69,14 @@ export class SigninComponent {
     this.validPassword = true;
   }
 
-  handleSuccess(user: User, enteredMail: string) {
+  async handleSuccess(user: User, enteredMail: string) {
     this.validMail = true;
     this.validPassword = true;
-  
+    const userDocRef = doc(this.firestore, `users/${user.userId}`);
+    await updateDoc(userDocRef, { online: true });
     this.userService.setUser(user);
     this.router.navigate(['/login',user.userId]);
     console.log('let user id',user.userId);
-    
   }
 
   falsePassword() {
