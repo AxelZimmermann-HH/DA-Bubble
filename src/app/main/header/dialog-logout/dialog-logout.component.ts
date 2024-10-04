@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { collection, Firestore, onSnapshot, doc, updateDoc, getDoc, setDoc } from '@angular/fire/firestore';
+import { collection, Firestore, onSnapshot, doc, updateDoc, deleteDoc, getDoc, setDoc } from '@angular/fire/firestore';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Channel } from '../../../models/channel.class';
 import { User } from '../../../models/user.class';
@@ -49,10 +49,19 @@ export class DialogLogoutComponent implements OnInit {
   async logOut() {
     if (this.currentUser) {
       const userDocRef = doc(this.firestore, `users/${this.currentUser.userId}`);
-      await updateDoc(userDocRef, { online: false });
-      this.dialogRef.close();
+      // Prüfen, ob der Benutzername "Gast" ist
+    if (this.currentUser.name === 'Gast') {
+      // Benutzer löschen, wenn es sich um einen Gast handelt
+      await deleteDoc(userDocRef);
+      console.log('Gast-Nutzer wurde gelöscht');
     } else {
-      console.error('Kein Benutzer zum Ausloggen gefunden');
+      // Nur den Online-Status auf false setzen, wenn es kein Gast ist
+      await updateDoc(userDocRef, { online: false });
     }
+    
+    this.dialogRef.close();
+  } else {
+    console.error('Kein Benutzer zum Ausloggen gefunden');
+  }
   }
 }
