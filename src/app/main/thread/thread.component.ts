@@ -45,8 +45,8 @@ export class ThreadComponent {
 
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
-        //console.log("Benutzer-ID:", this.userId);
       });
+
   }
 
   getAllUsers() {
@@ -78,7 +78,7 @@ export class ThreadComponent {
       snapshot.forEach((doc) => {
         let message = new Message({ ...doc.data(), id: doc.id });
         this.allMessages.push(message);
-        this.getAllAnswersForMessage(message.id);
+        // this.getAllAnswersForMessage();
       });
     });
   }
@@ -92,16 +92,16 @@ export class ThreadComponent {
     });
   });}
 
-  getAllAnswersForMessage(messageId: string) {
-    const answersCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}/answers`);
-    const readAnswers = onSnapshot(answersCollection, (snapshot) => {
-      this.allAnswers = []
-      snapshot.forEach((doc) => {
-        let answer = new Answer({ ...doc.data() });
-        this.allAnswers.push(answer);
-      });
-    });
-  }
+  // getAllAnswersForMessage() {
+  //   const answersCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}/answers`);
+  //   const readAnswers = onSnapshot(answersCollection, (snapshot) => {
+  //     this.allAnswers = []
+  //     snapshot.forEach((doc) => {
+  //       let answer = new Answer({ ...doc.data() });
+  //       this.allAnswers.push(answer);
+  //     });
+  //   });
+  // }
 
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);

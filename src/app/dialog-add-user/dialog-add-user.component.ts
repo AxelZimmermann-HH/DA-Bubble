@@ -8,6 +8,7 @@ import { FormsModule } from '@angular/forms';
 import { MatFormField } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { UserService } from '../services/user.service';
 
 
 @Component({
@@ -29,7 +30,7 @@ export class DialogAddUserComponent {
   selectedUser: any;
   dropdownOpen = false;
 
-  constructor(public firestore: Firestore, public dialogRef: MatDialogRef<DialogAddUserComponent>, @Inject(MAT_DIALOG_DATA) public data: any) {
+  constructor(public firestore: Firestore, public dialogRef: MatDialogRef<DialogAddUserComponent>,public userService: UserService, @Inject(MAT_DIALOG_DATA) public data: any) {
     this.channel = new Channel(data.channel); // Initialisiere das Channel-Objekt
     console.log('Channel:', this.channel);
     this.getAllUsers();

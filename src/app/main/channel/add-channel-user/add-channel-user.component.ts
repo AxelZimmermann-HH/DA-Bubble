@@ -5,6 +5,7 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angu
 import { User } from '../../../models/user.class';
 import { DialogUserProfilComponent } from '../../../dialog-user-profil/dialog-user-profil.component';
 import { Channel } from '../../../models/channel.class';
+import { UserService } from '../../../services/user.service';
 
 @Component({
   selector: 'app-add-channel-user',
@@ -20,7 +21,7 @@ export class AddChannelUserComponent {
 
   channelUsers = [];
 
-  constructor(public firestore: Firestore, public dialogRef: MatDialogRef<AddChannelUserComponent>, public dialog: MatDialog, @Inject(MAT_DIALOG_DATA) public data: any) {
+  constructor(public firestore: Firestore, public dialogRef: MatDialogRef<AddChannelUserComponent>,public userService: UserService, public dialog: MatDialog, @Inject(MAT_DIALOG_DATA) public data: any) {
     this.getAllUsers();
     this.channel = new Channel(data.channel);
     console.log('hallo', this.channel.members);

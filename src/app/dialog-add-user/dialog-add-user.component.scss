@@ -43,6 +43,18 @@
     }
 }
 
+.usersList {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    img {
+        width: 40px;
+        height: 40px;
+        border-radius: 30px;
+    }
+}
+
 .createBtn {
     width: 204px;
     height: 49px;
@@ -142,7 +154,7 @@
     box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.2);
 }
 
-.selected-user{
+.selected-user {
     background: rgba(236, 238, 254, 1);
     width: auto;
     height: 40px;
@@ -151,12 +163,14 @@
     gap: 15px;
     display: flex;
     align-items: center;
-    position:absolute;
+    position: absolute;
     margin: 0 6px;
- img{
-    cursor: pointer;
-    &:hover{
-        content: url('./../../assets/icons/close-1.png');
+
+    img {
+        cursor: pointer;
+
+        &:hover {
+            content: url('./../../assets/icons/close-1.png');
+        }
     }
- }
 }

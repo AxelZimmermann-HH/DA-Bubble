@@ -60,7 +60,7 @@
     </div>
 
     <div class="custom-input">
-        <textarea placeholder="Nachricht an #{{selectedChannel.channelName}}" class="text-area"></textarea>
+        <textarea placeholder="Nachricht an #{{selectedChannel.channelName}}" class="text-area" [(ngModel)]="newMessageText"></textarea>
         <div class="add-reaction">
             <div class="reactions">
                 <img src="./assets/icons/add-1.png" alt="" class="add-icon">
