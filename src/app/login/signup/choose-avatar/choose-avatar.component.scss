@@ -98,6 +98,10 @@
         width: 64px;
         border-radius: 50%;
         cursor: pointer;
+        box-sizing: border-box;
+        &:hover {
+            border: 4px solid lightgray;
+        }
     }
 }
 
@@ -147,6 +151,10 @@
     border-radius: 25px;
     cursor: pointer;
     text-align: center;
+    &:hover {
+        background-color: #444DF2;
+        color: white;
+    }
 }
 
 input[type="file"] {
@@ -174,7 +182,16 @@ input[type="file"] {
     font-family: 'Nunito';
     font-weight: 700;
     font-size: 18px;
+    cursor: not-allowed;
+}
+
+.next-button.active-button {
+    background-color: #444df2;
     cursor: pointer;
+}
+
+.next-button.active-button:hover {
+    background-color: #797EF3;
 }
 
 .guest {

@@ -9,3 +9,20 @@ app-signin, app-signup {
     align-items: center;
 }
 
+.login-footer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding-top: 50px;
+    > a {
+        font-size: 18px;
+        color: #797EF3;
+        text-decoration: none;
+        cursor: pointer;
+        &:hover {
+            font-weight: 700;
+        }
+    }
+}
+

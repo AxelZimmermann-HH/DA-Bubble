@@ -36,7 +36,7 @@
             <div class="login-buttons">
                 <button  class="next-button" 
                 [disabled]="!buttonEnabled" 
-                [ngStyle]="{'background-color': buttonEnabled ? '#444df2' : '#686868'}">Weiter</button>
+                [ngClass]="{'active-button': buttonEnabled}">Weiter</button>
             </div>
         </div>
 
