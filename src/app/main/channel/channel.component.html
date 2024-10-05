@@ -26,11 +26,13 @@
         <table class="chat-table">
             <tr>
                 <td style="height: 50px;"></td>
-                <div style="position: relative;">
-                    <hr class="separator-line"><button class="day-time-btn">Dienstag, 14 Januar</button>
-                </div>
             </tr>
-            <tr *ngFor="let message of allMessages">
+            <tr *ngFor="let dateGroup of groupedMessages | keyvalue">
+                <div style="position: relative;">
+                    <hr class="separator-line"><button class="day-time-btn">{{ dateGroup.key }}</button>
+                </div>
+                <ng-container *ngFor="let message of dateGroup.value">
+                    
                 <td [ngClass]="{'current-user':isCurrentUser(message.user)}">
                     <div class="message-main" [ngClass]="{'current-user':isCurrentUser(message.user)}">
                         <img [src]="'./assets/avatars/avatar_'+ getAvatarForUser(message.user) + '.png'" alt=""
@@ -48,13 +50,12 @@
                         <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
                         <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png" alt="">
                         <img src="./assets/icons/add_reaction.png" alt="">
-                        <img src="./assets/icons/comment.png" alt="">
+                        <img src="./assets/icons/comment.png" alt="" (click)="openThread(message, allAnswers)">
                         <img src="./assets/icons/Answer.png" alt="" *ngIf="isCurrentUser(message.user)">
                     </div>
                 </td>
-                <div style="position: relative;">
-                    <hr class="separator-line"><button class="day-time-btn">Dienstag, 14 Januar</button>
-                </div>
+            
+            </ng-container>
             </tr>
         </table>
     </div>

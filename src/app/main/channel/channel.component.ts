@@ -35,9 +35,11 @@ export class ChannelComponent {
   channel = new Channel();
   channelData: any = [];
 
-  message = new Message;
+  message = new Message();
   allMessages: any = [];
   filteredMessages: any = [];
+  groupedMessages: { [key: string]: Message[] } = {};
+
 
   answer = new Answer();
   allAnswers: any = [];
@@ -147,19 +149,57 @@ export class ChannelComponent {
     });
   }
 
-
-
   getAllMessages() {
     const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
-    const readMessages = onSnapshot(messagesCollection, (snapshot) => {
-      this.allMessages = [];
+    onSnapshot(messagesCollection, (snapshot) => {
+      let messages: Message[] = [];
       snapshot.forEach((doc) => {
         let message = new Message({ ...doc.data(), id: doc.id });
-        this.allMessages.push(message);
-       
+        messages.push(message);
       });
+
+      // Sort messages by timestamp
+      this.allMessages = messages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+      // Group messages by fullDate
+      this.groupedMessages = this.groupMessagesByDate(this.allMessages);
     });
   }
+
+  // Group messages by fullDate
+  groupMessagesByDate(messages: Message[]): { [key: string]: Message[] } {
+    const groupedMessages: { [key: string]: Message[] } = {};
+  
+    // Group messages by fullDate
+    messages.forEach(message => {
+      if (!groupedMessages[message.fullDate]) {
+        groupedMessages[message.fullDate] = [];
+      }
+      groupedMessages[message.fullDate].push(message);
+    });
+  
+    // Sort the groups by date, making sure today's messages come last
+    const sortedGroupKeys = Object.keys(groupedMessages).sort((a, b) => {
+      const today = new Date().toDateString();
+      const dateA = a === 'Heute' ? today : a;
+      const dateB = b === 'Heute' ? today : b;
+  
+      // Parse the dates for comparison
+      const parsedDateA = new Date(dateA);
+      const parsedDateB = new Date(dateB);
+  
+      return parsedDateA.getTime() - parsedDateB.getTime();
+    });
+  
+    // Return the sorted groups
+    const sortedGroupedMessages: { [key: string]: Message[] } = {};
+    sortedGroupKeys.forEach(key => {
+      sortedGroupedMessages[key] = groupedMessages[key];
+    });
+  
+    return sortedGroupedMessages;
+  }
+  
 
   // getAllAnswersForMessage(messageId: string) {
   //   const answersCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}/answers`);
