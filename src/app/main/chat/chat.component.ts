@@ -112,6 +112,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
 
   // öffnet das Bearbeitungsfeld
   editDirectMessage(message:any){
+ 
     this.editingMessageId = message.messageId;
     this.editedMessage.setValue(message.text)
   }

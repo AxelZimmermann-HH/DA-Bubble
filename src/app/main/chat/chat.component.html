@@ -49,14 +49,12 @@
 
                     <!-- Nachricht des aktuellen Benutzers -->
                     <div *ngIf="message.senderId == currentUser.userId">
-                        <table class="chat-table-sender">
+                        <table class="chat-table-sender" >
                             <tr>
                                 <td>
-                                    <div class="reaction-hover">      
+                                    <div class="reaction-hover" *ngIf="editingMessageId !== message.messageId">      
                                             <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
                                             <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png" alt="">
-                                            <img src="./assets/icons/add_reaction.png" alt="">
-                                            <img src="./assets/icons/comment.png" alt="">
                                             <img src="./assets/icons/more_vert.png" alt="" (click)="editDirectMessage(message)">    
                                     </div>
 
@@ -69,20 +67,26 @@
                                         </div>
 
                                
-                                            <div *ngIf="editingMessageId === message.messageId">
-                                                <textarea class="text-area" [formControl]="editedMessage"></textarea>
-                                                <div class="add-reaction">
-                                                    <div class="reactions">
-                                                        <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji">
-                                                    </div>
+                                            <div *ngIf="editingMessageId === message.messageId" class="edit-message-container">
                                         
-                                                    <button (click)="cancelEditing()">
-                                                        Abbrechen
-                                                    </button>
-                                                    <button (click)="setEditedDirectMessage(message)"  [disabled]="editedMessage.invalid">
-                                                        Speichern
-                                                    </button>
-                                                </div>
+                                                    <textarea class="edit-textarea" [formControl]="editedMessage"></textarea>
+                                                    <div class="bottom-container">
+                                                        <div class="reactions">
+                                                            <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji">
+                                                        </div>
+                                            
+                                                        <div class="button-container">
+                                                            <button class="cancel-button" (click)="cancelEditing()">
+                                                                Abbrechen
+                                                            </button>
+                                                            <button class="save-button" (click)="setEditedDirectMessage(message)"  [disabled]="editedMessage.invalid">
+                                                                Speichern
+                                                            </button>
+                                                        </div>
+    
+                                                    </div>
+                                             
+                                                
                                             </div>
                                 
 
