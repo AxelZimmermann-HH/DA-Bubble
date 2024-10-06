@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { addDoc, collection, doc, documentId, Firestore, getDocs, onSnapshot, query, where } from '@angular/fire/firestore';
+import { addDoc, collection, doc, documentId, Firestore, getDocs, onSnapshot, query, setDoc, where } from '@angular/fire/firestore';
 import { BehaviorSubject } from 'rxjs';
 import { directMessage } from '../models/directMessage.class';
 
@@ -106,7 +106,6 @@ export class ChatService {
     newDirectMessage.dayDateMonth = await this.getFormattedDate();
     const dmData = newDirectMessage.toJson();
 
-    // Nachricht speichern
     this.saveNewDirectMessage(dmData);
   };
 
@@ -119,6 +118,35 @@ export class ChatService {
       console.error('Fehler beim Erstellen der Nachricht:', error);
     }
   };
+
+
+  // Setze Daten für den editierten Chat
+  async setEditedChatData(editedDM:string, message:any) {
+    const newDirectMessage = new directMessage();
+    newDirectMessage.chatId = message.chatId;
+    newDirectMessage.messageId = message.messageId;
+    newDirectMessage.senderId = message.senderId;
+    newDirectMessage.receiverId = message.receiverId;
+    newDirectMessage.text = editedDM;
+    newDirectMessage.timestamp = await this.getTimeStamp();
+    newDirectMessage.time = newDirectMessage.timestamp.split('T')[1].slice(0, 5);
+    newDirectMessage.dayDateMonth = await this.getFormattedDate();
+    const dmData = newDirectMessage.toJson();
+
+    this.saveEditedMessage(dmData);
+  };
+
+
+    // Bearbeitete Nachricht speichern
+    async saveEditedMessage(dmData:any) {
+ debugger
+      try {
+        await setDoc(doc(this.firestore, 'chats', dmData.chatId, 'messages', dmData.messageId), dmData
+        );
+      } catch (error: any) {
+        console.error('Fehler beim Erstellen der Nachricht:', error);
+      }
+    };
 
 
   // Timestamp generieren

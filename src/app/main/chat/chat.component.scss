@@ -110,16 +110,15 @@
 
     .chat-table {
         width: 100%;
-        padding: 20px;
 
         td {
             display: flex;
             align-items: center;
+            justify-content: flex-start;
             gap: 16px;
             width: 100%;
             &:hover{
-                width: calc(100% + 12%);
-                margin-left: -30px;
+                justify-content: space-between;
                 background-color: rgb(236, 238, 254);
             }
         }
@@ -188,23 +187,31 @@
             border: 1px solid rgba(173, 176, 217, 1);
             position: relative;
             top: -80px;
-            right: -180px;
+            margin-right: 45px;
         }
 
         td:hover .reaction-hover {
             display: flex;
             align-items: center;
-            gap: 24px;
-            
-         img{
-            cursor: pointer;
-         }
+            gap: 8px;
+        
+            img{       
+                    border-radius: 30px;
+                    width: 20px;
+                    height: 20px;
+                    padding: 8px;
+
+                    &:hover{ 
+                        cursor: pointer;
+                        background: #ECEEFE;
+                    }
+            }
         }
     }
 
     .chat-table-sender {
         width: 100%;
-        padding: 20px;
+       
 
         td {
             display: flex;
@@ -212,10 +219,10 @@
             justify-content: flex-end;
             gap: 16px;
             width: 100%;
+            transition: background-color 0.5s ease-in-out;
             &:hover{
-                width: calc(100% + 12%);
-                margin-left: -30px;
                 background-color: rgb(236, 238, 254);
+                justify-content: space-between;
             }
         }
 
@@ -271,38 +278,45 @@
 
         .reaction-hover{
             display: none;
-            height: 46px;
+            align-items: center;
+            justify-content: center;
+            //gap: 5px;
             border-radius: 25px 25px 25px 0;
-            padding: 3px  20px;
+            padding: 3px 15px 3px 20px;
             background: rgba(255, 255, 255, 1);
             border: 1px solid rgba(173, 176, 217, 1);
             position: relative;
             top: -80px;
-            left: -180px;
+            margin-left: 45px;
         }
 
-        td:hover .reaction-hover {
+        :hover .reaction-hover {
             display: flex;
             align-items: center;
-            gap: 24px;
             
-         img{
-            cursor: pointer;
-         }
+        
+            img{       
+                    border-radius: 30px;
+                    width: 20px;
+                    height: 20px;
+                    padding: 10px;
+
+                    &:hover{ 
+                        cursor: pointer;
+                        background: #ECEEFE;
+                    }
+            }
         }
     }
 
     .separator-line {
-        width: 919px;
         height: 0;
-        border: 1px solid rgba(173, 176, 217, 1)
+        border: 1px solid rgba(173, 176, 217, 1);
+        margin: 20px;
     }
 
 
 }
-
-
-
 
 .day-time-btn {
     position: absolute;
@@ -355,6 +369,20 @@
             border: none; 
         }
     }
+
+    button {
+        border: unset;
+        background-color: unset;
+        img{
+            cursor: pointer;
+            
+            &:hover {
+                filter: contrast(0.5)
+            }
+        }
+    }
+    
+
 }
 
 .add-reaction {
@@ -397,4 +425,13 @@
     .add-mail:hover {
         content: url('./../../../assets/icons/alternate_email-2.png');
     }
+
+    .d-flex{
+        display: flex;
+    }
+
+    .d-none{
+        display: none !important;
+    }
+
 }

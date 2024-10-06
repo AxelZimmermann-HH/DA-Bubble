@@ -17,6 +17,8 @@ import { UserService } from '../../services/user.service';
 export class ChatComponent implements AfterViewInit, AfterViewChecked{
 
   directMessage = new FormControl('', [Validators.required, Validators.minLength(2)]);
+  editedMessage = new FormControl('', [Validators.required, Validators.minLength(2)]);
+  editingMessageId: string | null = null;
   currentUser: any;
   currentUserId: string = '';
   user = new User();
@@ -105,4 +107,27 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
            today.getMonth() === date.getMonth() &&
            today.getDate() === date.getDate();
   };
+
+  
+
+  // öffnet das Bearbeitungsfeld
+  editDirectMessage(message:any){
+    this.editingMessageId = message.messageId;
+    this.editedMessage.setValue(message.text)
+  }
+
+
+  // schlie0t das Bearbeitungsfeld, ohne Speichern
+  cancelEditing() {
+    this.editingMessageId = null;
+  }
+
+
+  // setzt die bearbeitete Nachricht 
+  async setEditedDirectMessage(message:any){
+    const editedDM = this.editedMessage.value!;
+    await this.chatService.setEditedChatData(editedDM, message);
+    this.editedMessage.setValue('');
+    this.editingMessageId = null;
+  }
 }

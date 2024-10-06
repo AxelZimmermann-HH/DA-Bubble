@@ -34,10 +34,13 @@
                                         </div>
                                     </div>
                                     <div class="reaction-hover">
-                                        <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
-                                        <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png" alt="">
-                                        <img src="./assets/icons/add_reaction.png" alt="">
-                                        <img src="./assets/icons/comment.png" alt="">
+                                        <div>
+                                            <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
+                                            <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png" alt="">
+                                            <img src="./assets/icons/add_reaction.png" alt="">
+                                            <img src="./assets/icons/comment.png" alt="">
+                                        </div>
+
                                     </div>
                                 </td>
                             </tr>
@@ -49,19 +52,40 @@
                         <table class="chat-table-sender">
                             <tr>
                                 <td>
-                                    <div class="reaction-hover">
-                                        <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
-                                        <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png" alt="">
-                                        <img src="./assets/icons/add_reaction.png" alt="">
-                                        <img src="./assets/icons/comment.png" alt="">
+                                    <div class="reaction-hover">      
+                                            <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
+                                            <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png" alt="">
+                                            <img src="./assets/icons/add_reaction.png" alt="">
+                                            <img src="./assets/icons/comment.png" alt="">
+                                            <img src="./assets/icons/more_vert.png" alt="" (click)="editDirectMessage(message)">    
                                     </div>
+
                                     <div class="message-main">
-                                        <div class="message-content">
+                                        <div class="message-content" *ngIf="editingMessageId !== message.messageId">
                                             <div class="name-time">
                                                 <p class="time">{{ message.time }} Uhr</p> {{ currentUser.name }}
                                             </div>
                                             <div class="speech-bubble">{{ message.text }}</div>
                                         </div>
+
+                               
+                                            <div *ngIf="editingMessageId === message.messageId">
+                                                <textarea class="text-area" [formControl]="editedMessage"></textarea>
+                                                <div class="add-reaction">
+                                                    <div class="reactions">
+                                                        <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji">
+                                                    </div>
+                                        
+                                                    <button (click)="cancelEditing()">
+                                                        Abbrechen
+                                                    </button>
+                                                    <button (click)="setEditedDirectMessage(message)"  [disabled]="editedMessage.invalid">
+                                                        Speichern
+                                                    </button>
+                                                </div>
+                                            </div>
+                                
+
                                         <img [src]="'/assets/avatars/avatar_' + currentUser.avatar + '.png'" alt="" class="avatar">
                                     </div>
 
@@ -92,9 +116,10 @@
                 <div style="height: 50px; width: 1px; background-color: rgba(104, 104, 104, 1);"></div>
                 <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji">
                 <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail">
+                
             </div>
 
-            <button (click)="sendDirectMessage()" [disabled]="directMessage.invalid">
+            <button  (click)="sendDirectMessage()" [disabled]="directMessage.invalid">
                 <img src="./assets/icons/Send icon.png">
             </button>
         </div>
