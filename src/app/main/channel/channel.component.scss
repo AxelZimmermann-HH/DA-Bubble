@@ -347,3 +347,18 @@ td:hover .b-radius {
     background-color: #797EF3 !important;
     color:#FFFFFF
 }
+
+
+  emoji-mart{
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: white;
+    width: 350px;
+    height: 350px;
+    z-index: 1111;
+    border-radius: 30px;
+    overflow-y: scroll;
+    scrollbar-width: none;
+    display: flex;
+  }

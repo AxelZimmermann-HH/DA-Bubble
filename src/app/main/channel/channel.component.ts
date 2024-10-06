@@ -14,6 +14,7 @@ import { Answer } from '../../models/answer.class';
 import { ActivatedRoute } from '@angular/router';
 import { addDoc, collection, doc, Firestore, getDoc, onSnapshot, Timestamp } from '@angular/fire/firestore';
 import { UserService } from '../../services/user.service';
+import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 
 
 @Component({
@@ -23,7 +24,7 @@ import { UserService } from '../../services/user.service';
     FormsModule,
     MatDialogModule,
     ThreadComponent,
-    AddChannelUserComponent],
+    AddChannelUserComponent,PickerComponent],
   templateUrl: './channel.component.html',
   styleUrl: './channel.component.scss'
 })
@@ -55,7 +56,6 @@ export class ChannelComponent {
   selectedAnswers: Answer[] = [];
 
   constructor(public dialog: MatDialog, public firestore: Firestore, private sharedService: SharedService, public userService: UserService, private route: ActivatedRoute) {
-    // this.getAllUsers();
     this.subscribeToSearch();
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
@@ -154,8 +154,14 @@ export class ChannelComponent {
     onSnapshot(messagesCollection, (snapshot) => {
       let messages: Message[] = [];
       snapshot.forEach((doc) => {
-        let message = new Message({ ...doc.data(), id: doc.id });
+        let messageData = doc.data(); // Get the message data
+        let messageId = doc.id;       // Get the message document ID from Firestore
+  
+        // Create a new Message object, including the Firestore document ID
+        let message = new Message({ ...messageData, id: messageId });
+     
         messages.push(message);
+        console.log('message id' , messageId)
       });
 
       // Sort messages by timestamp
@@ -163,10 +169,12 @@ export class ChannelComponent {
 
       // Group messages by fullDate
       this.groupedMessages = this.groupMessagesByDate(this.allMessages);
+      console.log('this messgaes', this.allMessages)
     });
   }
 
   // Group messages by fullDate
+ 
   groupMessagesByDate(messages: Message[]): { [key: string]: Message[] } {
     const groupedMessages: { [key: string]: Message[] } = {};
   
@@ -178,20 +186,32 @@ export class ChannelComponent {
       groupedMessages[message.fullDate].push(message);
     });
   
+    // Get today's date string for comparison
+    const today = new Date().toDateString();
+  
     // Sort the groups by date, making sure today's messages come last
     const sortedGroupKeys = Object.keys(groupedMessages).sort((a, b) => {
-      const today = new Date().toDateString();
-      const dateA = a === 'Heute' ? today : a;
-      const dateB = b === 'Heute' ? today : b;
+      if (a === 'Heute') return 1;  // "Heute" should come last
+      if (b === 'Heute') return -1; // "Heute" should come last
   
-      // Parse the dates for comparison
-      const parsedDateA = new Date(dateA);
-      const parsedDateB = new Date(dateB);
+      // Compare fullDate strings
+      const parsedDateA = new Date(a);
+      const parsedDateB = new Date(b);
   
       return parsedDateA.getTime() - parsedDateB.getTime();
     });
   
-    // Return the sorted groups
+    // Sort the messages within each group by timestamp
+    sortedGroupKeys.forEach(key => {
+      groupedMessages[key].sort((messageA, messageB) => {
+        // Compare timestamps as Date objects
+        const timeA = new Date(messageA.timestamp).getTime();
+        const timeB = new Date(messageB.timestamp).getTime();
+        return timeA - timeB;
+      });
+    });
+  
+    // Create a new object with sorted groups
     const sortedGroupedMessages: { [key: string]: Message[] } = {};
     sortedGroupKeys.forEach(key => {
       sortedGroupedMessages[key] = groupedMessages[key];
@@ -227,15 +247,17 @@ export class ChannelComponent {
       return; // Don't send empty messages
     }
     const userName = this.findUserNameById(this.userId);
-    if (!userName) {
+    if (!userName || 'Gast') {
       console.log('Benutzer nicht gefunden');
+      this.newMessageText = ''
       return; 
     }
-   
+    const currentDate = new Date();
     const messageData = {
       text: this.newMessageText,
       user: userName, // Verwende den gefundenen Benutzernamen
-      timestamp: Timestamp.now()
+      timestamp: Timestamp.now(),
+      fullDate: currentDate.toDateString()
   };
 
     const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
@@ -300,5 +322,17 @@ export class ChannelComponent {
 
   openThread(message: Message, answers: Answer[]) {
     this.isThreadOpen = true;
+  }
+
+
+  showEmojiPicker = false;
+
+  openEmojiPicker() {
+    this.showEmojiPicker = true;
+  }
+
+  addEmoji(event: any) {
+    console.log('emoji :',event.emoji.native); // Hier kannst du das ausgewählte Emoji verwenden
+    this.showEmojiPicker = false;
   }
 }

@@ -46,7 +46,7 @@ export class ThreadComponent {
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
       });
-
+      console.log('messages in thread :',this.allMessages)
   }
 
   getAllUsers() {
@@ -72,18 +72,19 @@ export class ThreadComponent {
   }
 
   getAllMessages() {
-    const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
+    const messagesCollection = collection(this.firestore, 'channels', `${this.selectedChannelId}`, 'messages');
     const readMessages = onSnapshot(messagesCollection, (snapshot) => {
       this.allMessages = [];
       snapshot.forEach((doc) => {
         let message = new Message({ ...doc.data(), id: doc.id });
         this.allMessages.push(message);
-        // this.getAllAnswersForMessage();
+        
       });
     });
   }
 
-  getMessagesForChannel(channelId: string){ const messageCollection = collection(this.firestore, `channels/${channelId}/messages`);
+  getMessagesForChannel(channelId: string){ 
+  const messageCollection = collection(this.firestore, `channels/${channelId}/messages`);
   const readMessages = onSnapshot(messageCollection, (snapshot) => {
     this.allMessages = [];
     snapshot.forEach((doc) => {
@@ -92,16 +93,16 @@ export class ThreadComponent {
     });
   });}
 
-  // getAllAnswersForMessage() {
-  //   const answersCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}/answers`);
-  //   const readAnswers = onSnapshot(answersCollection, (snapshot) => {
-  //     this.allAnswers = []
-  //     snapshot.forEach((doc) => {
-  //       let answer = new Answer({ ...doc.data() });
-  //       this.allAnswers.push(answer);
-  //     });
-  //   });
-  // }
+   getAllAnswersForMessage() {
+   const answersCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages/answers`);
+   const readAnswers = onSnapshot(answersCollection, (snapshot) => {
+     this.allAnswers = []
+     snapshot.forEach((doc) => {
+         let answer = new Answer({ ...doc.data() });
+         this.allAnswers.push(answer);
+     });
+    });
+  }
 
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
