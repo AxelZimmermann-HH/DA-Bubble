@@ -1,25 +1,38 @@
 <div class="thread-container">
     <div class="thread-header">
         <div>Thread <span style="font-family: Nunito;font-size: 14px;font-weight: 400;color: rgba(121, 126, 243, 1);">#
-                Entwicklerteam</span></div>
+                {{channelName}}</span></div>
         <img src="./assets/icons/close.png" alt="" (click)="closeThread()">
     </div>
-    <div class="thread-content" >
-        <div *ngFor="let message of allMessages" >
-            <div class="message-main" [ngClass]="{'current-user': isCurrentUser(message.user)}">
-                <img [src]="'./assets/avatars/avatar_'+ getAvatarForUser(message.user) + '.png'" alt="" class="avatar">
-                <div class="message-content" [ngClass]="{'a-flex': isCurrentUser(message.user)}">
-                    <div class="name-time"  [ngClass]="{'current-user': isCurrentUser(message.user)}">{{ message.user}} <p class="time">14:25Uhr</p>
-                    </div>
-                    <div class="speech-bubble"  [ngClass]="{'border-radius': isCurrentUser(message.user)}"> {{ message.text }}</div>
+    <div class="thread-content">
+        <div class="message-main" [ngClass]="{'current-user': isCurrentUser(message.user)}">
+            <img [src]="'./assets/avatars/avatar_'+ getAvatarForUser(message.user) + '.png'" alt="" class="avatar">
+            <div class="message-content" [ngClass]="{'a-flex': isCurrentUser(message.user)}">
+                <div class="name-time" [ngClass]="{'current-user': isCurrentUser(message.user)}">{{ message.user}} <p
+                        class="time">14:25Uhr</p>
                 </div>
-            </div>
-            <div class="separator">
-                <p class="label-answers" *ngIf="allAnswers.length>0">{{allAnswers.length}} Antworten</p>
-                <hr>
+                <div class="speech-bubble" [ngClass]="{'border-radius': isCurrentUser(message.user)}"> {{ message.text
+                    }}</div>
             </div>
         </div>
-        
+        <div class="separator">
+            <p class="label-answers" *ngIf="allAnswers.length>0">{{allAnswers.length}} Antworten</p>
+            <hr>
+        </div>
+        <div class="message-main">
+            <div *ngFor="let answer of message.answers" class="answer-item">
+                <img [src]="'./assets/avatars/avatar_'+ getAvatarForUser(answer.user) + '.png'" alt="" class="avatar">
+                <div class="answer-content">
+                    <div class="name-time">
+                        {{ answer.user }} 
+                        <p class="time">{{ answer.formatTimestamp() }}</p>
+                    </div>
+                    <div class="speech-bubble"> 
+                        {{ answer.text }}
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="custom-input">
             <textarea placeholder="Antworten..." class="text-area"></textarea>
             <div class="add-reaction">
@@ -29,9 +42,42 @@
                     <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji">
                     <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail">
                 </div>
-                <img src="./assets/icons/Send icon.png" (click)="sendMessage()" class="send-icon">
+                <img src="./assets/icons/Send icon.png" (click)="sendAnswer()" class="send-icon">
             </div>
         </div>
     </div>
 
-</div>
+
+
+
+
+
+    <!-- <div class="thread-content" >
+    <div *ngFor="let message of allMessages" >
+        <div class="message-main" [ngClass]="{'current-user': isCurrentUser(message.user)}">
+            <img [src]="'./assets/avatars/avatar_'+ getAvatarForUser(message.user) + '.png'" alt="" class="avatar">
+            <div class="message-content" [ngClass]="{'a-flex': isCurrentUser(message.user)}">
+                <div class="name-time"  [ngClass]="{'current-user': isCurrentUser(message.user)}">{{ message.user}} <p class="time">14:25Uhr</p>
+                </div>
+                <div class="speech-bubble"  [ngClass]="{'border-radius': isCurrentUser(message.user)}"> {{ message.text }}</div>
+            </div>
+        </div>
+        <div class="separator">
+            <p class="label-answers" *ngIf="allAnswers.length>0">{{allAnswers.length}} Antworten</p>
+            <hr>
+        </div>
+    </div>
+    
+    <div class="custom-input">
+        <textarea placeholder="Antworten..." class="text-area"></textarea>
+        <div class="add-reaction">
+            <div class="reactions">
+                <img src="./assets/icons/add-1.png" alt="" class="add-icon">
+                <div style="height: 50px;width: 1px;background-color:  rgba(104, 104, 104, 1);;"></div>
+                <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji">
+                <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail">
+            </div>
+            <img src="./assets/icons/Send icon.png" (click)="sendMessage()" class="send-icon">
+        </div>
+    </div>
+</div> -->

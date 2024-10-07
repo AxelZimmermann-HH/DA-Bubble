@@ -27,9 +27,12 @@ export class ThreadComponent {
   allAnswers: any = [];
 
   @Output() threadClosed = new EventEmitter<void>();
-  @Input() message: Message | null = null;
+ 
   @Input() answer: Answer[] = [];
   @Input() selectedChannelId: string | null = null;
+
+  @Input() channelName: string | undefined; 
+  @Input() message!: Message;  
 
   ngOnChanges(changes: SimpleChanges): void {
     // Check if the selectedChannelId changes to fetch messages for the new channel
@@ -47,8 +50,14 @@ export class ThreadComponent {
       this.userId = params['userId'];
       });
       console.log('messages in thread :',this.allMessages)
+   
   }
 
+  findUserNameById(userId: string) {
+    const user = this.userData.find((user: User) => user.userId === userId);
+    return user ? user.name : undefined;
+  }
+  
   getAllUsers() {
     const userCollection = collection(this.firestore, 'users');
     const readUsers = onSnapshot(userCollection, (snapshot) => {
@@ -114,7 +123,7 @@ export class ThreadComponent {
     return user ? user.name === currentUser : false;
   }
   
-  sendMessage() { }
+  sendAnswer() { }
 
   closeThread() {
     this.threadClosed.emit();

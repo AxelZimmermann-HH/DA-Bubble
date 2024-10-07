@@ -1,14 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { Component, Inject } from '@angular/core';
-import { arrayUnion, collection, doc, Firestore, onSnapshot, updateDoc } from '@angular/fire/firestore';
+import {  collection, doc, Firestore, onSnapshot, updateDoc } from '@angular/fire/firestore';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Channel } from '../models/channel.class';
-import { User } from '../models/user.class';
+
 import { FormsModule } from '@angular/forms';
 import { MatFormField } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { Channel } from '../models/channel.class';
+import { User } from '../models/user.class';
 import { UserService } from '../services/user.service';
+
+
 
 
 @Component({
@@ -36,6 +39,9 @@ export class DialogAddUserComponent {
     this.getAllUsers();
 
     this.user.name = "Noah";
+  }
+  ngOnInit() {
+   
   }
 
   getAllUsers() {

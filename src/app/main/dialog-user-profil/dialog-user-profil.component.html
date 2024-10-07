@@ -9,5 +9,5 @@
     </div>
     <span style="color: rgba(83, 90, 241, 1);">{{user.mail}}</span>
  </div>
- <button class="nachrichtBtn"><img src="./assets/icons/mode_comment.png" alt="">Nachricht</button>
+ <button class="nachrichtBtn" (click)="sendDirektMessage(user.name)"><img src="./assets/icons/mode_comment.png" alt="">Nachricht</button>
 </div>
