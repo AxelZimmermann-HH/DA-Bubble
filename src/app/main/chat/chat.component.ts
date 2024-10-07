@@ -3,9 +3,12 @@ import { ChatService } from '../../services/chat.service';
 import { CommonModule } from '@angular/common';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { DialogUserProfilComponent } from '../../dialog-user-profil/dialog-user-profil.component';
+import { DialogUserProfilComponent } from '../dialog-user-profil/dialog-user-profil.component';
 import { User } from '../../models/user.class';
 import { UserService } from '../../services/user.service';
+import { ActivatedRoute, Route } from '@angular/router';
+import { collection, collectionData } from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-chat',
@@ -25,12 +28,18 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
   chat: any;
  
   @ViewChild('chatContainer') chatContainer!: ElementRef;
+  
 
   constructor(
     public chatService: ChatService, 
     public dialog: MatDialog, 
-    public userService: UserService
+    public userService: UserService,
+    public route: ActivatedRoute
   ) {}
+
+
+
+
 
   // Scrollen direkt nach dem Initialisieren der View
   ngAfterViewInit() {
@@ -69,6 +78,11 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
         this.chat = chatSubject;
       }
     });
+
+
+    this.route.params.subscribe(params => {
+      const userId = params['userId'];
+  });
   };
 
 

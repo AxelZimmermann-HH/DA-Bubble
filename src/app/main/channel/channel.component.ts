@@ -1,8 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { DialogAddUserComponent } from '../../dialog-add-user/dialog-add-user.component';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
@@ -12,9 +11,11 @@ import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-ch
 import { AddChannelUserComponent } from './add-channel-user/add-channel-user.component';
 import { Answer } from '../../models/answer.class';
 import { ActivatedRoute } from '@angular/router';
-import { addDoc, collection, doc, Firestore, getDoc, onSnapshot, Timestamp } from '@angular/fire/firestore';
+import { addDoc, collection, doc, Firestore, getDoc, onSnapshot, orderBy, query, Timestamp } from '@angular/fire/firestore';
 import { UserService } from '../../services/user.service';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
+import { ChatComponent } from "../chat/chat.component";
+import { DialogAddUserComponent } from '../../dialog-add-user/dialog-add-user.component';
 
 
 @Component({
@@ -24,7 +25,7 @@ import { PickerComponent } from '@ctrl/ngx-emoji-mart';
     FormsModule,
     MatDialogModule,
     ThreadComponent,
-    AddChannelUserComponent, PickerComponent],
+    AddChannelUserComponent, PickerComponent, ChatComponent],
   templateUrl: './channel.component.html',
   styleUrl: './channel.component.scss'
 })
@@ -39,29 +40,33 @@ export class ChannelComponent {
   message = new Message();
   allMessages: any = [];
   filteredMessages: any = [];
-  groupedMessages: { [key: string]: Message[] } = {};
-
-
+ 
   answer = new Answer();
   allAnswers: any = [];
 
   channelMembers: any = [];
   newMessageText: string = '';
 
+  showChannel: boolean = true;
+  showChat: boolean = false;
+
   @Input() selectedChannelId: string | null = null;
+  @Output() chatSelected = new EventEmitter<void>();
 
   selectedChannel: Channel | null = null;
-  isThreadOpen: boolean = true;
-  selectedMessage: Message | null = null; // Selected message for the thread
+  isThreadOpen: boolean = false;
+  selectedMessage= new Message() ;// Selected message for the thread
   selectedAnswers: Answer[] = [];
+  
 
   constructor(public dialog: MatDialog, public firestore: Firestore, private sharedService: SharedService, public userService: UserService, private route: ActivatedRoute) {
     this.subscribeToSearch();
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
       console.log('Aktuelle userId:', this.userId); // Füge diese Zeile hinzu
+
     });
-  
+
     this.getAllUsers().then(() => {
       const userName = this.findUserNameById(this.userId);
       if (userName) {
@@ -70,7 +75,7 @@ export class ChannelComponent {
         console.log('Benutzer nicht gefunden');
       }
     });
-    
+
   }
 
   findUserNameById(userId: string) {
@@ -136,7 +141,7 @@ export class ChannelComponent {
       });
     });
   }
-  
+
 
   getAllChannels() {
     const channelCollection = collection(this.firestore, 'channels');
@@ -150,87 +155,36 @@ export class ChannelComponent {
   }
 
   getAllMessages() {
-    const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
-    onSnapshot(messagesCollection, (snapshot) => {
-      let messages: Message[] = [];
-      snapshot.forEach((doc) => {
-        let messageData = doc.data(); // Get the message data
-        let messageId = doc.id;       // Get the message document ID from Firestore
-  
-        // Create a new Message object, including the Firestore document ID
-        let message = new Message({ ...messageData, id: messageId });
-     
-        messages.push(message);
-        console.log('message id' , messageId)
-      });
+    const messagesQuery = query(
+        collection(this.firestore, `channels/${this.selectedChannelId}/messages`),
+        orderBy('timestamp', 'asc')
+    );
 
-      // Sort messages by timestamp
-      this.allMessages = messages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    this.allMessages = [];
+    onSnapshot(messagesQuery, (snapshot) => {
+        const messagesData = snapshot.docs.map(doc => new Message(doc.data()));
+        
+        // Nachrichten nach Datum gruppieren
+        const groupedMessages: { [date: string]: Message[] } = {};
+        
+        messagesData.forEach(message => {
+            const messageDate = message.fullDate; // Verwende hier dein formatFullDate
+            if (!groupedMessages[messageDate]) {
+                groupedMessages[messageDate] = [];
+            }
+            groupedMessages[messageDate].push(message);
+        });
 
-      // Group messages by fullDate
-      this.groupedMessages = this.groupMessagesByDate(this.allMessages);
-      console.log('this messgaes', this.allMessages)
-    });
-  }
+        // Umwandeln des gruppierten Objekts in ein Array
+        this.allMessages = Object.keys(groupedMessages).map(date => ({
+            date,
+            messages: groupedMessages[date]
+        }));
 
-  // Group messages by fullDate
- 
-  groupMessagesByDate(messages: Message[]): { [key: string]: Message[] } {
-    const groupedMessages: { [key: string]: Message[] } = {};
-  
-    // Group messages by fullDate
-    messages.forEach(message => {
-      if (!groupedMessages[message.fullDate]) {
-        groupedMessages[message.fullDate] = [];
-      }
-      groupedMessages[message.fullDate].push(message);
+        console.log('grouped messages', this.allMessages);
     });
-  
-    // Get today's date string for comparison
-    const today = new Date().toDateString();
-  
-    // Sort the groups by date, making sure today's messages come last
-    const sortedGroupKeys = Object.keys(groupedMessages).sort((a, b) => {
-      if (a === 'Heute') return 1;  // "Heute" should come last
-      if (b === 'Heute') return -1; // "Heute" should come last
-  
-      // Compare fullDate strings
-      const parsedDateA = new Date(a);
-      const parsedDateB = new Date(b);
-  
-      return parsedDateA.getTime() - parsedDateB.getTime();
-    });
-  
-    // Sort the messages within each group by timestamp
-    sortedGroupKeys.forEach(key => {
-      groupedMessages[key].sort((messageA, messageB) => {
-        // Compare timestamps as Date objects
-        const timeA = new Date(messageA.timestamp).getTime();
-        const timeB = new Date(messageB.timestamp).getTime();
-        return timeA - timeB;
-      });
-    });
-  
-    // Create a new object with sorted groups
-    const sortedGroupedMessages: { [key: string]: Message[] } = {};
-    sortedGroupKeys.forEach(key => {
-      sortedGroupedMessages[key] = groupedMessages[key];
-    });
-  
-    return sortedGroupedMessages;
-  }
-  
+}
 
-  // getAllAnswersForMessage(messageId: string) {
-  //   const answersCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}/answers`);
-  //   const readAnswers = onSnapshot(answersCollection, (snapshot) => {
-  //     this.allAnswers = []
-  //     snapshot.forEach((doc) => {
-  //       let answer = new Answer({ ...doc.data() });
-  //       this.allAnswers.push(answer);
-  //     });
-  //   });
-  // }
 
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
@@ -244,33 +198,38 @@ export class ChannelComponent {
 
   sendMessage() {
     if (this.newMessageText.trim() === '') {
-      return; // Don't send empty messages
+        return; // Don't send empty messages
     }
+
     const userName = this.findUserNameById(this.userId);
-    if (!userName || 'Gast') {
-      console.log('Benutzer nicht gefunden');
-      this.newMessageText = ''
-      return; 
+    if (!userName) {
+        console.log('Benutzer nicht gefunden');
+        this.newMessageText = '';
+        return;
     }
+
     const currentDate = new Date();
     const messageData = {
-      text: this.newMessageText,
-      user: userName, // Verwende den gefundenen Benutzernamen
-      timestamp: Timestamp.now(),
-      fullDate: currentDate.toDateString()
-  };
+        text: this.newMessageText,
+        user: userName, // Use the found username
+        timestamp: Timestamp.now(),
+        fullDate: currentDate.toDateString(),
+        answers: [] // Initialize with an empty array for answers
+    };
 
     const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
     addDoc(messagesCollection, messageData)
-      .then((docRef) => {
-        console.log('Nachricht erfolgreich gesendet:', docRef.id);
-        this.newMessageText = ''; // Leere das Eingabefeld nach dem Senden
-      })
-      .catch((error) => {
-        console.error('Fehler beim Senden der Nachricht:', error);
-      });
-    
-  }
+        .then((docRef) => {
+            console.log('Nachricht erfolgreich gesendet:', docRef.id);
+            // Optionally, create a new Message instance here if needed
+            // const newMessage = new Message({ ...messageData }, docRef.id);
+            this.newMessageText = ''; // Clear the input field after sending
+        })
+        .catch((error) => {
+            console.error('Fehler beim Senden der Nachricht:', error);
+        });
+}
+
 
   async getChannelData(channelId: string): Promise<Channel> {
     const channelDocRef = doc(this.firestore, 'channels', channelId);
@@ -288,9 +247,9 @@ export class ChannelComponent {
     }
   }
 
-  openDialog(component: any, channelId: string) {
-    this.getChannelData(channelId).then(channelData => {
-      this.dialog.open(component, {
+  openDialog(component: any, channelId: string): any { // Typ für die Rückgabe spezifizieren
+    return this.getChannelData(channelId).then(channelData => {
+      return this.dialog.open(component, {
         data: {
           channelId: channelId,
           channel: channelData  // Pass the Channel object
@@ -298,11 +257,14 @@ export class ChannelComponent {
       });
     }).catch(error => {
       console.error("Error opening dialog:", error);
+      return null; // Im Fehlerfall kann auch null zurückgegeben werden, um den Typ beizubehalten
     });
   }
 
   openUsersList(channelId: string) {
-    this.openDialog(AddChannelUserComponent, channelId);
+    const dialogRef = this.openDialog(AddChannelUserComponent, channelId); 
+   
+
   }
 
   openDialogAddUser(channelId: string) {
@@ -316,12 +278,16 @@ export class ChannelComponent {
 
   onThreadClosed() {
     this.isThreadOpen = false;
-    this.selectedMessage = null;
+   
     this.selectedAnswers = [];
+    
+
   }
 
-  openThread(message: Message, answers: Answer[]) {
+  openThread(message: Message) {
     this.isThreadOpen = true;
+    this.selectedMessage = message;
+  
   }
 
 
@@ -332,7 +298,7 @@ export class ChannelComponent {
   }
 
   addEmoji(event: any) {
-    console.log('emoji :',event.emoji.native); // Hier kannst du das ausgewählte Emoji verwenden
+    console.log('emoji :', event.emoji.native); // Hier kannst du das ausgewählte Emoji verwenden
     this.showEmojiPicker = false;
   }
 }
