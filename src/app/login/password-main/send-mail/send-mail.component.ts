@@ -1,18 +1,20 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Firestore, collection, getDocs, query, where } from '@angular/fire/firestore';
+import { FormsModule } from '@angular/forms';
 
 
 @Component({
   selector: 'app-send-mail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './send-mail.component.html',
   styleUrl: './send-mail.component.scss'
 })
 export class SendMailComponent {
   buttonEnabled: boolean = false;
   emailNotFound: boolean = false;
+  email: string = ''; // Füge die Variable email hinzu
 
   constructor(private firestore: Firestore) {
     console.log('Komponente wurde initialisiert');
@@ -24,17 +26,15 @@ export class SendMailComponent {
     this.emailNotFound = false;
   }
 
-  async checkEmail(email: string) {
-    debugger;
-    console.log('Check wird ausgeführt'); // Diese Zeile stellt sicher, dass die Funktion aufgerufen wird
+  async checkEmail(email: string, event: Event) {
+    event.preventDefault(); // Verhindert, dass das Formular das Standardverhalten ausführt.
+    
+    console.log('Check wird ausgeführt');
     try {
-      // const userCollection = collection(this.firestore, 'users');
       const q = query(collection(this.firestore, 'users'), where('mail', '==', email));
       const querySnapshot = await getDocs(q);
   
-      console.log('Query abgeschlossen'); // Diese Zeile prüft, ob die Abfrage abgeschlossen wird
-  
-      if (querySnapshot) {
+      if (!querySnapshot.empty) {
         console.log('check');
       } else {
         console.log('nix');
