@@ -8,11 +8,12 @@ import { UserService } from '../services/user.service';
 import { Auth, signInWithPopup, GoogleAuthProvider } from '@angular/fire/auth';
 import { SigninComponent } from "./signin/signin.component"; 
 import { SignupComponent } from './signup/signup.component';
+import { PasswordMainComponent } from './password-main/password-main.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, SigninComponent, SignupComponent],
+  imports: [CommonModule, FormsModule, SigninComponent, SignupComponent, PasswordMainComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
