@@ -24,7 +24,7 @@ import { PickerComponent } from '@ctrl/ngx-emoji-mart';
     FormsModule,
     MatDialogModule,
     ThreadComponent,
-    AddChannelUserComponent,PickerComponent],
+    AddChannelUserComponent, PickerComponent],
   templateUrl: './channel.component.html',
   styleUrl: './channel.component.scss'
 })
