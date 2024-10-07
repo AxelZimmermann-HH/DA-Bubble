@@ -89,7 +89,7 @@
 
     </div>
 
-    <app-thread *ngIf="isThreadOpen" [channelName]="selectedChannel?.channelName" [message]="selectedMessage"
+    <app-thread *ngIf="isThreadOpen" [selectedChannelId]="selectedChannelId" [channelName]="selectedChannel?.channelName" [message]="selectedMessage"
         (threadClosed)="onThreadClosed()">
     </app-thread>
 </div>

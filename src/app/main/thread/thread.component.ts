@@ -2,114 +2,128 @@ import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
-import { collection, Firestore, onSnapshot } from '@angular/fire/firestore';
+import { addDoc, collection, doc, Firestore, getDoc, onSnapshot, query, Timestamp } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Answer } from '../../models/answer.class';
 import { ActivatedRoute } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-thread',
   standalone: true,
-  imports: [CommonModule, MatDialogModule],
+  imports: [CommonModule, MatDialogModule, FormsModule],
   templateUrl: './thread.component.html',
-  styleUrl: './thread.component.scss'
+  styleUrls: ['./thread.component.scss'] // Fixed `styleUrl` to `styleUrls`
 })
-export class ThreadComponent {
+export class ThreadComponent  {
 
   user = new User();
-  userId!:string;
+  userId!: string;
   userData: User[] = [];
-
+  newAnswerText!: string;
   channel = new Channel();
-  channelData: any= [];
-  allMessages: any = [];
-  allAnswers: any = [];
+  channelData: Channel[] = [];
+  allMessages: Message[] = [];
 
+  timestamp?: Timestamp;
+
+  
   @Output() threadClosed = new EventEmitter<void>();
- 
   @Input() answer: Answer[] = [];
   @Input() selectedChannelId: string | null = null;
-
   @Input() channelName: string | undefined; 
-  @Input() message!: Message;  
+  @Input() message!: Message;
 
-  ngOnChanges(changes: SimpleChanges): void {
-    // Check if the selectedChannelId changes to fetch messages for the new channel
-    if (changes['selectedChannelId'] && this.selectedChannelId) {
-      this.getMessagesForChannel(this.selectedChannelId);
-    }
-  }
-  
-  constructor(public firestore: Firestore, public dialog: MatDialog, private route : ActivatedRoute) {
+ 
+  constructor(
+    public firestore: Firestore, 
+    public dialog: MatDialog, 
+    private route: ActivatedRoute
+  ) { }
+
+  ngOnInit(): void {
     this.getAllUsers();
-    this.getAllChannels();
-    this.getAllMessages();
-
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
-      });
-      console.log('messages in thread :',this.allMessages)
-   
+    });
+    console.log('message id', this.message.messageId);
+    
   }
 
-  findUserNameById(userId: string) {
-    const user = this.userData.find((user: User) => user.userId === userId);
-    return user ? user.name : undefined;
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['selectedChannelId'] && this.selectedChannelId) {
+    this.getMessagesForChannel(this.selectedChannelId);
+    }
   }
-  
+
+
   getAllUsers() {
     const userCollection = collection(this.firestore, 'users');
-    const readUsers = onSnapshot(userCollection, (snapshot) => {
-      this.userData = [];
-      snapshot.forEach((doc) => {
-        let user = new User({ ...doc.data(), id: doc.id });
-        this.userData.push(user);
-      });
+    onSnapshot(userCollection, (snapshot) => {
+      this.userData = snapshot.docs.map(doc => new User({ ...doc.data(), id: doc.id }));
     });
   }
 
-  getAllChannels() {
-    const channelCollection = collection(this.firestore, 'channels');
-    const readChannel = onSnapshot(channelCollection, (snapshot) => {
-      this.channelData = [];
-      snapshot.forEach((doc) => {
-        let channel = new Channel({ ...doc.data(), id: doc.id });
-        this.channelData.push(channel);
-      });
+  getMessagesForChannel(channelId: string) { 
+    const messageCollection = collection(this.firestore, `channels/${channelId}/messages`);
+    onSnapshot(messageCollection, (snapshot) => {
+        this.allMessages = snapshot.docs.map((doc) => {
+            const data = doc.data();
+            console.log('Message ID:', doc.id); // Log the document ID
+            console.log('Message Data:', data); // Log the data
+            return new Message({ 
+                ...data, 
+                timestamp: data['timestamp'] 
+            }, doc.id); // Create a new Message instance with the data and message ID
+        });
+        console.log('All Messages:', this.allMessages); // Log all messages after mapping
     });
+}
+
+ 
+
+saveAnswer(messageId: string) {
+  if (!this.selectedChannelId || !this.newAnswerText.trim()) {
+      console.error('Invalid channel or empty answer text.');
+      return;
   }
 
-  getAllMessages() {
-    const messagesCollection = collection(this.firestore, 'channels', `${this.selectedChannelId}`, 'messages');
-    const readMessages = onSnapshot(messagesCollection, (snapshot) => {
-      this.allMessages = [];
-      snapshot.forEach((doc) => {
-        let message = new Message({ ...doc.data(), id: doc.id });
-        this.allMessages.push(message);
-        
-      });
-    });
+  if (!messageId) {
+      console.error('Message ID is empty. Cannot save answer.');
+      // You can either skip saving or handle it accordingly
+      return;
   }
 
-  getMessagesForChannel(channelId: string){ 
-  const messageCollection = collection(this.firestore, `channels/${channelId}/messages`);
-  const readMessages = onSnapshot(messageCollection, (snapshot) => {
-    this.allMessages = [];
-    snapshot.forEach((doc) => {
-      let message = new Message({ ...doc.data(), id: doc.id });
-      this.allMessages.push(message);
-    });
-  });}
+  const answersRef = collection(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}/answers`);
+  const answerData = {
+      text: this.newAnswerText,
+      user: this.user.name,
+      timestamp: Timestamp.now(),
+  };
 
-   getAllAnswersForMessage() {
-   const answersCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages/answers`);
-   const readAnswers = onSnapshot(answersCollection, (snapshot) => {
-     this.allAnswers = []
-     snapshot.forEach((doc) => {
-         let answer = new Answer({ ...doc.data() });
-         this.allAnswers.push(answer);
-     });
+  addDoc(answersRef, answerData)
+      .then(() => {
+          console.log('Answer successfully saved');
+          this.newAnswerText = '';
+      })
+      .catch(error => {
+          console.error('Error saving answer: ', error);
+      });
+}
+
+
+
+  getAnswersForMessage(messageId: string) {
+    if (!this.selectedChannelId) return;
+
+    const answersQuery = query(collection(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}/answers`));
+    onSnapshot(answersQuery, (snapshot) => {
+      const answers = snapshot.docs.map(doc => new Answer(doc.data()));
+      const message = this.allMessages.find((msg: Message) => msg.messageId === messageId);
+      if (message) {
+        message.answers = answers; 
+      }
     });
   }
 
@@ -118,12 +132,10 @@ export class ThreadComponent {
     return user ? user.avatar : 'default';
   }
 
-  isCurrentUser(currentUser:string):boolean{
-    const user = this.userData.find((u:any) => u.userId === this.userId );
-    return user ? user.name === currentUser : false;
+  isCurrentUser(currentUser: string): boolean {
+    const currentUserObj = this.userData.find(u => u.userId === this.userId);
+    return currentUserObj ? currentUserObj.name === currentUser : false;
   }
-  
-  sendAnswer() { }
 
   closeThread() {
     this.threadClosed.emit();

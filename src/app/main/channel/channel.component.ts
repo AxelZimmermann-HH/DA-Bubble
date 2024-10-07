@@ -186,18 +186,6 @@ export class ChannelComponent {
 }
 
 
-
-  // getAllAnswersForMessage(messageId: string) {
-  //   const answersCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}/answers`);
-  //   const readAnswers = onSnapshot(answersCollection, (snapshot) => {
-  //     this.allAnswers = []
-  //     snapshot.forEach((doc) => {
-  //       let answer = new Answer({ ...doc.data() });
-  //       this.allAnswers.push(answer);
-  //     });
-  //   });
-  // }
-
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
     return user ? user.avatar : 'default';
@@ -210,33 +198,38 @@ export class ChannelComponent {
 
   sendMessage() {
     if (this.newMessageText.trim() === '') {
-      return; // Don't send empty messages
+        return; // Don't send empty messages
     }
+
     const userName = this.findUserNameById(this.userId);
-    if (!userName || 'Gast') {
-      console.log('Benutzer nicht gefunden');
-      this.newMessageText = ''
-      return;
+    if (!userName) {
+        console.log('Benutzer nicht gefunden');
+        this.newMessageText = '';
+        return;
     }
+
     const currentDate = new Date();
     const messageData = {
-      text: this.newMessageText,
-      user: userName, // Verwende den gefundenen Benutzernamen
-      timestamp: Timestamp.now(),
-      fullDate: currentDate.toDateString()
+        text: this.newMessageText,
+        user: userName, // Use the found username
+        timestamp: Timestamp.now(),
+        fullDate: currentDate.toDateString(),
+        answers: [] // Initialize with an empty array for answers
     };
 
     const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
     addDoc(messagesCollection, messageData)
-      .then((docRef) => {
-        console.log('Nachricht erfolgreich gesendet:', docRef.id);
-        this.newMessageText = ''; // Leere das Eingabefeld nach dem Senden
-      })
-      .catch((error) => {
-        console.error('Fehler beim Senden der Nachricht:', error);
-      });
+        .then((docRef) => {
+            console.log('Nachricht erfolgreich gesendet:', docRef.id);
+            // Optionally, create a new Message instance here if needed
+            // const newMessage = new Message({ ...messageData }, docRef.id);
+            this.newMessageText = ''; // Clear the input field after sending
+        })
+        .catch((error) => {
+            console.error('Fehler beim Senden der Nachricht:', error);
+        });
+}
 
-  }
 
   async getChannelData(channelId: string): Promise<Channel> {
     const channelDocRef = doc(this.firestore, 'channels', channelId);
