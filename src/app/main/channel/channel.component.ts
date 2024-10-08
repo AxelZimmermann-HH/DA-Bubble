@@ -50,6 +50,8 @@ export class ChannelComponent {
   showChannel: boolean = true;
   showChat: boolean = false;
 
+  showEmojiPicker = false;
+
   @Input() selectedChannelId: string | null = null;
   @Output() chatSelected = new EventEmitter<void>();
 
@@ -310,16 +312,13 @@ export class ChannelComponent {
 
   onThreadClosed() {
     this.isThreadOpen = false;
-
     this.selectedAnswers = [];
-
-
   }
 
   openThread(message: Message) {
     this.isThreadOpen = true;
     this.selectedMessage = message;
-this.getAnswers(message.messageId)
+    this.getAnswers(message.messageId);
   }
 
   getAnswers(messageId: string) {
@@ -336,7 +335,7 @@ this.getAnswers(message.messageId)
     });
   }
 
-  showEmojiPicker = false;
+
 
   openEmojiPicker(message:any) {
     if ( message ===this.selectedMessage.messageId) {
