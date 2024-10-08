@@ -9,10 +9,10 @@
     </div>
 
     <div class="thread-content">
+       
         <!-- Main message section -->
         <div class="message-main" [ngClass]="{'current-user': isCurrentUser(message.user)}">
-            <img [src]="'./assets/avatars/avatar_' + getAvatarForUser(message.user) + '.png'" alt="Avatar"
-                class="avatar">
+            <img [src]="getAvatarForUser(message.user)" alt="Avatar" class="avatar">
             <div class="message-content" [ngClass]="{'a-flex': isCurrentUser(message.user)}">
                 <div class="name-time" [ngClass]="{'current-user': isCurrentUser(message.user)}">
                     {{ message.user }}
@@ -31,38 +31,39 @@
             </p>
             <hr>
         </div>
-     
+
         <!-- Answer list -->
-        <div class="message-main" *ngFor="let answer of message.answers" class="answer-item">
-            <img [src]="'./assets/avatars/avatar_' + getAvatarForUser(answer.user) + '.png'" alt="Answer Avatar"
-                class="avatar">
-            <div class="answer-content">
-                <div class="name-time">
-                    {{ answer.user }}
-                    <p class="time">{{ answer.formatTimestamp() }}</p>
-                </div>
-                <div class="speech-bubble">
-                    {{ answer.text }}
-                </div>
-            </div>
-        </div>
-
-        <!-- Input for new answers -->
-        <div *ngFor="let message of allMessages">
-            <div class="custom-input">
-                <textarea placeholder="Antworten..." class="text-area" [(ngModel)]="newAnswerText"></textarea>
-                <div class="add-reaction">
-                    <div class="reactions">
-                        <img src="./assets/icons/add-1.png" alt="Add" class="add-icon">
-                        <div style="height: 50px; width: 1px; background-color: rgba(104, 104, 104, 1);"></div>
-                        <img src="./assets/icons/sentiment_satisfied-1.png" alt="Emoji" class="add-emoji">
-                        <img src="./assets/icons/alternate_email-1.png" alt="Email" class="add-mail">
+       
+        <div *ngFor="let answer of message.answers">
+            <div class="message-main" [ngClass]="{'current-user': isCurrentUser(answer.user)}"
+                *ngFor="let answer of message.answers">
+                <img [src]="getAvatarForUser(answer.user)" alt="Avatar" class="avatar">
+                <div class="message-content" [ngClass]="{'a-flex': isCurrentUser(answer.user)}">
+                    <div class="name-time" [ngClass]="{'current-user': isCurrentUser(answer.user)}">
+                        {{ answer.user }}
+                        <p class="time">{{ answer.formatTimestamp() }}</p>
                     </div>
-                    <img src="./assets/icons/Send icon.png" alt="Send" class="send-icon"
-                        (click)="saveAnswer(message.messageId)">
+                    <div class="speech-bubble" [ngClass]="{'border-radius': isCurrentUser(answer.user)}">
+                        {{ answer.text }}
+                    </div>
                 </div>
             </div>
         </div>
+        <!-- Input for new answers -->
 
+        <div class="custom-input">
+            <textarea placeholder="Antworten..." class="text-area" [(ngModel)]="newAnswerText"></textarea>
+            <div class="add-reaction">
+                <div class="reactions">
+                    <img src="./assets/icons/add-1.png" alt="Add" class="add-icon">
+                    <div style="height: 50px; width: 1px; background-color: rgba(104, 104, 104, 1);"></div>
+                    <img src="./assets/icons/sentiment_satisfied-1.png" alt="Emoji" class="add-emoji">
+                    <img src="./assets/icons/alternate_email-1.png" alt="Email" class="add-mail">
+                </div>
+                <img src="./assets/icons/Send icon.png" alt="Send" class="send-icon" (click)="addAnswer(message.messageId)">
+            </div>
+        </div>
     </div>
+    
+    
 </div>

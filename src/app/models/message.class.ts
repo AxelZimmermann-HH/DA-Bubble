@@ -6,6 +6,8 @@ export interface MessageData {
   user?: string;
   timestamp?: any; // Use a more specific type if applicable
   answers?: Answer[];
+  emojis?: [];
+
 }
 
 export class Message {
@@ -15,6 +17,8 @@ export class Message {
   timestamp!: Date;
   fullDate!: string;
   answers: Answer[] = []; 
+  emojis!:[];
+
 
   constructor(obj: MessageData = {}, messageId: string = '') {
     this.messageId = messageId; // should be set from Firestore
@@ -24,6 +28,7 @@ export class Message {
     this.timestamp = date;
     this.fullDate = this.formatFullDate(date);
     this.answers = Array.isArray(obj.answers) ? obj.answers.map(a => new Answer(a)) : []; // Initialize answers
+    this.emojis = obj.emojis || [];
 }
 
 
@@ -60,7 +65,8 @@ export class Message {
       user: this.user,
       timestamp: this.timestamp,
       fullDate: this.fullDate,
-      answers: this.answers 
+      answers: this.answers,
+      emojis:this.emojis
     };
   }
 }

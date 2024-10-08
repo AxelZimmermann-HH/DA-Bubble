@@ -23,7 +23,6 @@
             </div>
         </div>
         <div class="channel-content">
-
             <table class="chat-table">
                 <tr>
                     <td style="height: 50px;"></td>
@@ -31,7 +30,7 @@
                 <ng-container *ngFor="let group of allMessages">
                     <tr>
                         <td colspan="2">
-                            <div style="position: relative;">
+                            <div style="position: relative; width: 100%;margin:0 75px">
                                 <hr class="separator-line">
                                 <button class="day-time-btn">{{ group.date }}</button>
                             </div>
@@ -61,17 +60,15 @@
                                 <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
                                 <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png"
                                     alt="">
-                                <img src="./assets/icons/add_reaction.png" alt="" (click)="openEmojiPicker()">
+                                <img src="./assets/icons/add_reaction.png" alt="" (click)="openEmojiPicker(message)">
                                 <img src="./assets/icons/comment.png" alt="" (click)="openThread(message)">
                                 <img src="./assets/icons/Answer.png" alt="" *ngIf="isCurrentUser(message.user)">
                             </div>
-                            
+                            <emoji-mart (emojiSelect)="addEmoji($event)" *ngIf="showEmojiPicker"></emoji-mart>
                         </td>
                     </tr>
                 </ng-container>
             </table>
-
-
         </div>
 
         <div class="custom-input">
@@ -80,7 +77,7 @@
             <div class="add-reaction">
                 <div class="reactions">
                     <img src="./assets/icons/add-1.png" alt="" class="add-icon">
-                    <div style="height: 50px;width: 1px;background-color:  rgba(104, 104, 104, 1);;"></div>
+                    <div style="height: 35px;width: 1px;background-color:  rgba(104, 104, 104, 1);;"></div>
                     <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji">
                     <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail">
                 </div>
@@ -90,7 +87,10 @@
 
     </div>
 
-    <app-thread *ngIf="isThreadOpen" [selectedChannelId]="selectedChannelId" [channelName]="selectedChannel?.channelName" [message]="selectedMessage"
-        (threadClosed)="onThreadClosed()">
+    <app-thread *ngIf="isThreadOpen" 
+    [selectedChannelId]="selectedChannelId" 
+    [channelName]="selectedChannel?.channelName" 
+    [message]="selectedMessage"
+    (threadClosed)="onThreadClosed()">
     </app-thread>
 </div>

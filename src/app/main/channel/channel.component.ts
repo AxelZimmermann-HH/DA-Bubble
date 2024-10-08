@@ -11,7 +11,7 @@ import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-ch
 import { AddChannelUserComponent } from './add-channel-user/add-channel-user.component';
 import { Answer } from '../../models/answer.class';
 import { ActivatedRoute } from '@angular/router';
-import { addDoc, collection, doc, Firestore, getDoc, onSnapshot, orderBy, query, Timestamp } from '@angular/fire/firestore';
+import { addDoc, collection, doc, Firestore, getDoc, onSnapshot, orderBy, query, Timestamp, updateDoc } from '@angular/fire/firestore';
 import { UserService } from '../../services/user.service';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { ChatComponent } from "../chat/chat.component";
@@ -162,7 +162,16 @@ export class ChannelComponent {
 
     this.allMessages = [];
     onSnapshot(messagesQuery, (snapshot) => {
-      const messagesData = snapshot.docs.map(doc => new Message(doc.data()));
+      const messagesData = snapshot.docs.map(doc => {
+        const data = doc.data();
+        // Füge hier das emojis-Feld hinzu, um sicherzustellen, dass es korrekt verarbeitet wird
+        return new Message({
+          text: data['text'],
+          user: data['user'],
+          timestamp: data['timestamp'],
+          emojis: data['emojis'] || [] // Stelle sicher, dass das emojis-Feld vorhanden ist
+        }, doc.id);
+      });
 
       // Nachrichten nach Datum gruppieren
       const groupedMessages: { [date: string]: Message[] } = {};
@@ -182,6 +191,24 @@ export class ChannelComponent {
       }));
 
       console.log('grouped messages', this.allMessages);
+    });
+  }
+
+  updateMessageInFirestore(message: Message) {
+    const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${message.messageId}`);
+  
+    // Hier fügen wir die Emojis zur Nachricht hinzu oder aktualisieren sie
+    updateDoc(messageRef, {
+      text: message.text,
+      user: message.user,
+      timestamp: message.timestamp,
+      emojis: message.answers // Hier kannst du die Emojis speichern, z. B. in einem Array
+    })
+    .then(() => {
+      console.log("Nachricht erfolgreich aktualisiert!");
+    })
+    .catch((error) => {
+      console.error("Fehler beim Aktualisieren der Nachricht: ", error);
     });
   }
 
@@ -222,16 +249,13 @@ export class ChannelComponent {
       user: userName, // Use the found username
       timestamp: Timestamp.now(),
       fullDate: currentDate.toDateString(),
-      answers: [] // Initialize with an empty array for answers
+      answers: [] 
     };
 
     const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
     addDoc(messagesCollection, messageData)
       .then((docRef) => {
-        console.log('Nachricht erfolgreich gesendet:', docRef.id);
-        // Optionally, create a new Message instance here if needed
-        // const newMessage = new Message({ ...messageData }, docRef.id);
-        this.newMessageText = ''; // Clear the input field after sending
+        this.newMessageText = ''; 
       })
       .catch((error) => {
         console.error('Fehler beim Senden der Nachricht:', error);
@@ -301,8 +325,10 @@ export class ChannelComponent {
 
   showEmojiPicker = false;
 
-  openEmojiPicker() {
-    this.showEmojiPicker = true;
+  openEmojiPicker(message:any) {
+    if ( message ===this.selectedMessage.messageId) {
+      this.showEmojiPicker = true;
+    }
   }
 
   addEmoji(event: any) {
