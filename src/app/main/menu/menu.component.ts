@@ -247,50 +247,52 @@ export class MenuComponent {
 
   
   //öffnet den PvP Chat
-  async openDirectMessage(currentUserId:string, userId:string){
-    this.chatService.chatIsEmpty = true;
-    this.chatService.chatMessages = []
-    const chatId = await this.createChatID(currentUserId, userId);
-    const checkIfChatExists = query(collection(this.firestore, "chats"), where(documentId(), "==", chatId));
-    const querySnapshot = await getDocs(checkIfChatExists);
-    
-    if (querySnapshot.empty) {
-
-      //legt neuen Chat an, wenn kein Chat existiert
-      await this.createNewChat(chatId, currentUserId, userId);
-      console.log('chat nicht gefunden');
-
-    } else {
-
-      //öffnet den vorhanden Chat
-      querySnapshot.forEach((doc) => {
-        this.chatService.getChatData(chatId);
-        console.log('chat gefunden:', doc.id, '=>', doc.data());
-      });
-
-    }
-    this.chatService.getUserData(userId);
-  };
-
-
-  //erstellt eine Chat-ID aus den Nutzer ID's
-  async createChatID(myUserId:string, userId:string){
-    return [myUserId, userId].sort().join('_');
-  };
-
-
-  //erstellt einen neuen Chat
-  async createNewChat(chatId: string, myUserId: string, userId:string){
-
-    const collectionRef = "chats"; 
-    try {
-      const docRef = doc(this.firestore, collectionRef, chatId);
-      await setDoc(docRef, {
-        users: [myUserId, userId]
-      });
-      console.log("Chat erfolgreich hinzugefügt mit der ID:", chatId);
-    } catch (error) {
-      console.error("Fehler beim Hinzufügen des Chats: ", error);
-    };
-  };
-};
+  //async openDirectMessage(currentUserId:string, userId:string){
+  //  
+  //  this.chatService.chatIsEmpty = true;
+  //  this.chatService.chatMessages = []
+  //  const chatId = await this.createChatID(currentUserId, userId);
+  //  const checkIfChatExists = query(collection(this.firestore, "chats"), where(documentId(), "==", chatId));
+  //  const querySnapshot = await getDocs(checkIfChatExists);
+  //  
+  //  if (querySnapshot.empty) {
+//
+  //    //legt neuen Chat an, wenn kein Chat existiert
+  //    await this.createNewChat(chatId, currentUserId, userId);
+  //    this.chatService.chatId = chatId;
+  //    console.log('chat nicht gefunden');
+//
+  //  } else {
+//
+  //    //öffnet den vorhanden Chat
+  //    querySnapshot.forEach((doc) => {
+  //      this.chatService.getChatData(chatId);
+  //      console.log('chat gefunden:', doc.id, '=>', doc.data());
+  //    });
+//
+  //  }
+  //  this.chatService.getUserData(userId);
+  //};
+//
+//
+  ////erstellt eine Chat-ID aus den Nutzer ID's
+  //async createChatID(myUserId:string, userId:string){
+  //  return [myUserId, userId].sort().join('_');
+  //};
+//
+//
+  ////erstellt einen neuen Chat
+  //async createNewChat(chatId: string, myUserId: string, userId:string){
+//
+  //  const collectionRef = "chats"; 
+  //  try {
+  //    const docRef = doc(this.firestore, collectionRef, chatId);
+  //    await setDoc(docRef, {
+  //      users: [myUserId, userId]
+  //    });
+  //    console.log("Chat erfolgreich hinzugefügt mit der ID:", chatId);
+  //  } catch (error) {
+  //    console.error("Fehler beim Hinzufügen des Chats: ", error);
+  //  };
+  //};
+};//

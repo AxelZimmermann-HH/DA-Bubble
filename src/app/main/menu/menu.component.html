@@ -73,7 +73,7 @@
         <div class="user-container" *ngIf="showUser">
 
             @for(user of filteredUsers; track user){
-            <div class="user" (click)="this.openDirectMessage(currentUserId, user.userId); selectChat()">
+            <div class="user" (click)="this.chatService.openDirectMessage(currentUserId, user.userId); selectChat()">
                 <div class="avatar-container">
                     @if (userService.isNumber(user.avatar)) {
                         <img class="user-avatar" src="\assets\avatars\avatar_{{user.avatar}}.png" alt="">

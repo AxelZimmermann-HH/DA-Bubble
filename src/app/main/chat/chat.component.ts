@@ -98,6 +98,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
 
   //sendet neue DM an den Chat Service
   async sendDirectMessage() {
+    
     const newDm = this.directMessage.value!;
     await this.chatService.setChatData(newDm, this.currentUserId);
     this.directMessage.setValue('');

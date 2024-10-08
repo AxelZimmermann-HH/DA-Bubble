@@ -18,8 +18,76 @@ export class ChatService {
   chatMessages: any[] = [];
   groupedMessages: { [key: string]: directMessage[] } = {};
   chatIsEmpty: boolean = true;
+  selectedChannelId: string | null = null;
+  showChannel = true;
+  showChat = true;
 
   constructor(public firestore: Firestore) {}
+
+
+  onChannelSelected(channel: any) {
+    this.selectedChannelId = channel.id;
+    this.showChannel = true;
+    this.showChat = false;
+  }
+
+
+  onChatSelected() {
+    console.log('Chat selected in MainComponent');
+    this.showChannel = false;
+    this.showChat = true;
+  }
+
+  //öffnet den privaten Chat
+  async openDirectMessage(currentUserId:string, userId:string){
+    debugger
+    this.chatIsEmpty = true;
+    this.chatMessages = []
+    const chatId = await this.createChatID(currentUserId, userId);
+    const checkIfChatExists = query(collection(this.firestore, "chats"), where(documentId(), "==", chatId));
+    const querySnapshot = await getDocs(checkIfChatExists);
+    
+    if (querySnapshot.empty) {
+
+      //legt neuen Chat an, wenn kein Chat existiert
+      await this.createNewChat(chatId, currentUserId, userId);
+      this.chatId = chatId;
+      console.log('chat nicht gefunden');
+
+    } else {
+
+      //öffnet den vorhanden Chat
+      querySnapshot.forEach((doc) => {
+        this.getChatData(chatId);
+        console.log('chat gefunden:', doc.id, '=>', doc.data());
+      });
+
+    }
+    this.getUserData(userId);
+  };
+
+
+  //erstellt eine Chat-ID aus den Nutzer ID's
+  async createChatID(myUserId:string, userId:string){
+    return [myUserId, userId].sort().join('_');
+  };
+
+
+  //erstellt einen neuen Chat
+  async createNewChat(chatId: string, myUserId: string, userId:string){
+
+    const collectionRef = "chats"; 
+    try {
+      const docRef = doc(this.firestore, collectionRef, chatId);
+      await setDoc(docRef, {
+        users: [myUserId, userId]
+      });
+      console.log("Chat erfolgreich hinzugefügt mit der ID:", chatId);
+    } catch (error) {
+      console.error("Fehler beim Hinzufügen des Chats: ", error);
+    };
+  };
+
 
   // Benutzer-Daten abrufen
   async getUserData(userId: string) {
@@ -98,6 +166,7 @@ export class ChatService {
   // Nachricht senden
   async setChatData(newDm: string, currentUserId: string) {
     const newDirectMessage = new directMessage();
+    newDirectMessage.chatId = this.chatId;
     newDirectMessage.senderId = currentUserId;
     newDirectMessage.receiverId = this.userId;
     newDirectMessage.text = newDm;
@@ -106,7 +175,8 @@ export class ChatService {
     newDirectMessage.dayDateMonth = await this.getFormattedDate();
     const dmData = newDirectMessage.toJson();
 
-    this.saveNewDirectMessage(dmData);
+    await this.saveNewDirectMessage(dmData);
+    await this.getChatData(this.chatId)
   };
 
 
@@ -128,27 +198,26 @@ export class ChatService {
     newDirectMessage.senderId = message.senderId;
     newDirectMessage.receiverId = message.receiverId;
     newDirectMessage.text = editedDM;
-    newDirectMessage.timestamp = await this.getTimeStamp();
-    newDirectMessage.time = newDirectMessage.timestamp.split('T')[1].slice(0, 5);
-    newDirectMessage.dayDateMonth = await this.getFormattedDate();
+    newDirectMessage.timestamp = message.timestamp;
+    newDirectMessage.time = message.time;
+    newDirectMessage.dayDateMonth = message.dayDateMonth;
     const dmData = newDirectMessage.toJson();
 
     this.saveEditedMessage(dmData);
   };
 
 
-    // Bearbeitete Nachricht speichern
-    async saveEditedMessage(dmData:any) {
- debugger
-      try {
-        await setDoc(doc(this.firestore, 'chats', dmData.chatId, 'messages', dmData.messageId), dmData
-        );
-      } catch (error: any) {
-        console.error('Fehler beim Erstellen der Nachricht:', error);
-      }
-    };
+  // Bearbeitete Nachricht speichern
+  async saveEditedMessage(dmData:any) {
+    try {
+      await setDoc(doc(this.firestore, 'chats', dmData.chatId, 'messages', dmData.messageId), dmData
+      );
+    } catch (error: any) {
+      console.error('Fehler beim Erstellen der Nachricht:', error);
+    }
+  };
 
-
+  
   // Timestamp generieren
   async getTimeStamp() {
     const now = new Date();

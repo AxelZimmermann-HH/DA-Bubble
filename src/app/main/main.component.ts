@@ -8,6 +8,7 @@ import { ChatComponent } from "./chat/chat.component";
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { DialogUserProfilComponent } from './dialog-user-profil/dialog-user-profil.component';
+import { ChatService } from '../services/chat.service';
 
 @Component({
   selector: 'app-main',
@@ -19,23 +20,6 @@ import { DialogUserProfilComponent } from './dialog-user-profil/dialog-user-prof
 })
 export class MainComponent {
 
-  selectedChannelId: string | null = null;
-  showChannel = true;
-  showChat = true;
+  constructor(private dialog:MatDialog, public chatService: ChatService){}
 
- constructor(private dialog:MatDialog){}
-
-  onChannelSelected(channel: any) {
-    this.selectedChannelId = channel.id;
-    this.showChannel = true;
-    this.showChat = false;
-  }
-
-  onChatSelected() {
-    console.log('Chat selected in MainComponent');
-    this.showChannel = false;
-    this.showChat = true;
-  }
-
- 
 }

@@ -59,7 +59,7 @@ export class ChannelComponent {
   selectedAnswers: Answer[] = [];
 
 
-  constructor(public dialog: MatDialog, public firestore: Firestore, private sharedService: SharedService, public userService: UserService, private route: ActivatedRoute) {
+  constructor(public dialog: MatDialog, public firestore: Firestore, public sharedService: SharedService, public userService: UserService, private route: ActivatedRoute) {
     this.subscribeToSearch();
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
@@ -303,10 +303,10 @@ export class ChannelComponent {
     this.openDialog(DialogAddUserComponent, channelId);
   }
 
-
-  openDialogEditChannel(channel: any) {
-    this.dialog.open(DialogEditChannelComponent, { data: channel });
-  }
+  //in shared Service verschoben
+  //openDialogEditChannel(channel: any) {
+  //  this.dialog.open(DialogEditChannelComponent, { data: channel });
+  //}
 
   onThreadClosed() {
     this.isThreadOpen = false;

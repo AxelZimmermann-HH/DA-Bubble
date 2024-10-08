@@ -3,7 +3,7 @@
     <ul class="users-menu">
         @for (member of channel.members; track member.name){
         @if(userService.isNumber(member.avatar)){
-        <li class="usersList" (click)="openUserProfil(member)">
+        <li class="usersList" (click)="openUserProfil(member); dialogRef.close()">
             <img [src]="'./assets/avatars/avatar_' + member.avatar + '.png'" alt=""
                 style="width: 50px; height: 50px; border-radius: 30px;">
             <div [ngClass]="{'offline-point': !member.online}" class="online-point"></div>
@@ -12,7 +12,7 @@
         </li>
         }
         @else{
-        <li class="usersList" (click)="openUserProfil(member)">
+        <li class="usersList" (click)="openUserProfil(member); dialogRef.close()">
             <img [src]="member.avatar" alt="Google User Avatar" alt=""
                 style="width: 50px; height: 50px; border-radius: 30px;">
             <div [ngClass]="{'offline-point': !member.online}" class="online-point"></div>

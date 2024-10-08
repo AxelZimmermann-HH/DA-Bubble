@@ -1,7 +1,7 @@
 <div style="display: flex; align-items: center; gap: 16px;">
     <div class="channel-container" *ngIf="selectedChannel">
         <div class="channel-header">
-            <button class="edit-channel" (click)="openDialogEditChannel(selectedChannel)">
+            <button class="edit-channel" (click)="this.sharedService.openDialogEditChannel(selectedChannel)">
                 <p># {{selectedChannel.channelName}}</p>
                 <img src="./assets/icons/keyboard_arrow_down_1.png" alt="">
             </button>
