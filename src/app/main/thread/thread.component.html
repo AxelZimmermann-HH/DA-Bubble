@@ -26,17 +26,17 @@
 
         <!-- Separator and answer count -->
         <div class="separator">
-            <p class="label-answers" *ngIf="message.answers.length > 0">
-                {{ message.answers.length }} Antworten
+            <p class="label-answers" *ngIf="selectedAnswers.length > 0">
+                {{ selectedAnswers.length }} Antworten
             </p>
             <hr>
         </div>
 
         <!-- Answer list -->
        
-        <div *ngFor="let answer of message.answers">
+        
             <div class="message-main" [ngClass]="{'current-user': isCurrentUser(answer.user)}"
-                *ngFor="let answer of message.answers">
+                *ngFor="let answer of selectedAnswers">
                 <img [src]="getAvatarForUser(answer.user)" alt="Avatar" class="avatar">
                 <div class="message-content" [ngClass]="{'a-flex': isCurrentUser(answer.user)}">
                     <div class="name-time" [ngClass]="{'current-user': isCurrentUser(answer.user)}">
@@ -48,7 +48,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        
         <!-- Input for new answers -->
 
         <div class="custom-input">

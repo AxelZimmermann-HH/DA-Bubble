@@ -319,9 +319,22 @@ export class ChannelComponent {
   openThread(message: Message) {
     this.isThreadOpen = true;
     this.selectedMessage = message;
-
+this.getAnswers(message.messageId)
   }
 
+  getAnswers(messageId: string) {
+    const messageDocRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}`);;
+    getDoc(messageDocRef).then(doc => {
+      if (doc.exists()) {
+        const data = doc.data();
+        this.selectedAnswers = data['answers'] ? data['answers'].map((a: any) => new Answer(a)) : [];
+      } else {
+        console.log("Keine solche Nachricht gefunden!");
+      }
+    }).catch(error => {
+      console.error("Fehler beim Abrufen der Antworten: ", error);
+    });
+  }
 
   showEmojiPicker = false;
 

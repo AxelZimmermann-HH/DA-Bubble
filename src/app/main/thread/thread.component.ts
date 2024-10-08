@@ -36,6 +36,7 @@ export class ThreadComponent {
   @Input() selectedChannelId: string | null = null;
   @Input() channelName: string | undefined;
   @Input() message!: Message;
+  @Input() selectedAnswers: Answer[]=[]
 
 
   constructor(
