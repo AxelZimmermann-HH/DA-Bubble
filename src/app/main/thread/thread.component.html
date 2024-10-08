@@ -1,6 +1,6 @@
 <div class="thread-container">
     <div class="thread-header">
-        <div>Thread 
+        <div>Thread
             <span style="font-family: Nunito; font-size: 14px; font-weight: 400; color: rgba(121, 126, 243, 1);">
                 #{{channelName}}
             </span>
@@ -11,14 +11,14 @@
     <div class="thread-content">
         <!-- Main message section -->
         <div class="message-main" [ngClass]="{'current-user': isCurrentUser(message.user)}">
-            <img [src]="'./assets/avatars/avatar_' + getAvatarForUser(message.user) + '.png'" 
-                 alt="Avatar" class="avatar">
+            <img [src]="'./assets/avatars/avatar_' + getAvatarForUser(message.user) + '.png'" alt="Avatar"
+                class="avatar">
             <div class="message-content" [ngClass]="{'a-flex': isCurrentUser(message.user)}">
                 <div class="name-time" [ngClass]="{'current-user': isCurrentUser(message.user)}">
-                    {{ message.user }} 
+                    {{ message.user }}
                     <p class="time">{{ message.formatTimestamp() }}</p>
                 </div>
-                <div class="speech-bubble" [ngClass]="{'border-radius': isCurrentUser(message.user)}"> 
+                <div class="speech-bubble" [ngClass]="{'border-radius': isCurrentUser(message.user)}">
                     {{ message.text }}
                 </div>
             </div>
@@ -31,11 +31,11 @@
             </p>
             <hr>
         </div>
-
+     
         <!-- Answer list -->
         <div class="message-main" *ngFor="let answer of message.answers" class="answer-item">
-            <img [src]="'./assets/avatars/avatar_' + getAvatarForUser(answer.user) + '.png'" 
-                 alt="Answer Avatar" class="avatar">
+            <img [src]="'./assets/avatars/avatar_' + getAvatarForUser(answer.user) + '.png'" alt="Answer Avatar"
+                class="avatar">
             <div class="answer-content">
                 <div class="name-time">
                     {{ answer.user }}
@@ -58,11 +58,11 @@
                         <img src="./assets/icons/sentiment_satisfied-1.png" alt="Emoji" class="add-emoji">
                         <img src="./assets/icons/alternate_email-1.png" alt="Email" class="add-mail">
                     </div>
-                    <img src="./assets/icons/Send icon.png" alt="Send" class="send-icon" 
-                         (click)="saveAnswer(message.messageId)">
+                    <img src="./assets/icons/Send icon.png" alt="Send" class="send-icon"
+                        (click)="saveAnswer(message.messageId)">
                 </div>
             </div>
         </div>
-        
+
     </div>
 </div>
