@@ -22,7 +22,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
   directMessage = new FormControl('', [Validators.required, Validators.minLength(2)]);
   editedMessage = new FormControl('', [Validators.required, Validators.minLength(2)]);
   editingMessageId: string | null = null;
-  currentUser: any;
+  currentUser: any|string;
   currentUserId: string = '';
   user = new User();
   chat: any;
@@ -38,7 +38,17 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
   ) {}
 
 
+  getAvatarForUser(userName: string):any {
 
+    if (userName === this.user.name) {
+      if (this.userService.isNumber(this.user.avatar)) {
+        return './assets/avatars/avatar_' + this.user.avatar + '.png';  // Local asset avatar
+      } else { 
+        return this.user.avatar;  // External URL avatar
+      }
+    }
+    return './assets/avatars/avatar_0.png';  // Default avatar when user not found
+  }
 
 
   // Scrollen direkt nach dem Initialisieren der View

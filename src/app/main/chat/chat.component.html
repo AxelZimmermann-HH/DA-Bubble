@@ -2,7 +2,7 @@
     <div class="channel-header">
         <div class="user" (click)="openUserProfil(user)">
             <div class="avatar-container">
-                <img class="user-avatar" [src]="'/assets/avatars/avatar_' + user.avatar + '.png'" alt="">
+                <img class="user-avatar" [src]="getAvatarForUser(user.name)" alt="">
                 <div [ngClass]="{'offline-point': !user.online}" class="online-point"></div>
             </div>
             <span class="header1">{{ user.name }}</span>
@@ -105,7 +105,7 @@
     <!-- Wenn keine Nachrichten vorhanden sind -->
     <div class="new-chat-info-container" *ngIf="chatService.chatIsEmpty">
         <div class="new-chat-user-avatar-container">
-            <img class="new-chat-user-avatar" [src]="'/assets/avatars/avatar_' + user.avatar + '.png'" alt="">
+            <img class="new-chat-user-avatar" [src]="getAvatarForUser(user.name)" alt="">
             <span class="header1">{{ user.name }}</span>
         </div>
         <span class="info header6">Diese Unterhaltung findet nur zwischen <span class="name-colored">&#64;{{ user.name }}</span> und dir statt.</span>

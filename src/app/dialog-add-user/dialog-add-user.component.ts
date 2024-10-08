@@ -40,13 +40,10 @@ export class DialogAddUserComponent {
 
     this.user.name = "Noah";
   }
-  ngOnInit() {
-   
-  }
-
+ 
   getAllUsers() {
     const userCollection = collection(this.firestore, 'users');
-    const readUsers = onSnapshot(userCollection, (snapshot) => {
+    onSnapshot(userCollection, (snapshot) => {
       this.userData = [];
       snapshot.forEach((doc) => {
         let user = new User({ ...doc.data(), id: doc.id });

@@ -1,6 +1,6 @@
 .channel-container {
     background-color: #FFFFFF;
-    width: 989px;
+    width: 100%;
     border-radius: 30px;
     height: 940px;
     display: flex;
@@ -110,6 +110,7 @@
         }
     }
 }
+
 .speech-bubble {
     width: 352px;
     height: 55px;
@@ -120,6 +121,7 @@
     font-size: 18px;
     font-weight: 400;
 }
+
 .channel-content {
     width: 100%;
     overflow-y: scroll;
@@ -172,7 +174,7 @@
                 margin: 0;
             }
 
-           
+
 
             .label-answers {
                 display: flex;
@@ -181,13 +183,16 @@
                 font-size: 18px;
                 font-weight: 400;
                 color: rgba(83, 90, 241, 1);
-                &:hover{cursor: pointer;}
+
+                &:hover {
+                    cursor: pointer;
+                }
             }
         }
     }
 
     .separator-line {
-        width: 919px;
+        width: auto;
         height: 0;
         border: 1px solid rgba(173, 176, 217, 1)
     }
@@ -211,13 +216,16 @@ td:hover .reaction-hover {
     align-items: center;
     gap: 8px;
 
-    img {       
-border-radius: 30px;
-width: 20px;
-height: 20px;
-padding: 8px;
-&:hover{ cursor: pointer;
-    background: #ECEEFE;}
+    img {
+        border-radius: 30px;
+        width: 20px;
+        height: 20px;
+        padding: 8px;
+
+        &:hover {
+            cursor: pointer;
+            background: #ECEEFE;
+        }
     }
 }
 
@@ -250,14 +258,14 @@ td:hover .speech-bubble {
     position: absolute;
     bottom: 20px;
     height: 145px;
-    width: 919px;
+    width: -webkit-fill-available;
     border-radius: 20px;
-    padding: 20px;
+    margin: 0 20px;
     gap: 8px;
     background: rgba(255, 255, 255, 1);
     border: 1px solid rgba(173, 176, 217, 1);
-    left: 50%;
-    transform: translate(-50%, 0%);
+    // left: 50%;
+    // transform: translate(-50%, 0%);
     font-size: 18px;
     font-weight: 400;
     display: flex;
@@ -269,12 +277,12 @@ td:hover .speech-bubble {
         font-family: nunito;
         font-size: 18px;
         font-weight: 400;
-        max-width: 100%;
-        min-width: 100%;
         height: 100%;
+        min-height: 20px;
         overflow-y: scroll;
         scrollbar-width: none;
-        line-height: 1.7;
+        margin: 20px;
+        max-width: -webkit-fill-available;
 
         &:focus {
             outline: none;
@@ -287,6 +295,7 @@ td:hover .speech-bubble {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin: 0 20px;
 }
 
 .reactions {
@@ -333,32 +342,32 @@ td:hover .speech-bubble {
     }
 }
 
-.current-user{
+.current-user {
     flex-direction: row-reverse;
 }
 
-.b-radius{
+.b-radius {
     border-radius: 30px 0px 30px 30px;
     background: #797EF3;
-    color:#FFFFFF
+    color: #FFFFFF
 }
 
 td:hover .b-radius {
     background-color: #797EF3 !important;
-    color:#FFFFFF
+    color: #FFFFFF
 }
 
 
-  emoji-mart{
-    position: absolute;
-    top: 20px;
-    right: 20px;
+emoji-mart {
+    // position: absolute;
+    // top: 20px;
+    // right: 20px;
     background-color: white;
     width: 350px;
     height: 350px;
     z-index: 1111;
-    border-radius: 30px;
+    // border-radius: 30px;
     overflow-y: scroll;
     scrollbar-width: none;
     display: flex;
-  }
+}

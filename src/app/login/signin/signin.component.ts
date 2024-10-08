@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ViewChild, ElementRef, Input, Output, EventEmitter } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-import { collection, Firestore, onSnapshot, doc, updateDoc, getDoc, setDoc } from '@angular/fire/firestore';
+import { collection, Firestore, onSnapshot, doc, updateDoc, getDoc, setDoc, query, where, getDocs, deleteDoc, documentId } from '@angular/fire/firestore';
 import { User } from '../../models/user.class';
 import { Router } from '@angular/router'; 
 import { UserService } from '../../services/user.service';  
@@ -16,6 +16,7 @@ import { Auth, signInWithPopup, GoogleAuthProvider } from '@angular/fire/auth';
 })
 export class SigninComponent {
   @Output() signUpChange = new EventEmitter<boolean>();
+  @Output() passwordChange = new EventEmitter<boolean>();
   @Input() signUp: boolean = false;
   @ViewChild('mailInput') mailInput!: ElementRef;
   userData: any = [];
@@ -97,23 +98,81 @@ export class SigninComponent {
 
   guestLogin() {
     const userCollection = collection(this.firestore, 'users');
-    const guestUserDocRef = doc(userCollection);
+    
+    const guestUserId = '12345guest';
+    const guestUserDocRef = doc(userCollection, guestUserId);
+
     // Erstelle einen Gast-Benutzer mit einer zufälligen ID
     const guestUser = new User();
     guestUser.name = 'Gast';
     guestUser.mail = 'guest@example.com';
     guestUser.avatar = 1;  // Oder eine beliebige Avatar-ID
-    guestUser.userId = guestUserDocRef.id;  // Generiere eine zufällige ID
+    // guestUser.userId = guestUserDocRef.id;  // Generiere eine zufällige ID
+    guestUser.userId = guestUserId;
 
     setDoc(guestUserDocRef, guestUser.toJson()).then(() => {
       console.log('Gastbenutzer angelegt:', guestUser);
   
       // Rufe handleSuccess auf und simuliere den Gast-Login
       this.handleSuccess(guestUser, guestUser.mail);
+      this.deleteGuestChats();
     }).catch((error) => {
       console.error('Fehler beim Anlegen des Gastbenutzers:', error);
     });
   }
+
+  deleteGuestChats() {
+    console.log('RUN');
+    const chatsCollection = collection(this.firestore, 'chats');
+    
+    // Abfrage für Dokumente, deren ID mit "12345guest" beginnt
+    const startWithQuery = query(chatsCollection, where(documentId(), '>=', '12345guest'), where(documentId(), '<=', '12345guest\uf8ff'));
+  
+    getDocs(startWithQuery).then((snapshot) => {
+      console.log('StartWithQuery: Anzahl der Dokumente:', snapshot.size);
+      if (snapshot.empty) {
+        console.log('Keine Dokumente gefunden, die mit "12345guest" beginnen.');
+      } else {
+        snapshot.forEach((doc) => {
+          // Client-seitige Überprüfung, ob die ID wirklich mit "guest" endet
+          if (doc.id.startsWith('12345guest') || doc.id.endsWith('12345guest')) {
+            console.log('Dokument gefunden zum Löschen:', doc.id);
+            // Lösche alle Subcollections vor dem Hauptdokument
+            this.deleteSubcollections(doc.ref).then(() => {
+              // Lösche das übergeordnete Chat-Dokument
+              deleteDoc(doc.ref).then(() => {
+                console.log('Chat gelöscht:', doc.id);
+              }).catch((error) => {
+                console.error('Fehler beim Löschen des Chats:', error);
+              });
+            }).catch((error) => {
+              console.error('Fehler beim Löschen der Subcollection:', error);
+            });
+          }
+        });
+      }
+    }).catch((error) => {
+      console.error('Fehler bei der Abfrage der Chats:', error);
+    });
+  }
+  
+  // Rekursive Funktion zum Löschen der Subcollections
+  async deleteSubcollections(chatRef: any) {
+    const messagesCollection = collection(chatRef, 'messages');
+    
+    // Alle Nachrichten innerhalb des Chat-Dokuments abrufen
+    const snapshot = await getDocs(messagesCollection);
+  
+    const deletePromises = snapshot.docs.map((messageDoc) => {
+      return deleteDoc(messageDoc.ref);  // Lösche jede Nachricht in der "messages"-Subcollection
+    });
+  
+    // Warte, bis alle Nachrichten gelöscht sind
+    await Promise.all(deletePromises);
+    console.log('Alle Nachrichten in der Subcollection gelöscht.');
+  }
+  
+  
 
   googleLogin() {
     signInWithPopup(this.auth, new GoogleAuthProvider())
@@ -169,6 +228,10 @@ export class SigninComponent {
 
   goToSignUp() {
     this.signUpChange.emit(true); // sendet das Event nach oben
+  }
+
+  goToPasswordReset() {
+    this.passwordChange.emit(true)
   }
 }
 

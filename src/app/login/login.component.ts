@@ -19,12 +19,18 @@ import { PasswordMainComponent } from './password-main/password-main.component';
 })
 export class LoginComponent {
   signUp: boolean = false;
+  password: boolean = false;
 
   onSignUpChange(newSignUpValue: boolean) {
     this.signUp = newSignUpValue; // aktualisiert die Variable in der Parent-Komponente
   }
 
+  onPasswordChange(newPasswordValue: boolean) {
+    this.password = newPasswordValue;
+  }
+
   handleSwitchToSignin() {
     this.signUp = false;  // Schaltet zu Signin um
+    this.password = false;
   }
 }

@@ -11,7 +11,7 @@ import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-ch
 import { AddChannelUserComponent } from './add-channel-user/add-channel-user.component';
 import { Answer } from '../../models/answer.class';
 import { ActivatedRoute } from '@angular/router';
-import { addDoc, collection, doc, Firestore, getDoc, onSnapshot, orderBy, query, Timestamp } from '@angular/fire/firestore';
+import { addDoc, collection, doc, Firestore, getDoc, onSnapshot, orderBy, query, Timestamp, updateDoc } from '@angular/fire/firestore';
 import { UserService } from '../../services/user.service';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { ChatComponent } from "../chat/chat.component";
@@ -40,7 +40,7 @@ export class ChannelComponent {
   message = new Message();
   allMessages: any = [];
   filteredMessages: any = [];
- 
+
   answer = new Answer();
   allAnswers: any = [];
 
@@ -55,9 +55,9 @@ export class ChannelComponent {
 
   selectedChannel: Channel | null = null;
   isThreadOpen: boolean = false;
-  selectedMessage= new Message() ;// Selected message for the thread
+  selectedMessage = new Message();// Selected message for the thread
   selectedAnswers: Answer[] = [];
-  
+
 
   constructor(public dialog: MatDialog, public firestore: Firestore, private sharedService: SharedService, public userService: UserService, private route: ActivatedRoute) {
     this.subscribeToSearch();
@@ -156,39 +156,74 @@ export class ChannelComponent {
 
   getAllMessages() {
     const messagesQuery = query(
-        collection(this.firestore, `channels/${this.selectedChannelId}/messages`),
-        orderBy('timestamp', 'asc')
+      collection(this.firestore, `channels/${this.selectedChannelId}/messages`),
+      orderBy('timestamp', 'asc')
     );
 
     this.allMessages = [];
     onSnapshot(messagesQuery, (snapshot) => {
-        const messagesData = snapshot.docs.map(doc => new Message(doc.data()));
-        
-        // Nachrichten nach Datum gruppieren
-        const groupedMessages: { [date: string]: Message[] } = {};
-        
-        messagesData.forEach(message => {
-            const messageDate = message.fullDate; // Verwende hier dein formatFullDate
-            if (!groupedMessages[messageDate]) {
-                groupedMessages[messageDate] = [];
-            }
-            groupedMessages[messageDate].push(message);
-        });
+      const messagesData = snapshot.docs.map(doc => {
+        const data = doc.data();
+        // Füge hier das emojis-Feld hinzu, um sicherzustellen, dass es korrekt verarbeitet wird
+        return new Message({
+          text: data['text'],
+          user: data['user'],
+          timestamp: data['timestamp'],
+          emojis: data['emojis'] || [] // Stelle sicher, dass das emojis-Feld vorhanden ist
+        }, doc.id);
+      });
 
-        // Umwandeln des gruppierten Objekts in ein Array
-        this.allMessages = Object.keys(groupedMessages).map(date => ({
-            date,
-            messages: groupedMessages[date]
-        }));
+      // Nachrichten nach Datum gruppieren
+      const groupedMessages: { [date: string]: Message[] } = {};
 
-        console.log('grouped messages', this.allMessages);
+      messagesData.forEach(message => {
+        const messageDate = message.fullDate; // Verwende hier dein formatFullDate
+        if (!groupedMessages[messageDate]) {
+          groupedMessages[messageDate] = [];
+        }
+        groupedMessages[messageDate].push(message);
+      });
+
+      // Umwandeln des gruppierten Objekts in ein Array
+      this.allMessages = Object.keys(groupedMessages).map(date => ({
+        date,
+        messages: groupedMessages[date]
+      }));
+
+      console.log('grouped messages', this.allMessages);
     });
-}
+  }
+
+  updateMessageInFirestore(message: Message) {
+    const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${message.messageId}`);
+  
+    // Hier fügen wir die Emojis zur Nachricht hinzu oder aktualisieren sie
+    updateDoc(messageRef, {
+      text: message.text,
+      user: message.user,
+      timestamp: message.timestamp,
+      emojis: message.answers // Hier kannst du die Emojis speichern, z. B. in einem Array
+    })
+    .then(() => {
+      console.log("Nachricht erfolgreich aktualisiert!");
+    })
+    .catch((error) => {
+      console.error("Fehler beim Aktualisieren der Nachricht: ", error);
+    });
+  }
 
 
   getAvatarForUser(userName: string) {
+
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
-    return user ? user.avatar : 'default';
+    if (user) {
+      if (this.userService.isNumber(user.avatar)) {
+        return './assets/avatars/avatar_' + user.avatar + '.png';  // Local asset avatar
+      } else { 
+        return user.avatar;  // External URL avatar
+      }
+    }
+    return './assets/avatars/avatar_0.png';  // Default avatar when user not found
   }
 
   isCurrentUser(currentUser: string): boolean {
@@ -198,37 +233,34 @@ export class ChannelComponent {
 
   sendMessage() {
     if (this.newMessageText.trim() === '') {
-        return; // Don't send empty messages
+      return; // Don't send empty messages
     }
 
     const userName = this.findUserNameById(this.userId);
     if (!userName) {
-        console.log('Benutzer nicht gefunden');
-        this.newMessageText = '';
-        return;
+      console.log('Benutzer nicht gefunden');
+      this.newMessageText = '';
+      return;
     }
 
     const currentDate = new Date();
     const messageData = {
-        text: this.newMessageText,
-        user: userName, // Use the found username
-        timestamp: Timestamp.now(),
-        fullDate: currentDate.toDateString(),
-        answers: [] // Initialize with an empty array for answers
+      text: this.newMessageText,
+      user: userName, // Use the found username
+      timestamp: Timestamp.now(),
+      fullDate: currentDate.toDateString(),
+      answers: [] 
     };
 
     const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
     addDoc(messagesCollection, messageData)
-        .then((docRef) => {
-            console.log('Nachricht erfolgreich gesendet:', docRef.id);
-            // Optionally, create a new Message instance here if needed
-            // const newMessage = new Message({ ...messageData }, docRef.id);
-            this.newMessageText = ''; // Clear the input field after sending
-        })
-        .catch((error) => {
-            console.error('Fehler beim Senden der Nachricht:', error);
-        });
-}
+      .then((docRef) => {
+        this.newMessageText = ''; 
+      })
+      .catch((error) => {
+        console.error('Fehler beim Senden der Nachricht:', error);
+      });
+  }
 
 
   async getChannelData(channelId: string): Promise<Channel> {
@@ -262,8 +294,8 @@ export class ChannelComponent {
   }
 
   openUsersList(channelId: string) {
-    const dialogRef = this.openDialog(AddChannelUserComponent, channelId); 
-   
+    const dialogRef = this.openDialog(AddChannelUserComponent, channelId);
+
 
   }
 
@@ -278,23 +310,38 @@ export class ChannelComponent {
 
   onThreadClosed() {
     this.isThreadOpen = false;
-   
+
     this.selectedAnswers = [];
-    
+
 
   }
 
   openThread(message: Message) {
     this.isThreadOpen = true;
     this.selectedMessage = message;
-  
+this.getAnswers(message.messageId)
   }
 
+  getAnswers(messageId: string) {
+    const messageDocRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}`);;
+    getDoc(messageDocRef).then(doc => {
+      if (doc.exists()) {
+        const data = doc.data();
+        this.selectedAnswers = data['answers'] ? data['answers'].map((a: any) => new Answer(a)) : [];
+      } else {
+        console.log("Keine solche Nachricht gefunden!");
+      }
+    }).catch(error => {
+      console.error("Fehler beim Abrufen der Antworten: ", error);
+    });
+  }
 
   showEmojiPicker = false;
 
-  openEmojiPicker() {
-    this.showEmojiPicker = true;
+  openEmojiPicker(message:any) {
+    if ( message ===this.selectedMessage.messageId) {
+      this.showEmojiPicker = true;
+    }
   }
 
   addEmoji(event: any) {
