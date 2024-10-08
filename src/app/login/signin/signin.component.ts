@@ -16,6 +16,7 @@ import { Auth, signInWithPopup, GoogleAuthProvider } from '@angular/fire/auth';
 })
 export class SigninComponent {
   @Output() signUpChange = new EventEmitter<boolean>();
+  @Output() passwordChange = new EventEmitter<boolean>();
   @Input() signUp: boolean = false;
   @ViewChild('mailInput') mailInput!: ElementRef;
   userData: any = [];
@@ -227,6 +228,10 @@ export class SigninComponent {
 
   goToSignUp() {
     this.signUpChange.emit(true); // sendet das Event nach oben
+  }
+
+  goToPasswordReset() {
+    this.passwordChange.emit(true)
   }
 }
 

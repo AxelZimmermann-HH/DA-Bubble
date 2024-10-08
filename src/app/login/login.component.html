@@ -1,12 +1,13 @@
 <div class="login-container">
-    @if (!signUp) {
-        <app-signin [signUp]="signUp" (signUpChange)="onSignUpChange($event)"></app-signin>
-    } @else {
-        <app-signup (switchToSignin)="handleSwitchToSignin()"></app-signup>
+    @if (!signUp && !password) {
+        <app-signin [signUp]="signUp" (signUpChange)="onSignUpChange($event)" (passwordChange)="onPasswordChange($event)"></app-signin>
+    }
+    @if (!signUp && password) {
+        <app-password-main (switchToSignin)="handleSwitchToSignin()"></app-password-main>
     } 
-</div>
-<div class="login-container">
-    <app-password-main></app-password-main>
+    @if (signUp) {
+        <app-signup (switchToSignin)="handleSwitchToSignin()"></app-signup>  
+    } 
 </div>
 <div class="login-footer">
     <a href="#">Impressum</a><a href="#">Datenschutz</a>
