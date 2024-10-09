@@ -213,7 +213,7 @@ export class SigninComponent {
     this.handleSuccess(existingUser, email);
   }
 
-  async createNewUser(userDocRef: any, googleUser: any, email: string, userId: string) {
+  async createNewUser2(userDocRef: any, googleUser: any, email: string, userId: string) {
     const newUser = new User();
     newUser.name = googleUser.displayName || 'Unbekannter Benutzer';
     newUser.mail = email;
@@ -272,7 +272,7 @@ export class SigninComponent {
 
   
   
-  async createNewUser2(userDocRef: any, googleUser: any, email: string, userId: string) {
+  async createNewUser(userDocRef: any, googleUser: any, email: string, userId: string) {
     const newUser = new User();
     newUser.name = googleUser.displayName || 'Unbekannter Benutzer';
     newUser.mail = email;

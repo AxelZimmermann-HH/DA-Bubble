@@ -106,8 +106,8 @@
 }
 
 .selected-avatar {
-    width: 168px;
-    height: 168px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     object-fit: cover; 
     object-position: center;
@@ -278,11 +278,46 @@ input[type="file"] {
         justify-content: center;
         gap: 35px;
         > h1 {
-            font-size: 30px;
+            font-size: 25px;
             padding-bottom: 0px;
         }
         > img {
             padding-bottom: 15px;
         }
+    }
+    .text-right {
+        > p {
+            font-size: 16px;
+            padding-top: 20px;
+        }
+    }
+    .avatars {
+        > img {
+            width: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-sizing: border-box;
+            &:hover {
+                border: 2px solid lightgray;
+            }
+        }
+    }
+    .upload-area {
+        gap: 10px;
+        align-items: center;
+        margin-top: 20px;
+        > p {
+            font-size: 16px;
+            margin: 0;
+        }
+    }
+    .custom-file-upload {
+        padding: 8px 16px;
+        font-size: 16px;
+    }
+    .next-button {
+        padding: 8px 16px;
+        font-size: 16px;
+        cursor: not-allowed;
     }
 }
