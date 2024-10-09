@@ -38,24 +38,6 @@ p {
     }
 }
 
-.gotoregister {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 5px;
-    padding-right: 70px;
-    > p {
-        font-family: 'Nunito';
-        font-weight: 400;
-        font-size: 18px;
-    };
-    > a {
-        &:hover {
-            font-weight: 700;
-        }
-    }
-}
-
 .login-content {
     background-color: white;
     width: 500px;
@@ -143,7 +125,6 @@ p {
 
 .header {
     display: flex;
-    // justify-content: space-between;
     gap: 40px;
     align-items: center;
     width: 100%;
@@ -182,16 +163,6 @@ p {
     cursor: pointer;
     &:hover {
         background-color: #797EF3;
-    }
-}
-
-.guest {
-    color: #444DF2;
-    border: 1px solid #444DF2;
-    background-color: white;
-    &:hover {
-        color: white;
-        background-color: #444DF2;
     }
 }
 
@@ -235,5 +206,88 @@ p {
     }
     100% {
         transform: translateY(0);  /* Endposition */
+    }
+}
+
+
+@media (max-width: 750px) {
+    a {
+        font-size: 16px;
+    }
+    .login-header {
+        width: 100%;
+        margin: 0px;
+    }
+    .logo {
+        gap: 16px;
+        padding-left: 20px;
+        > img {
+           width: 40px; 
+        }
+        > p {
+            font-size: 18px; 
+        }
+    }
+    .login-content {
+        width: 90%;
+        padding: 30px 10px;
+        > h1 {
+            font-size: 30px;
+            padding-bottom: 10px;
+            margin: 0;
+        }
+        > p {
+            font-size: 18px;
+            text-align: center;
+            margin: 0;
+        }
+        > form {
+            gap: 20px;
+            width: 100%;
+            padding-top: 20px;
+            > .divider {
+                gap: 10px;
+            }
+            > .input {
+                position: relative;
+                width: 100%;
+                > input {
+                    font-size: 16px;
+                    &::placeholder {
+                        font-size: 16px;
+                    }
+                }
+            }
+        }
+    }
+    .header {
+        justify-content: center;
+        gap: 35px;
+        > h1 {
+            font-size: 30px;
+            padding-bottom: 0px;
+        }
+        > img {
+            padding-bottom: 15px;
+            &:hover {
+                cursor: pointer;
+                transform: scale(1.1);
+            }
+        }
+    }
+    .success-inner-dialog {
+        border-radius: 20px 20px 0 20px;
+        padding: 20px;
+        > p {
+            font-size: 20px;
+        }
+    }
+}
+
+@media (max-width: 450px) {
+    .header {
+        > h1 {
+            font-size: 20px;
+        }
     }
 }
