@@ -213,7 +213,7 @@ export class SigninComponent {
     this.handleSuccess(existingUser, email);
   }
 
-  async createNewUser(userDocRef: any, googleUser: any, email: string, userId: string) {
+  async createNewUser2(userDocRef: any, googleUser: any, email: string, userId: string) {
     const newUser = new User();
     newUser.name = googleUser.displayName || 'Unbekannter Benutzer';
     newUser.mail = email;
@@ -222,8 +222,8 @@ export class SigninComponent {
   
     // Versuch das Google-Bild zu laden, aber mit direktem Fallback bei Fehler
     try {
-      const avatarUrl = googleUser.photoURL || 'assets/default-avatar.png'; // Google-Avatar oder Fallback
-  
+      const avatarUrl = googleUser.photoURL || 'assets/avatars/avatar_1.png'; // Google-Avatar oder Fallback
+      //  
       // Avatar abrufen und hochladen (aber mit maximal 3 Versuchen bei Fehlern)
       const avatarBlob = await this.fetchAvatarWithRetry(avatarUrl);
   
@@ -237,7 +237,7 @@ export class SigninComponent {
     } catch (error) {
       console.error('Fehler beim Laden des Avatars:', error);
       // Fallback-Avatar verwenden
-      newUser.avatar = 'assets/default-avatar.png'; 
+      newUser.avatar = 'assets/avatars/avatar_1.png'; 
     }
   
     // Speichern des neuen Benutzers in Firestore
@@ -272,7 +272,7 @@ export class SigninComponent {
 
   
   
-  async createNewUser2(userDocRef: any, googleUser: any, email: string, userId: string) {
+  async createNewUser(userDocRef: any, googleUser: any, email: string, userId: string) {
     const newUser = new User();
     newUser.name = googleUser.displayName || 'Unbekannter Benutzer';
     newUser.mail = email;
