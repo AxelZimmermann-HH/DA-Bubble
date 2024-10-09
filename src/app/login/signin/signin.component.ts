@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ViewChild, ElementRef, Input, Output, EventEmitter } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { collection, Firestore, onSnapshot, doc, updateDoc, getDoc, setDoc, query, where, getDocs, deleteDoc, documentId } from '@angular/fire/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from '@angular/fire/storage'; // Firebase Storage Funktionen
 import { User } from '../../models/user.class';
 import { Router } from '@angular/router'; 
 import { UserService } from '../../services/user.service';  
@@ -211,8 +212,67 @@ export class SigninComponent {
     const existingUser = docSnapshot.data() as User;
     this.handleSuccess(existingUser, email);
   }
-  
+
   async createNewUser(userDocRef: any, googleUser: any, email: string, userId: string) {
+    const newUser = new User();
+    newUser.name = googleUser.displayName || 'Unbekannter Benutzer';
+    newUser.mail = email;
+    newUser.online = true;
+    newUser.userId = userId;
+  
+    // Versuch das Google-Bild zu laden, aber mit direktem Fallback bei Fehler
+    try {
+      const avatarUrl = googleUser.photoURL || 'assets/default-avatar.png'; // Google-Avatar oder Fallback
+  
+      // Avatar abrufen und hochladen (aber mit maximal 3 Versuchen bei Fehlern)
+      const avatarBlob = await this.fetchAvatarWithRetry(avatarUrl);
+  
+      const storage = getStorage();
+      const storageRef = ref(storage, `avatars/${userId}`);
+      await uploadBytes(storageRef, avatarBlob);
+  
+      const avatarDownloadUrl = await getDownloadURL(storageRef);
+      newUser.avatar = avatarDownloadUrl; // Gespeicherte URL in User-Dokument speichern
+  
+    } catch (error) {
+      console.error('Fehler beim Laden des Avatars:', error);
+      // Fallback-Avatar verwenden
+      newUser.avatar = 'assets/default-avatar.png'; 
+    }
+  
+    // Speichern des neuen Benutzers in Firestore
+    await setDoc(userDocRef, newUser.toJson());
+    console.log('Neuer Benutzer angelegt:', newUser);
+  
+    this.handleSuccess(newUser, email);
+  }
+  
+  async fetchAvatarWithRetry(avatarUrl: string, retryCount = 0): Promise<Blob> {
+    try {
+      const response = await fetch(avatarUrl);
+      if (!response.ok) {
+        console.warn(`Fehler beim Laden des Bildes (Status: ${response.status})`);
+        throw new Error(`Fehler beim Laden des Bildes: ${response.statusText}`);
+      }
+  
+      return await response.blob();
+    } catch (error: any) {
+      if (error.message.includes('429') && retryCount < 3) {
+        console.warn('Zu viele Anfragen (429). Warte 1 Sekunde und versuche erneut.');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return this.fetchAvatarWithRetry(avatarUrl, retryCount + 1); // Erneuter Versuch
+      } else {
+        throw new Error('Fehler beim Laden des Avatars oder zu viele Versuche.');
+      }
+    }
+  }
+  
+  
+
+
+  
+  
+  async createNewUser2(userDocRef: any, googleUser: any, email: string, userId: string) {
     const newUser = new User();
     newUser.name = googleUser.displayName || 'Unbekannter Benutzer';
     newUser.mail = email;

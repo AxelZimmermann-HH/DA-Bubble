@@ -242,3 +242,47 @@ input[type="file"] {
         transform: translateY(0);  /* Endposition */
     }
 }
+
+@media (max-width: 750px) {
+    a {
+        font-size: 16px;
+    }
+    .login-content {
+        width: 90%;
+        padding: 30px 10px;
+        > p {
+            font-size: 18px;
+            text-align: center;
+            margin: 0;
+        }
+        > form {
+            gap: 20px;
+            width: 100%;
+            padding-top: 20px;
+            > .divider {
+                gap: 10px;
+            }
+            > .input {
+                position: relative;
+                width: 100%;
+                > input {
+                    font-size: 16px;
+                    &::placeholder {
+                        font-size: 16px;
+                    }
+                }
+            }
+        }
+    }
+    .header {
+        justify-content: center;
+        gap: 35px;
+        > h1 {
+            font-size: 30px;
+            padding-bottom: 0px;
+        }
+        > img {
+            padding-bottom: 15px;
+        }
+    }
+}
