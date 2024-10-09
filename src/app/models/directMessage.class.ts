@@ -8,6 +8,9 @@ export class directMessage {
     timestamp!: string;
     messageId!: string;
     chatId!: string;
+    fileDownloadUrl!: string;
+    fileName!: string;
+
 
     constructor(obj?: any) {
         this.text = obj ? obj.text : '';
@@ -18,6 +21,8 @@ export class directMessage {
         this.timestamp = obj ? obj.timestamp : '';
         this.messageId = obj ? obj.messageId : '';
         this.chatId = obj ? obj.chatId : '';
+        this.fileDownloadUrl = obj ? obj.fileDownloadUrl : '';
+        this.fileName = obj ? obj.fileName : '';
     }
 
     public toJson(){
@@ -30,6 +35,8 @@ export class directMessage {
             timestamp:this.timestamp,
             messageId:this.messageId,
             chatId:this.chatId,
+            fileDownloadUrl:this.fileDownloadUrl,
+            fileName:this.fileName,
         }
        
     }

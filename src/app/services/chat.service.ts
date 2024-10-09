@@ -40,7 +40,6 @@ export class ChatService {
 
   //öffnet den privaten Chat
   async openDirectMessage(currentUserId:string, userId:string){
-    debugger
     this.chatIsEmpty = true;
     this.chatMessages = []
     const chatId = await this.createChatID(currentUserId, userId);
@@ -132,6 +131,8 @@ export class ChatService {
               time: messageData['time'],
               dayDateMonth: messageData['dayDateMonth'],
               text: messageData['text'],
+              fileDownloadUrl: messageData['fileDownloadUrl'],
+              fileName: messageData['fileName'],
             };
 
             this.chatMessages.push(chatData);
@@ -164,7 +165,7 @@ export class ChatService {
 
 
   // Nachricht senden
-  async setChatData(newDm: string, currentUserId: string) {
+  async setChatData(newDm: string, fileDownloadUrl:string, selectedFileName:string, currentUserId: string) {
     const newDirectMessage = new directMessage();
     newDirectMessage.chatId = this.chatId;
     newDirectMessage.senderId = currentUserId;
@@ -173,6 +174,9 @@ export class ChatService {
     newDirectMessage.timestamp = await this.getTimeStamp();
     newDirectMessage.time = newDirectMessage.timestamp.split('T')[1].slice(0, 5);
     newDirectMessage.dayDateMonth = await this.getFormattedDate();
+    newDirectMessage.fileName = selectedFileName;
+    newDirectMessage.fileDownloadUrl = fileDownloadUrl;
+
     const dmData = newDirectMessage.toJson();
 
     await this.saveNewDirectMessage(dmData);

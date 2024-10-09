@@ -7,8 +7,7 @@ import { DialogUserProfilComponent } from '../dialog-user-profil/dialog-user-pro
 import { User } from '../../models/user.class';
 import { UserService } from '../../services/user.service';
 import { ActivatedRoute, Route } from '@angular/router';
-import { collection, collectionData } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from '@angular/fire/storage';  // Firebase Storage imports
 
 @Component({
   selector: 'app-chat',
@@ -21,6 +20,8 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
 
   directMessage = new FormControl('', [Validators.required, Validators.minLength(2)]);
   editedMessage = new FormControl('', [Validators.required, Validators.minLength(2)]);
+  file = new FormControl('', [Validators.required, Validators.minLength(2)]);
+
   editingMessageId: string | null = null;
   currentUser: any|string;
   currentUserId: string = '';
@@ -98,9 +99,10 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
 
   //sendet neue DM an den Chat Service
   async sendDirectMessage() {
-    
     const newDm = this.directMessage.value!;
-    await this.chatService.setChatData(newDm, this.currentUserId);
+    const fileDownloadUrl = this.fileDownloadUrl;
+    const fileName = this.selectedFileName;
+    await this.chatService.setChatData(newDm, fileDownloadUrl, fileName, this.currentUserId);
     this.directMessage.setValue('');
   };
 
@@ -137,7 +139,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
 
   // öffnet das Bearbeitungsfeld
   editDirectMessage(message:any){
- 
     this.editingMessageId = message.messageId;
     this.editedMessage.setValue(message.text)
   }
@@ -155,5 +156,88 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     await this.chatService.setEditedChatData(editedDM, message);
     this.editedMessage.setValue('');
     this.editingMessageId = null;
+  }
+
+
+  //FILE-UPLOAD
+  selectedFile: File | null = null;
+  selectedFileName: string = '';  // Neuer Dateiname-String
+  fileDownloadUrl: string = '';
+
+
+  //Datei hinzufügen
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.selectedFile = input.files[0];
+      this.selectedFileName = this.selectedFile.name;  // Dateiname speichern
+      this.uploadFile()
+    }
+    
+  }
+
+
+  //Datei ändern
+  onChangeFileSelected(event: Event, fileToDelete:string) {
+    this.deleteFile(fileToDelete); //Alte Datei löschen
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.selectedFile = input.files[0];
+      this.selectedFileName = this.selectedFile.name;  // Dateiname speichern
+      this.uploadFile()
+    }
+  }
+
+
+  //File in den Storage hochladen
+  async uploadFile() {
+    if (!this.selectedFile) return;
+
+    try {
+      // Initialisiere Firebase Storage
+      const storage = getStorage();
+      const storageRef = ref(storage, `files/${this.selectedFileName}`);
+
+      // Lade die Datei hoch
+      const snapshot = await uploadBytes(storageRef, this.selectedFile);
+
+      // Hol die URL der hochgeladenen Datei
+      const url = await getDownloadURL(snapshot.ref);
+      this.fileDownloadUrl = url;
+    } catch (error) {
+      console.error('Fehler beim Hochladen der Datei:', error);
+    }
+  }
+
+
+  //File im Browser abrufen und laden
+  downloadFile(fileDownloadUrl:string, fileName:string){
+       // Erstellen eines unsichtbaren Links
+       const link = document.createElement('a');
+       link.href = fileDownloadUrl;
+       link.download = fileName;
+       // Anhängen des Links an das Dokument
+       document.body.appendChild(link);
+   
+       // Automatisches Klicken des Links, um den Download zu starten
+       link.click();
+   
+       // Entfernen des Links nach dem Download
+       document.body.removeChild(link);
+  }
+
+
+  //Datei löschen
+  deleteFile(fileName: string) {
+    // Firebase Storage initialisieren
+    const storage = getStorage();
+    const fileRef = ref(storage, '/files/' + fileName);
+
+    // Datei löschen
+    deleteObject(fileRef).then(() => {
+      console.log('Datei erfolgreich gelöscht');
+    }).catch((error) => {
+      console.error('Fehler beim Löschen der Datei:', error);
+    });
   }
 }
