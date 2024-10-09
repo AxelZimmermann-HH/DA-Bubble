@@ -2,7 +2,7 @@
  <div class="profil-header">Profil <img src="./assets/icons/close.png" alt="" class="closebtn" (click)="dialogRef.close(); this.sharedService.openDialogEditChannel(selectedChannel)"></div>
  <img [src]="'./assets/avatars/avatar_' + user.avatar +'.png'" alt="" class="profilImg">
  <div class="user-info">
-    <div class="user-name">{{user.name + user.userId}} <img src="{{user.avatar}}" alt=""></div>
+    <div class="user-name">{{user.name}} <img src="{{user.avatar}}" alt=""></div>
     <div class="d-flex"><div [ngClass]="{'offline-point': !user.online}" class="online-point"></div><span>{{ user.online ? 'Aktiv' : 'Abwesend' }}</span></div>
     <div class="email">
         <img src="./assets/icons/mail.png" alt="">E-mail-Adresse 

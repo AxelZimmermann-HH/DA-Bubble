@@ -7,7 +7,6 @@ export interface MessageData {
   timestamp?: any; // Use a more specific type if applicable
   answers?: Answer[];
   emojis?: [];
-
 }
 
 export class Message {
@@ -19,6 +18,8 @@ export class Message {
   answers: Answer[] = []; 
   emojis!:[];
 
+  isEditing: boolean = false;
+  editedText: string = '';
 
   constructor(obj: MessageData = {}, messageId: string = '') {
     this.messageId = messageId; // should be set from Firestore
@@ -29,9 +30,17 @@ export class Message {
     this.fullDate = this.formatFullDate(date);
     this.answers = Array.isArray(obj.answers) ? obj.answers.map(a => new Answer(a)) : []; // Initialize answers
     this.emojis = obj.emojis || [];
+    this.editedText = this.text; 
 }
 
+public getLastAnswerTimestamp():string|any {
+  if (this.answers.length === 0) {
+    return null; // Keine Antworten vorhanden
+  }
 
+  const lastAnswer = this.answers[this.answers.length - 1];
+  return lastAnswer.formatTimestamp(); // Formatierter Zeitstempel der letzten Antwort
+}
   private getDateFromTimestamp(timestamp: any): Date {
     return timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp);
   }

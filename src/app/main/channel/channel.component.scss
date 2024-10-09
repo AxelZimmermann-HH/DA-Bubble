@@ -112,6 +112,7 @@
 }
 
 .speech-bubble {
+    font-family: Nunito;
     width: 352px;
     height: 55px;
     padding: 15px;
@@ -139,6 +140,9 @@
             width: 100%;
             transition: background-color 0.5s ease-in-out;
             margin: 30px 0;
+            position: relative;
+            height: 200px;
+            padding: 20px 0;
 
             &:hover {
                 background-color: rgb(236, 238, 254);
@@ -206,9 +210,9 @@
     padding: 3px 20px;
     background: rgba(255, 255, 255, 1);
     border: 1px solid rgba(173, 176, 217, 1);
-    position: relative;
-    top: -125px;
-    right: -50px;
+    position: absolute;
+    right: 16px;
+    top: -16px;
 }
 
 td:hover .reaction-hover {
@@ -264,8 +268,6 @@ td:hover .speech-bubble {
     gap: 8px;
     background: rgba(255, 255, 255, 1);
     border: 1px solid rgba(173, 176, 217, 1);
-    // left: 50%;
-    // transform: translate(-50%, 0%);
     font-size: 18px;
     font-weight: 400;
     display: flex;
@@ -346,6 +348,10 @@ td:hover .speech-bubble {
     flex-direction: row-reverse;
 }
 
+.reaction-left {
+    left: 16px;
+}
+
 .b-radius {
     border-radius: 30px 0px 30px 30px;
     background: #797EF3;
@@ -356,6 +362,30 @@ td:hover .b-radius {
     background-color: #797EF3 !important;
     color: #FFFFFF
 }
+
+.message-edit-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.edit-text-message {
+    position: absolute;
+    width: 100%;
+    padding:20px;
+    box-sizing: border-box;
+}
+
+.button-group {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+}
+
+.button-group button {
+    margin-left: 5px;
+}
+
 
 
 emoji-mart {

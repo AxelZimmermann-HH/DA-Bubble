@@ -2,7 +2,7 @@
   <div class="addUser-header">
     <p>Leute hinzufügen</p><img src="./assets/icons/close.png" alt="" (click)="dialogRef.close()">
   </div>
-  <p style="color: rgba(121, 126, 243, 1);font-size: 18px;font-weight: 400;"># {{data.channel.channelName}}</p>
+  <p style="color: rgba(121, 126, 243, 1);font-size: 18px;font-weight: 400;"># {{data?.channel?.channelName}}</p>
 
   <div class="custom-dropdown">
     <div class="dropdown-selected" (click)="toggleDropdown()" [ngClass]="{'selected-user': selectedUser}">

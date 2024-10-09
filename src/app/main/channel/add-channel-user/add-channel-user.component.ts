@@ -6,8 +6,9 @@ import { User } from '../../../models/user.class';
 import { Channel } from '../../../models/channel.class';
 import { UserService } from '../../../services/user.service';
 import { DialogUserProfilComponent } from '../../dialog-user-profil/dialog-user-profil.component';
-import { ActivatedRoute, Route, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ChatService } from '../../../services/chat.service';
+import { DialogAddUserComponent } from '../../../dialog-add-user/dialog-add-user.component';
 
 @Component({
   selector: 'app-add-channel-user',
@@ -24,15 +25,24 @@ export class AddChannelUserComponent {
   userId!: string;
   channelUsers = [];
 
-  @Output() chatSelected = new EventEmitter<void>();
-  constructor(public firestore: Firestore, private router: Router, private route: ActivatedRoute, public chatService: ChatService, public dialogRef: MatDialogRef<AddChannelUserComponent>, public userService: UserService, public dialog: MatDialog, @Inject(MAT_DIALOG_DATA) public data: any) {
+
+
+  constructor(
+    public firestore: Firestore,
+    private route: ActivatedRoute,
+    public chatService: ChatService,
+    public dialogRef:
+      MatDialogRef<AddChannelUserComponent>,
+    public userService: UserService,
+    public dialog: MatDialog,
+    @Inject(MAT_DIALOG_DATA) public data: any,
+  ) 
+  {
     this.getAllUsers();
     this.channel = new Channel(data.channel);
-    console.log('hallo', this.channel.members);
-
     this.route.params.subscribe(params => {
       const currentUser = params['userId'];
-      console.log('Aktuelle userId:', currentUser); // Füge diese Zeile hinzu
+      console.log('Aktuelle userId:', currentUser); 
     });
 
   }
@@ -50,7 +60,12 @@ export class AddChannelUserComponent {
   }
 
   openUserProfil(member: any) {
-this.dialog.open(DialogUserProfilComponent, { data: member });
-console.log('add channel user ', member.name);
+    this.dialog.open(DialogUserProfilComponent, { data: member });
+    console.log('add channel user ', member.name);
   }
+
+  openDialogAddUser() {
+
+  }
+
 }

@@ -39,33 +39,46 @@
                     <tr *ngFor="let message of group.messages">
                         <td [ngClass]="{'current-user': isCurrentUser(message.user)}">
                             <div class="message-main" [ngClass]="{'current-user': isCurrentUser(message.user)}">
-                                <img [src]="getAvatarForUser(message.user)" alt=""
-                                    class="avatar">
+                                <img [src]="getAvatarForUser(message.user)" alt="" class="avatar">
                                 <div class="message-content">
                                     <div class="name-time" [ngClass]="{'current-user': isCurrentUser(message.user)}">
                                         {{ message.user }}
                                         <p class="time">{{ message.formatTimestamp() }}</p>
                                     </div>
-                                    <div class="speech-bubble" [ngClass]="{'b-radius': isCurrentUser(message.user)}">
+                                    <div class="speech-bubble" [ngClass]="{'b-radius': isCurrentUser(message.user)}"
+                                        *ngIf="!message.isEditing">
                                         {{ message.text }}
                                     </div>
+                                    <div *ngIf="message.isEditing" style="position: relative;">
+                                        <textarea [(ngModel)]="message.editedText" class="speech-bubble"
+                                            [ngClass]="{'b-radius': isCurrentUser(message.user)}" >
+                                        </textarea>
+                                        <div class="button-group">
+                                            <button (click)="saveMessageEdit(message)">Speichern</button>
+                                            <button (click)="cancelMessageEdit(message)">Abbrechen</button>
+                                        </div>
+                                    </div>
                                     <div class="label-answers" (click)="openThread(message)"
-                                        *ngIf="allAnswers.length > 0">
-                                        {{ allAnswers.length }} Antworten
-                                        <p class="time">Letzte Antwort 15:00</p>
+                                        *ngIf="message.answers.length > 0">
+                                        {{ message.answers.length }} Antworten
+                                        <p class="time">Letzte Antwort {{message.getLastAnswerTimestamp()}}</p>
                                     </div>
                                 </div>
                             </div>
-                            <div class="reaction-hover">
+                            <div class="reaction-hover" [ngClass]="{'reaction-left': isCurrentUser(message.user)}">
                                 <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
                                 <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png"
                                     alt="">
                                 <img src="./assets/icons/add_reaction.png" alt="" (click)="openEmojiPicker(message)">
                                 <img src="./assets/icons/comment.png" alt="" (click)="openThread(message)">
-                                <img src="./assets/icons/Answer.png" alt="" *ngIf="isCurrentUser(message.user)">
+                                <img src="./assets/icons/more_vert.png" alt="" *ngIf="isCurrentUser(message.user)"
+                                    (click)="editDirectMessage(message)">
                             </div>
+
                             <emoji-mart (emojiSelect)="addEmoji($event)" *ngIf="showEmojiPicker"></emoji-mart>
+
                         </td>
+
                     </tr>
                 </ng-container>
             </table>
@@ -87,11 +100,8 @@
 
     </div>
 
-    <app-thread *ngIf="isThreadOpen" 
-    [selectedChannelId]="selectedChannelId" 
-    [channelName]="selectedChannel?.channelName" 
-    [message]="selectedMessage"
-    [selectedAnswers]="selectedAnswers"
-    (threadClosed)="onThreadClosed()">
+    <app-thread *ngIf="isThreadOpen" [selectedChannelId]="selectedChannelId"
+        [channelName]="selectedChannel?.channelName" [message]="selectedMessage" [selectedAnswers]="selectedAnswers"
+        (threadClosed)="onThreadClosed()">
     </app-thread>
 </div>

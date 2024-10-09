@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Inject } from '@angular/core';
-import {  collection, doc, Firestore, onSnapshot, updateDoc } from '@angular/fire/firestore';
+import { collection, doc, Firestore, onSnapshot, updateDoc } from '@angular/fire/firestore';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 import { FormsModule } from '@angular/forms';
@@ -33,14 +33,19 @@ export class DialogAddUserComponent {
   selectedUser: any;
   dropdownOpen = false;
 
-  constructor(public firestore: Firestore, public dialogRef: MatDialogRef<DialogAddUserComponent>,public userService: UserService, @Inject(MAT_DIALOG_DATA) public data: any) {
-    this.channel = new Channel(data.channel); // Initialisiere das Channel-Objekt
-    console.log('Channel:', this.channel);
+  constructor(public firestore: Firestore, public dialogRef: MatDialogRef<DialogAddUserComponent>, public userService: UserService, @Inject(MAT_DIALOG_DATA) public data: any) {
+
+    if (data && data.channel) {
+      this.channel = new Channel(data.channel);
+    } else {
+      console.error('No channel data passed to the dialog');
+    }
+
     this.getAllUsers();
 
     this.user.name = "Noah";
   }
- 
+
   getAllUsers() {
     const userCollection = collection(this.firestore, 'users');
     onSnapshot(userCollection, (snapshot) => {
@@ -68,20 +73,20 @@ export class DialogAddUserComponent {
     this.selectedUser = null;
   }
 
-  async addMember(user :User) {
+  async addMember(user: User) {
     if (user) {
-      const channelRef = doc(this.firestore,'channels', this.channel.id);
+      const channelRef = doc(this.firestore, 'channels', this.channel.id);
       try {
-        const currentMembers = this.channel.members || []; 
+        const currentMembers = this.channel.members || [];
         const isMemberAlready = currentMembers.some(member => member.userId === user.userId);
 
         if (isMemberAlready) {
-            console.log(`${user.name} ist bereits ein Mitglied des Channels.`);
-            this.dialogRef.close(false);
-            return; 
+          console.log(`${user.name} ist bereits ein Mitglied des Channels.`);
+          this.dialogRef.close(false); // Close the dialog without success
+          return;
         }
         await updateDoc(channelRef, {
-          members: [...currentMembers, user.toJson()] 
+          members: [...currentMembers, user.toJson()]
         });
 
         console.log(`${user.name} wurde zum Channel hinzugefügt.`);

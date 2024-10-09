@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
@@ -16,6 +16,7 @@ import { UserService } from '../../services/user.service';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { ChatComponent } from "../chat/chat.component";
 import { DialogAddUserComponent } from '../../dialog-add-user/dialog-add-user.component';
+import { ChatService } from '../../services/chat.service';
 
 
 @Component({
@@ -23,6 +24,7 @@ import { DialogAddUserComponent } from '../../dialog-add-user/dialog-add-user.co
   standalone: true,
   imports: [CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     MatDialogModule,
     ThreadComponent,
     AddChannelUserComponent, PickerComponent, ChatComponent],
@@ -50,6 +52,8 @@ export class ChannelComponent {
   showChannel: boolean = true;
   showChat: boolean = false;
 
+
+
   showEmojiPicker = false;
 
   @Input() selectedChannelId: string | null = null;
@@ -61,7 +65,12 @@ export class ChannelComponent {
   selectedAnswers: Answer[] = [];
 
 
-  constructor(public dialog: MatDialog, public firestore: Firestore, public sharedService: SharedService, public userService: UserService, private route: ActivatedRoute) {
+  constructor(public dialog: MatDialog,
+    public firestore: Firestore,
+    public sharedService: SharedService,
+    public userService: UserService,
+    private route: ActivatedRoute,
+    public chatService: ChatService) {
     this.subscribeToSearch();
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
@@ -77,7 +86,6 @@ export class ChannelComponent {
         console.log('Benutzer nicht gefunden');
       }
     });
-
   }
 
   findUserNameById(userId: string) {
@@ -144,7 +152,6 @@ export class ChannelComponent {
     });
   }
 
-
   getAllChannels() {
     const channelCollection = collection(this.firestore, 'channels');
     const readChannel = onSnapshot(channelCollection, (snapshot) => {
@@ -166,16 +173,14 @@ export class ChannelComponent {
     onSnapshot(messagesQuery, (snapshot) => {
       const messagesData = snapshot.docs.map(doc => {
         const data = doc.data();
-        // Füge hier das emojis-Feld hinzu, um sicherzustellen, dass es korrekt verarbeitet wird
         return new Message({
           text: data['text'],
           user: data['user'],
           timestamp: data['timestamp'],
-          emojis: data['emojis'] || [] // Stelle sicher, dass das emojis-Feld vorhanden ist
+          answers: data['answers'] || [],
+          emojis: data['emojis'] || []
         }, doc.id);
       });
-
-      // Nachrichten nach Datum gruppieren
       const groupedMessages: { [date: string]: Message[] } = {};
 
       messagesData.forEach(message => {
@@ -185,7 +190,6 @@ export class ChannelComponent {
         }
         groupedMessages[messageDate].push(message);
       });
-
       // Umwandeln des gruppierten Objekts in ein Array
       this.allMessages = Object.keys(groupedMessages).map(date => ({
         date,
@@ -198,30 +202,27 @@ export class ChannelComponent {
 
   updateMessageInFirestore(message: Message) {
     const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${message.messageId}`);
-  
-    // Hier fügen wir die Emojis zur Nachricht hinzu oder aktualisieren sie
     updateDoc(messageRef, {
       text: message.text,
       user: message.user,
       timestamp: message.timestamp,
       emojis: message.answers // Hier kannst du die Emojis speichern, z. B. in einem Array
     })
-    .then(() => {
-      console.log("Nachricht erfolgreich aktualisiert!");
-    })
-    .catch((error) => {
-      console.error("Fehler beim Aktualisieren der Nachricht: ", error);
-    });
+      .then(() => {
+        console.log("Nachricht erfolgreich aktualisiert!");
+      })
+      .catch((error) => {
+        console.error("Fehler beim Aktualisieren der Nachricht: ", error);
+      });
   }
 
 
   getAvatarForUser(userName: string) {
-
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
     if (user) {
       if (this.userService.isNumber(user.avatar)) {
         return './assets/avatars/avatar_' + user.avatar + '.png';  // Local asset avatar
-      } else { 
+      } else {
         return user.avatar;  // External URL avatar
       }
     }
@@ -237,7 +238,6 @@ export class ChannelComponent {
     if (this.newMessageText.trim() === '') {
       return; // Don't send empty messages
     }
-
     const userName = this.findUserNameById(this.userId);
     if (!userName) {
       console.log('Benutzer nicht gefunden');
@@ -251,13 +251,13 @@ export class ChannelComponent {
       user: userName, // Use the found username
       timestamp: Timestamp.now(),
       fullDate: currentDate.toDateString(),
-      answers: [] 
+      answers: []
     };
 
     const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
     addDoc(messagesCollection, messageData)
       .then((docRef) => {
-        this.newMessageText = ''; 
+        this.newMessageText = '';
       })
       .catch((error) => {
         console.error('Fehler beim Senden der Nachricht:', error);
@@ -267,7 +267,6 @@ export class ChannelComponent {
 
   async getChannelData(channelId: string): Promise<Channel> {
     const channelDocRef = doc(this.firestore, 'channels', channelId);
-
     try {
       const docSnap = await getDoc(channelDocRef);
       if (docSnap.exists()) {
@@ -297,48 +296,68 @@ export class ChannelComponent {
 
   openUsersList(channelId: string) {
     const dialogRef = this.openDialog(AddChannelUserComponent, channelId);
-
-
   }
 
   openDialogAddUser(channelId: string) {
     this.openDialog(DialogAddUserComponent, channelId);
   }
 
-  //in shared Service verschoben
-  //openDialogEditChannel(channel: any) {
-  //  this.dialog.open(DialogEditChannelComponent, { data: channel });
-  //}
+  openDialogEditChannel(channel: any) {
+    this.dialog.open(DialogEditChannelComponent, { data: channel });
+  }
 
   onThreadClosed() {
     this.isThreadOpen = false;
-    this.selectedAnswers = [];
   }
 
   openThread(message: Message) {
     this.isThreadOpen = true;
     this.selectedMessage = message;
-    this.getAnswers(message.messageId);
   }
 
   getAnswers(messageId: string) {
-    const messageDocRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}`);;
-    getDoc(messageDocRef).then(doc => {
-      if (doc.exists()) {
-        const data = doc.data();
-        this.selectedAnswers = data['answers'] ? data['answers'].map((a: any) => new Answer(a)) : [];
+    const messageDocRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}`);
+
+    onSnapshot(messageDocRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const data = docSnapshot.data();
+        this.selectedAnswers = data['answers']
+          ? data['answers'].map((a: any) => new Answer(a))
+          : [];
+        console.log('Aktualisierte Antworten: ', this.selectedAnswers);
       } else {
-        console.log("Keine solche Nachricht gefunden!");
+        this.selectedAnswers = []; // Setze auf leer, wenn keine Antworten vorhanden
+        console.log('Keine Antworten gefunden');
       }
-    }).catch(error => {
-      console.error("Fehler beim Abrufen der Antworten: ", error);
+    }, (error) => {
+      console.error('Fehler beim Abrufen der Antworten: ', error);
     });
   }
 
+  editDirectMessage(message: Message) {
+    console.log('edit direkt message ', message.text, message.user, this.findUserNameById(this.userId));
+    message.isEditing = true;
+    message.editedText = message.text;
+  }
 
+  saveMessageEdit(message: Message) {
+    const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${message.messageId}`);
+    updateDoc(messageRef, { text: message.editedText })
+      .then(() => {
+        message.text = message.editedText;  // Lokale Aktualisierung
+        message.isEditing = false;
+      })
+      .catch((error) => {
+        console.error("Fehler beim Speichern der Nachricht: ", error);
+      });
+  }
+  cancelMessageEdit(message: Message) {
+    message.isEditing = false;
+    message.editedText = message.text;
+  }
 
-  openEmojiPicker(message:any) {
-    if ( message ===this.selectedMessage.messageId) {
+  openEmojiPicker(message: any) {
+    if (message === this.selectedMessage.messageId) {
       this.showEmojiPicker = true;
     }
   }

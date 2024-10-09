@@ -42,7 +42,7 @@ export class DialogEditChannelComponent {
 
   getAllChannels() {
     const channelCollection = collection(this.firestore, 'channels');
-    const readChannel = onSnapshot(channelCollection, (snapshot) => {
+    onSnapshot(channelCollection, (snapshot) => {
       this.channelData = [];
       snapshot.forEach((doc) => {
         let channel = new Channel({ ...doc.data(), id: doc.id });
