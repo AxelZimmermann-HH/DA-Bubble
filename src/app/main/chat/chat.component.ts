@@ -99,6 +99,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
 
   //sendet neue DM an den Chat Service
   async sendDirectMessage() {
+    debugger
     const newDm = this.directMessage.value!;
     const fileDownloadUrl = this.fileDownloadUrl;
     const fileName = this.selectedFileName;
@@ -215,6 +216,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
        // Erstellen eines unsichtbaren Links
        const link = document.createElement('a');
        link.href = fileDownloadUrl;
+       link.target = '_blank';
        link.download = fileName;
        // Anhängen des Links an das Dokument
        document.body.appendChild(link);

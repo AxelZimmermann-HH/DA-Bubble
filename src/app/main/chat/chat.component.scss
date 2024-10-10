@@ -168,6 +168,31 @@
                 flex-direction: column;
             }
 
+            .file-container{
+                border: 1px solid #ADB0D9;
+                border-radius: 30px;
+                box-sizing: border-box;
+                padding: 15px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .open-file-button{
+                border: 1px solid #797EF3;
+                border-radius: 30px;
+                background-color: #444DF2;
+                color: #FFFFFF;
+                padding: 12px 25px;
+                width: fit-content;
+                transition: all 100ms ease-out;
+                &:hover{
+                    cursor: pointer;
+                    color: #444DF2;
+                    background-color: #FFFFFF;
+                  }
+            }
+
             .label-answers {
                 display: flex;
                 align-items: center;
@@ -276,6 +301,24 @@
                 border-radius: 30px;
                 box-sizing: border-box;
                 padding: 15px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .open-file-button{
+                border: 1px solid #797EF3;
+                border-radius: 30px;
+                color: #444DF2;
+                background-color: #FFFFFF;
+                padding: 12px 25px;
+                width: fit-content;
+                transition: all 100ms ease-out;
+                &:hover{
+                    cursor: pointer;
+                    background-color: #444DF2;
+                    color: #FFFFFF;
+                  }
             }
 
             .label-answers {
@@ -456,8 +499,43 @@
         }
     }
 
-    
+    .file-upload-container{
+        background-color: #797EF3;
+        color: #FFFFFF;
+        display: flex;
+        flex-direction: row;
+        width: fit-content;
+        gap: 8px;
+        align-items: center;
+        border-radius: 30px;
+        padding: 12px 25px;
+    }
 
+    .file-button-change{
+        width: 16px;
+        height: 16px;
+        padding: 4px;
+        background-color: #ECEEFE;
+        border-radius: 50%;
+        box-sizing: content-box;
+        &:hover {
+            cursor: pointer;
+            content: url('./../../../assets/icons/edit-1.png');
+        }
+    }
+
+    .file-button-delete{
+        width: 16px;
+        height: 16px;
+        padding: 4px;
+        background-color: #ECEEFE;
+        border-radius: 50%;
+        box-sizing: content-box;
+        &:hover {
+            cursor: pointer;
+            content: url('./../../../assets/icons/close-1.png');
+        }
+    }
 }
 
 .add-reaction {

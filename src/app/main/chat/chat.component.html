@@ -35,7 +35,15 @@
                                             <div class="name-time"> {{ user.name }}
                                                 <p class="time">{{ message.time }} Uhr</p>
                                             </div>
-                                            <div class="speech-bubble">{{ message.text }}</div>
+                                            <div class="speech-bubble">
+                                                <span>{{ message.text }}</span>
+                                                <div *ngIf="message.fileName" class="file-container">
+                                                    <span>{{message.fileName}}</span>
+                                                    <button  class="open-file-button"
+                                                        (click)="downloadFile(message.fileDownloadUrl, message.fileName)">Anhang
+                                                        öffnen</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="reaction-hover">
@@ -76,9 +84,9 @@
 
                                                 <div *ngIf="message.fileName" class="file-container">
                                                     <span>{{message.fileName}}</span>
-                                                    <button
-                                                        (click)="downloadFile(message.fileDownloadUrl, message.fileName)">Anhang
-                                                        herunterladen</button>
+                                                    <button class="open-file-button" (click)="downloadFile(message.fileDownloadUrl, message.fileName)">
+                                                        Anhang öffnen
+                                                    </button>
                                                 </div>
 
                                             </div>
@@ -144,15 +152,17 @@
         <textarea placeholder="Nachricht an {{ user.name }}" class="text-area" [formControl]="directMessage"></textarea>
 
         @if (selectedFile) { <!-- Datei-Anzeige -->
-        <div>
+        <div class="file-upload-container">
             <span> {{ selectedFileName }}</span>
-            <label for="file-change">
-                <span>Anhang ändern</span>
+            <label for="file-change" style="height: 24px;">
+                <img class="file-button-change" src="./assets/icons/edit.png" alt="Anhang ändern">
             </label>
+
             <input style="display: none;" id="file-change" type="file"
                 (change)="onChangeFileSelected($event, selectedFileName)" />
 
-            <button (click)="deleteFile(selectedFileName); this.selectedFile = null;">Anhang löschen</button>
+           
+            <img class="file-button-delete" (click)="deleteFile(selectedFileName); selectedFile = null;" src="./assets/icons/close.png" alt="Anhang löschen">
         </div>
         }
 
@@ -174,7 +184,11 @@
 
             </div>
 
-            <button (click)="sendDirectMessage(); this.selectedFile = null" [disabled]="directMessage.invalid">
+            <button (click)="sendDirectMessage(); 
+            selectedFile = null; 
+            this.selectedFileName = ''; 
+            this.fileDownloadUrl=''" 
+            [disabled]="directMessage.invalid && !selectedFile">
                 <img src="./assets/icons/Send icon.png">
             </button>
         </div>
