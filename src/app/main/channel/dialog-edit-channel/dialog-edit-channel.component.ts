@@ -31,9 +31,15 @@ export class DialogEditChannelComponent {
 
   constructor(public dialogRef: MatDialogRef<DialogEditChannelComponent>, public firestore: Firestore, @Inject(MAT_DIALOG_DATA) public channel: Channel) {
 
-    this.user.name = 'Noah Braun';
+   
+    if (this.channel && this.channel.channelName) {
+      this.newChannelName = this.channel.channelName;
+    } else {
+      console.warn('No channel data passed to the dialog.');
+      this.newChannelName = ''; // or handle this scenario appropriately
+    }
     this.getAllChannels();
-    this.newChannelName = this.channel.channelName;
+    // this.user.name = 'Noah Braun';
   }
 
   toggleInputName() {
