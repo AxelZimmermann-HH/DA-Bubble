@@ -39,6 +39,7 @@
                                                 <span>{{ message.text }}</span>
                                                 <div *ngIf="message.fileName" class="file-container">
                                                     <span>{{message.fileName}}</span>
+                                                    <img class="preview-img" [src]="message.fileDownloadUrl" alt="">
                                                     <button  class="open-file-button"
                                                         (click)="downloadFile(message.fileDownloadUrl, message.fileName)">Anhang
                                                         öffnen</button>
@@ -84,6 +85,7 @@
 
                                                 <div *ngIf="message.fileName" class="file-container">
                                                     <span>{{message.fileName}}</span>
+                                                    <img class="preview-img" [src]="message.fileDownloadUrl" alt="">
                                                     <button class="open-file-button" (click)="downloadFile(message.fileDownloadUrl, message.fileName)">
                                                         Anhang öffnen
                                                     </button>

@@ -197,7 +197,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
       // Initialisiere Firebase Storage
       const storage = getStorage();
       const storageRef = ref(storage, `files/${this.selectedFileName}`);
-
+      
       // Lade die Datei hoch
       const snapshot = await uploadBytes(storageRef, this.selectedFile);
 
