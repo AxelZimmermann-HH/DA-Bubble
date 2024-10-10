@@ -164,6 +164,8 @@
                 background: rgba(236, 238, 254, 1);
                 font-size: 18px;
                 font-weight: 400;
+                display: flex;
+                flex-direction: column;
             }
 
             .label-answers {
@@ -265,7 +267,15 @@
                 color: #FFFFFF;
                 font-size: 18px;
                 font-weight: 400;
-             
+                display: flex;
+                flex-direction: column;
+            }
+
+            .file-container{
+                border: 1px solid #ADB0D9;
+                border-radius: 30px;
+                box-sizing: border-box;
+                padding: 15px;
             }
 
             .label-answers {
