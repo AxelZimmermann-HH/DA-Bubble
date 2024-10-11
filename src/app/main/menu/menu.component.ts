@@ -6,6 +6,7 @@ import { DialogAddChannelComponent } from '../../dialog-add-channel/dialog-add-c
 import { SharedService } from '../../services/shared.service';
 import { ChatService } from '../../services/chat.service';
 import { UserService } from '../../services/user.service';  
+import { ActivatedRoute } from '@angular/router';
 
 
 @Component({
@@ -16,7 +17,7 @@ import { UserService } from '../../services/user.service';
   styleUrl: './menu.component.scss'
 })
 export class MenuComponent {
-  constructor(public firestore: Firestore, public dialog: MatDialog, private sharedService: SharedService, public chatService: ChatService, public userService: UserService){}
+  constructor(public firestore: Firestore, public route: ActivatedRoute,public dialog: MatDialog, private sharedService: SharedService, public chatService: ChatService, public userService: UserService){}
 
   newDmIcon = 'edit_square.png'
   channelIcon1:string = 'arrow_drop_down.png';
@@ -43,6 +44,8 @@ export class MenuComponent {
   currentUserId:string = '';
   currentUser:any;
 
+  userId!:string
+
   @Output() channelSelected = new EventEmitter<any>();
   @Output() chatSelected = new EventEmitter<void>();
 
@@ -60,6 +63,11 @@ export class MenuComponent {
         this.currentUserId = user.userId;
       }
     });
+
+    this.route.params.subscribe(params => {
+      this.userId = params['userId'];
+    });
+    
   }
 
   subscribeToSearch() {
@@ -225,7 +233,7 @@ export class MenuComponent {
 
   //öffnet den Channel hinzufügen Dialog
   openDialogAddChannel() {
-    this.dialog.open(DialogAddChannelComponent)
+    this.dialog.open(DialogAddChannelComponent, {data:{userId:this.userId}})
   }
 
 
@@ -244,7 +252,17 @@ export class MenuComponent {
   selectChat() {
     this.chatSelected.emit();
   }
-
+  getAvatarForUser(userName: string) {
+    const user = this.userData.find((u: { name: string; }) => u.name === userName);
+    if (user) {
+      if (this.userService.isNumber(user.avatar)) {
+        return './assets/avatars/avatar_' + user.avatar + '.png';  // Local asset avatar
+      } else {
+        return user.avatar;  // External URL avatar
+      }
+    }
+    return './assets/avatars/avatar_0.png';  // Default avatar when user not found
+  }
   
   //öffnet den PvP Chat
   //async openDirectMessage(currentUserId:string, userId:string){
