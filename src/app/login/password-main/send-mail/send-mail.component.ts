@@ -6,6 +6,7 @@ import { Firestore, collection, getDocs, query, where } from '@angular/fire/fire
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../../services/user.service';
 import { User } from '../../../models/user.class';
+import { Auth, sendPasswordResetEmail } from '@angular/fire/auth';
 
 
 @Component({
@@ -24,7 +25,7 @@ export class SendMailComponent {
   email: string = ''; // Füge die Variable email hinzu
   success: boolean = false;
 
-  constructor(private firestore: Firestore, private http: HttpClient, private userService: UserService) {
+  constructor(private firestore: Firestore, private http: HttpClient, private userService: UserService, private auth: Auth) {
     console.log('Komponente wurde initialisiert');
   }
 
@@ -57,6 +58,8 @@ export class SendMailComponent {
         const userDoc = querySnapshot.docs[0].data() as User;  // Den User aus den Firestore-Daten laden
         this.userService.setUser(userDoc);  // User im Service setzen
 
+        await sendPasswordResetEmail(this.auth, email);
+        console.log('E-Mail zum Zurücksetzen des Passworts wurde gesendet.');
 
         this.success = true;
         setTimeout(() => {

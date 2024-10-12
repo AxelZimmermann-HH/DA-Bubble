@@ -1,27 +1,27 @@
 <div class="header-content">
     <div class="logo">
-        <img src="../../../assets/icons/Logo.svg" alt="">
+        <img src="./assets/icons/Logo.svg" alt="">
         <p>DABubble</p>
     </div>
     <div class="input">
         <input id="search" type="text" placeholder="Devspace durchsuchen" (input)="onSearchInput($event)">
-        <img src="../../../assets/icons/search-2.png" alt="">
+        <img src="./assets/icons/search-2.png" alt="">
     </div>
     <div class="header-user">
 
         @if (currentUser) {
             <p>{{ currentUser.name }}</p>
             @if (userService.isNumber(currentUser.avatar)) {
-                <img class="test" [src]="'../../../assets/avatars/avatar_' + currentUser.avatar + '.png'" alt="User Avatar">
+                <img class="test" [src]="'./assets/avatars/avatar_' + currentUser.avatar + '.png'" alt="User Avatar">
               } @else {
                 <img class="test" [src]="currentUser.avatar" alt="Google User Avatar">
               }
             
         } @else {
             <p>Gast</p>
-            <img src="../../../assets/avatars/avatar_1.png" alt="">
+            <img src="./assets/avatars/avatar_1.png" alt="">
         }
         
-        <img (click)="openDialogLogout()" class="header-menu" src="../../../assets/icons/keyboard_arrow_down_1.png" alt="">
+        <img (click)="openDialogLogout()" class="header-menu" src="./assets/icons/keyboard_arrow_down_1.png" alt="">
     </div>
 </div>
