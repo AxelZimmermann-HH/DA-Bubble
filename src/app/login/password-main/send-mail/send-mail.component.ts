@@ -58,7 +58,10 @@ export class SendMailComponent {
         const userDoc = querySnapshot.docs[0].data() as User;  // Den User aus den Firestore-Daten laden
         this.userService.setUser(userDoc);  // User im Service setzen
 
-        await sendPasswordResetEmail(this.auth, email);
+        await sendPasswordResetEmail(this.auth, email, {
+          url: 'http://localhost:4200/reset',  // Angepasster Link zur Unterroute
+          handleCodeInApp: true
+        });
         console.log('E-Mail zum Zurücksetzen des Passworts wurde gesendet.');
 
         this.success = true;
@@ -74,6 +77,7 @@ export class SendMailComponent {
       console.error('Fehler beim Abrufen der E-Mail:', error);
     }
   }
+
 
   async sendResetEmail(email: string) {
     const apiUrl = 'http://localhost:4200/sendMail.php';  // Für XAMPP/WAMP

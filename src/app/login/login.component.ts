@@ -9,6 +9,8 @@ import { Auth, signInWithPopup, GoogleAuthProvider } from '@angular/fire/auth';
 import { SigninComponent } from "./signin/signin.component"; 
 import { SignupComponent } from './signup/signup.component';
 import { PasswordMainComponent } from './password-main/password-main.component';
+import { ActivatedRoute } from '@angular/router';
+
 
 @Component({
   selector: 'app-login',
@@ -20,6 +22,16 @@ import { PasswordMainComponent } from './password-main/password-main.component';
 export class LoginComponent {
   signUp: boolean = false;
   password: boolean = false;
+
+  constructor(private route: ActivatedRoute) {}
+
+  ngOnInit() {
+    // Überprüfe, ob die URL die Segmente "password-main" und "reset-password" enthält
+    const urlSegments = this.route.snapshot.url.map(segment => segment.path);
+    if (urlSegments.includes('password-main') && urlSegments.includes('reset-password')) {
+      this.password = true;  // Setzt den Zustand, um "password-main" anzuzeigen
+    }
+  }
 
   onSignUpChange(newSignUpValue: boolean) {
     this.signUp = newSignUpValue; // aktualisiert die Variable in der Parent-Komponente
