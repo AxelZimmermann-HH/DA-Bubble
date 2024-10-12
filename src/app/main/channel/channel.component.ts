@@ -74,8 +74,6 @@ export class ChannelComponent {
     this.subscribeToSearch();
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
-      console.log('Aktuelle userId:', this.userId); // Füge diese Zeile hinzu
-
     });
 
     this.getAllUsers().then(() => {
@@ -280,17 +278,17 @@ export class ChannelComponent {
     }
   }
 
-  openDialog(component: any, channelId: string): any { // Typ für die Rückgabe spezifizieren
+  openDialog(component: any, channelId: string): any {
     return this.getChannelData(channelId).then(channelData => {
       return this.dialog.open(component, {
         data: {
           channelId: channelId,
-          channel: channelData  // Pass the Channel object
+          channel: channelData
         }
       });
     }).catch(error => {
       console.error("Error opening dialog:", error);
-      return null; // Im Fehlerfall kann auch null zurückgegeben werden, um den Typ beizubehalten
+      return null;
     });
   }
 
@@ -299,8 +297,18 @@ export class ChannelComponent {
   }
 
   openDialogAddUser(channelId: string) {
-    this.openDialog(DialogAddUserComponent, channelId);
+    // Channel-Daten basierend auf der channelId abrufen
+    this.getChannelData(channelId).then(channelData => {
+      if (channelData) {
+        this.dialog.open(DialogAddUserComponent, {
+          data: { channel: channelData, source: 'channelComponent' }
+        });
+      } 
+    }).catch(error => {
+      console.error('Error retrieving channel data:', error);
+    });
   }
+  
 
   openDialogEditChannel(channel: any) {
     this.dialog.open(DialogEditChannelComponent, { data: channel });

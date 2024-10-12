@@ -181,3 +181,9 @@
         content: url('./../../assets/icons/close-1.png');
     }
 }
+
+.flex-direction{
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}

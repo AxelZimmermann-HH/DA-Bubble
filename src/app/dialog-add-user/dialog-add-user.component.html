@@ -1,8 +1,8 @@
-<div class="addUser-content">
+<div class="addUser-content" *ngIf="data?.source === 'channelComponent'; else addChannelTemplate">
   <div class="addUser-header">
     <p>Leute hinzufügen</p><img src="./assets/icons/close.png" alt="" (click)="dialogRef.close()">
   </div>
-  <p style="color: rgba(121, 126, 243, 1);font-size: 18px;font-weight: 400;"># {{data?.channel?.channelName}}</p>
+  <p style="color: rgba(121, 126, 243, 1);font-size: 18px;font-weight: 400;"># {{data?.channel.channelName}}</p>
 
   <div class="custom-dropdown">
     <div class="dropdown-selected" (click)="toggleDropdown()" [ngClass]="{'selected-user': selectedUser}">
@@ -21,3 +21,40 @@
   </div>
   <button class="createBtn" [disabled]="!selectedUser" (click)="addMember(selectedUser)">Hinzufügen</button>
 </div>
+
+<ng-template #addChannelTemplate>
+<div class="adduser-container">
+  <div class="addUser-header">
+    <p>Leute hinzufügen</p><img src="./../../assets/icons/close.png" alt="" (click)="dialogRef.close()">
+  </div>
+  <div class="flex-direction">
+    <div class="d-flex">
+      <input type="radio" name="options" (change)="selectedOption = 'channel'">
+      Alle Mitglieder von <span class="channel-name">{{channel.channelName}}</span> hinzufügen
+    </div>
+    <div class="d-flex">
+      <input type="radio" name="options" (change)="selectedOption = 'user'">
+      Bestimmte Leute hinzufügen
+    </div>
+  </div>
+
+  <div class="custom-dropdown">
+    <div class="dropdown-selected" (click)="toggleDropdown()" [ngClass]="{'selected-user': selectedUser}">
+      <img *ngIf="selectedUser" [src]="getAvatarForUser(selectedUser.name)" alt="" class="slectedUserImg">
+      <span>{{ selectedUser ? selectedUser.name : 'Name eingeben' }}</span>
+      <img src="./assets/icons/close.png" alt="" *ngIf="selectedUser" (click)="removeSelectedUser($event)" class="closeBtn">
+    </div>
+
+    <ul *ngIf="dropdownOpen" class="dropdown-options">
+      <li (click)="selectUser(user)" class="usersList" *ngFor="let user of userData">
+        <img [src]="getAvatarForUser(user.name)" alt="">
+        {{ user.name }}
+      </li>
+    </ul>
+
+  </div>
+
+  <button class="createBtn" [disabled]="!selectedOption"
+    (click)="addMember(selectedUser)">Hinzufügen</button>
+</div>
+</ng-template>

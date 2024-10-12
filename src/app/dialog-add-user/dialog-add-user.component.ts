@@ -30,8 +30,9 @@ export class DialogAddUserComponent {
   selectedUser: any;
   dropdownOpen = false;
 
-  constructor(public firestore: Firestore, public dialogRef: MatDialogRef<DialogAddUserComponent>, public userService: UserService, @Inject(MAT_DIALOG_DATA) public data: any) {
 
+  constructor(public firestore: Firestore, public dialogRef: MatDialogRef<DialogAddUserComponent>, public userService: UserService, @Inject(MAT_DIALOG_DATA) public data: any) {
+  
     if (data && data.channel) {
       this.channel = new Channel(data.channel);
       this.channelId = data.channel.id;
@@ -39,6 +40,14 @@ export class DialogAddUserComponent {
     } else {
       console.error('No channel data passed to the dialog');
     }
+
+    // Überprüfen, von wo der Dialog geöffnet wurde
+    if (data.source === 'createNewChannel') {
+      console.log("Dialog opened from createNewChannel");
+    } else if (data.source === 'channelComponent') {
+      console.log("Dialog opened from channelComponent");
+    }
+
     this.getAllUsers();
   }
 
@@ -51,22 +60,18 @@ export class DialogAddUserComponent {
         this.userData.push(user);
       });
       console.log('current users', this.userData);
-      this.updateChannelMembers(); // Mitglieder aktualisieren, nachdem die Benutzerliste aktualisiert wurde
+      this.updateChannelMembers();
     });
   }
   updateChannelMembers() {
     const currentMemberIds = this.channel.members.map((member: any) => member.userId);
-    
-    // Überprüfen, ob Mitglieder nicht mehr vorhanden sind
-    const updatedMembers = this.channel.members.filter((member: any) => 
+    const updatedMembers = this.channel.members.filter((member: any) =>
       currentMemberIds.includes(member.userId)
     );
-  
-    // Wenn sich die Mitgliederliste geändert hat, aktualisieren Sie den Channel
     if (updatedMembers.length !== this.channel.members.length) {
       const channelRef = doc(this.firestore, 'channels', this.channelId);
       updateDoc(channelRef, { members: updatedMembers }).then(() => {
-        this.channel.members = updatedMembers; // Mitglieder im lokalen Zustand aktualisieren
+        this.channel.members = updatedMembers;
         console.log('Channel members updated:', this.channel.members);
       }).catch((error) => {
         console.error('Error updating channel members:', error);
@@ -124,7 +129,7 @@ export class DialogAddUserComponent {
         this.channel.members = doc.data()?.['members'] || [];
         console.log('Aktualisierte Mitglied Liste', this.channel.members);
       }
-      else{
+      else {
         console.log('channel-Dokument existiert nicht ');
       }
     })
@@ -134,12 +139,12 @@ export class DialogAddUserComponent {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
     if (user) {
       if (this.userService.isNumber(user.avatar)) {
-        return './assets/avatars/avatar_' + user.avatar + '.png';  // Local asset avatar
+        return './assets/avatars/avatar_' + user.avatar + '.png';
       } else {
-        return user.avatar;  // External URL avatar
+        return user.avatar;
       }
     }
-    return './assets/avatars/avatar_0.png';  // Default avatar when user not found
+    return './assets/avatars/avatar_0.png';
   }
 
   closeDialog() {
