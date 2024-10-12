@@ -170,13 +170,13 @@
         @if (selectedFile) { <!-- Datei-Anzeige -->
         <div class="file-upload-container">
 
-            <img *ngIf="fileType == 'image/jpeg' || fileType == 'image/png'" style="height: 60px; width: 40%;" [src]="fileDownloadUrl" alt="">
+            <img *ngIf="this.selectedFileType == 'image/jpeg' || this.selectedFileType  == 'image/png'" style="height: 60px; width: 40%;" [src]="fileDownloadUrl" alt="">
 
-            <object *ngIf="fileType == 'application/pdf'" [data]="this.chatService.safeUrl" type="application/pdf" width="40%" height="60px">
+            <object *ngIf="this.selectedFileType  == 'application/pdf'" [data]="this.chatService.safeUrl" type="application/pdf" width="40%" height="60px">
                 Dein Browser unterstützt keine PDF-Anzeige
             </object>
 
-            <pre *ngIf="fileType == 'text/plain'" style="overflow: auto;"> 
+            <pre *ngIf="this.selectedFileType  == 'text/plain'" style="overflow: auto;"> 
                 <p>{{this.chatService.textContent}}</p>
             </pre>
 

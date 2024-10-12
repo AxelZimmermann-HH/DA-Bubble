@@ -22,6 +22,8 @@ export class ChatService {
   selectedChannelId: string | null = null;
   showChannel = true;
   showChat = true;
+  textContent: string | null = null;
+  safeUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
 
   constructor(public firestore: Firestore, private sanitizer: DomSanitizer) {}
 
@@ -139,7 +141,7 @@ export class ChatService {
 
             this.chatMessages.push(chatData);
             if(chatData.fileType == 'text/plain'){
-              debugger
+              this.textContent = '';
               this.fetchTextFile(chatData.fileDownloadUrl)
             }
             if(chatData.fileType == 'application/pdf'){
@@ -159,17 +161,15 @@ export class ChatService {
     });
   };
 
-  safeUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
 
   async loadSafeFile(fileUrl: string) {
     this.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fileUrl);
   }
 
 
-  textContent: string | null = null;
-
+  // Dateiinhalt als Text laden
   async fetchTextFile(url: string) {
-    // Dateiinhalt als Text laden
+    
     fetch(url)
       .then(response => {
         if (!response.ok) {

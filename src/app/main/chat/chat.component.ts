@@ -102,7 +102,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     const newDm = this.directMessage.value!;
     const fileDownloadUrl = this.fileDownloadUrl;
     const fileName = this.selectedFileName;
-    const fileType = this.fileType;
+    const fileType = this.selectedFileType;
     await this.chatService.setChatData(newDm, fileDownloadUrl, fileName, fileType, this.currentUserId);
     this.directMessage.setValue('');
   };
@@ -137,7 +137,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
   };
 
   
-
   // öffnet das Bearbeitungsfeld
   editDirectMessage(message:any){
     this.editingMessageId = message.messageId;
@@ -173,8 +172,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     if (input.files && input.files[0]) {
       this.selectedFile = input.files[0];
       this.selectedFileName = this.selectedFile.name;  // Dateiname speichern
-      this.selectedFileType = input.type;
-      console.log(input.files)
+      this.selectedFileType = input.files[0]['type'];
       this.uploadFile()
     }
     
@@ -182,17 +180,16 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
 
 
   //Datei ändern
-  onChangeFileSelected(event: Event, fileToDelete:string) {
+  async onChangeFileSelected(event: Event, fileToDelete:string) {
     this.deleteFile(fileToDelete); //Alte Datei löschen
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       this.selectedFile = input.files[0];
       this.selectedFileName = this.selectedFile.name;  // Dateiname speichern
-      this.uploadFile()
+      await this.uploadFile()
     }
   }
 
-fileType:any;
 
   //File in den Storage hochladen
   async uploadFile() {
@@ -209,28 +206,14 @@ fileType:any;
       // Hol die URL der hochgeladenen Datei
       const url = await getDownloadURL(snapshot.ref);
       this.fileDownloadUrl = url;
-      this.fileType = await this.loadFileMetaData(storageRef)
-      await this.chatService.loadSafeFile(this.fileDownloadUrl);
-      await this.chatService.fetchTextFile(this.fileDownloadUrl)
-    } catch (error) {
-      console.error('Fehler beim Hochladen der Datei:', error);
-    }
+      
+     if(this.selectedFileType == 'text/plain'){
+        await this.chatService.fetchTextFile(this.fileDownloadUrl)
+      }
+      } catch (error) {
+        console.error('Fehler beim Hochladen der Datei:', error);
+      }
   }
-
-
-  //lädt die META-Daten der Datei um den Typ zu speichern
-  async loadFileMetaData(storageRef: StorageReference){
-
-    getMetadata(storageRef)
-    .then((metadata) => {
-      this.fileType = metadata.contentType;  // Typ der Datei
-      console.log(this.fileType)
-    })
-    .catch((error) => {
-    console.error('Fehler beim Abrufen der Metadaten:', error);
-    });
-  }
-
 
 
   //File im Browser abrufen und laden
