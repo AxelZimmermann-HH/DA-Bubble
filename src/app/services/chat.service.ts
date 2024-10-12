@@ -124,7 +124,7 @@ export class ChatService {
 
           messagesSnapshot.forEach((messageDoc) => {
             const messageData = messageDoc.data();
-
+            
             const chatData = {
               chatId: chatDoc.id,
               messageId: messageDoc.id,
@@ -136,16 +136,14 @@ export class ChatService {
               text: messageData['text'],
               fileDownloadUrl: messageData['fileDownloadUrl'],
               fileName: messageData['fileName'],
-              fileType: messageData['fileType']
+              fileType: messageData['fileType'],
+              safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(messageData['fileDownloadUrl'])
             };
 
             this.chatMessages.push(chatData);
             if(chatData.fileType == 'text/plain'){
               this.textContent = '';
               this.fetchTextFile(chatData.fileDownloadUrl)
-            }
-            if(chatData.fileType == 'application/pdf'){
-              this.loadSafeFile(chatData.fileDownloadUrl)
             }
           });
 
@@ -160,11 +158,6 @@ export class ChatService {
       }
     });
   };
-
-
-  async loadSafeFile(fileUrl: string) {
-    this.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fileUrl);
-  }
 
 
   // Dateiinhalt als Text laden

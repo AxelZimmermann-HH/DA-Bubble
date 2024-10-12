@@ -8,6 +8,7 @@ import { User } from '../../models/user.class';
 import { UserService } from '../../services/user.service';
 import { ActivatedRoute, Route } from '@angular/router';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject, StorageReference, getMetadata } from '@angular/fire/storage';  // Firebase Storage imports
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-chat',
@@ -35,7 +36,8 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     public chatService: ChatService, 
     public dialog: MatDialog, 
     public userService: UserService,
-    public route: ActivatedRoute
+    public route: ActivatedRoute,
+    private sanitizer: DomSanitizer
   ) {}
 
 
@@ -105,6 +107,9 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     const fileType = this.selectedFileType;
     await this.chatService.setChatData(newDm, fileDownloadUrl, fileName, fileType, this.currentUserId);
     this.directMessage.setValue('');
+    this.selectedFile = null;
+    this.selectedFileName = '';
+    this.selectedFileType = '';
   };
 
 
@@ -186,10 +191,19 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     if (input.files && input.files[0]) {
       this.selectedFile = input.files[0];
       this.selectedFileName = this.selectedFile.name;  // Dateiname speichern
+      this.selectedFileType = input.files[0]['type'];
       await this.uploadFile()
     }
   }
-
+  safeUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
+  
+  async loadSafeFile(fileUrl: string) {
+    if (!fileUrl) {
+      console.error('Die Datei-URL ist ungültig.');
+      return;
+    }
+    this.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fileUrl);
+  }
 
   //File in den Storage hochladen
   async uploadFile() {
@@ -199,7 +213,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
       // Initialisiere Firebase Storage
       const storage = getStorage();
       const storageRef = ref(storage, `files/${this.selectedFileName}`);
-      
+  
       // Lade die Datei hoch
       const snapshot = await uploadBytes(storageRef, this.selectedFile);
 
@@ -207,7 +221,11 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
       const url = await getDownloadURL(snapshot.ref);
       this.fileDownloadUrl = url;
       
-     if(this.selectedFileType == 'text/plain'){
+      if(this.selectedFileType == 'application/pdf'){
+        console.log('Lade die Datei von URL:', this.fileDownloadUrl);
+        await this.loadSafeFile(this.fileDownloadUrl)
+      }
+      if(this.selectedFileType == 'text/plain'){
         await this.chatService.fetchTextFile(this.fileDownloadUrl)
       }
       } catch (error) {

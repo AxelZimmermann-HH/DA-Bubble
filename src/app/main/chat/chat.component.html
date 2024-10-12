@@ -41,7 +41,7 @@
                                                     <span>{{message.fileName}}</span>
                                                     <img *ngIf="message.fileType == 'image/jpeg' || message.fileType == 'image/png'" class="preview-img" [src]="message.fileDownloadUrl" alt="">
 
-                                                    <object *ngIf="message.fileType == 'application/pdf'" [data]="this.chatService.safeUrl" type="application/pdf" width="60%" height="100%">
+                                                    <object *ngIf="message.fileType == 'application/pdf'" [data]="message.safeUrl" type="application/pdf" width="60%" height="100%">
                                                         Dein Browser unterstützt keine PDF-Anzeige
                                                     </object>
 
@@ -94,7 +94,7 @@
 
                                                     <img *ngIf="message.fileType == 'image/jpeg' || message.fileType == 'image/png'" class="preview-img" [src]="message.fileDownloadUrl" alt="">
 
-                                                    <object *ngIf="message.fileType == 'application/pdf'" [data]="this.chatService.safeUrl" type="application/pdf" width="60%" height="100%">
+                                                    <object *ngIf="message.fileType == 'application/pdf'" [data]="message.safeUrl" type="application/pdf" width="60%" height="100%">
                                                         Dein Browser unterstützt keine PDF-Anzeige
                                                     </object>
 
@@ -172,9 +172,9 @@
 
             <img *ngIf="this.selectedFileType == 'image/jpeg' || this.selectedFileType  == 'image/png'" style="height: 60px; width: 40%;" [src]="fileDownloadUrl" alt="">
 
-            <object *ngIf="this.selectedFileType  == 'application/pdf'" [data]="this.chatService.safeUrl" type="application/pdf" width="40%" height="60px">
+            <iframe *ngIf="this.selectedFileType == 'application/pdf' && safeUrl" [src]="this.safeUrl" type="application/pdf" width="40%" height="60px">
                 Dein Browser unterstützt keine PDF-Anzeige
-            </object>
+            </iframe>
 
             <pre *ngIf="this.selectedFileType  == 'text/plain'" style="overflow: auto;"> 
                 <p>{{this.chatService.textContent}}</p>
