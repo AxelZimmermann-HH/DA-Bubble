@@ -7,7 +7,7 @@ import { DialogUserProfilComponent } from '../dialog-user-profil/dialog-user-pro
 import { User } from '../../models/user.class';
 import { UserService } from '../../services/user.service';
 import { ActivatedRoute, Route } from '@angular/router';
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from '@angular/fire/storage';  // Firebase Storage imports
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject, StorageReference, getMetadata } from '@angular/fire/storage';  // Firebase Storage imports
 
 @Component({
   selector: 'app-chat',
@@ -102,7 +102,8 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     const newDm = this.directMessage.value!;
     const fileDownloadUrl = this.fileDownloadUrl;
     const fileName = this.selectedFileName;
-    await this.chatService.setChatData(newDm, fileDownloadUrl, fileName, this.currentUserId);
+    const fileType = this.fileType;
+    await this.chatService.setChatData(newDm, fileDownloadUrl, fileName, fileType, this.currentUserId);
     this.directMessage.setValue('');
   };
 
@@ -162,6 +163,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
   //FILE-UPLOAD
   selectedFile: File | null = null;
   selectedFileName: string = '';  // Neuer Dateiname-String
+  selectedFileType: string = '';
   fileDownloadUrl: string = '';
 
 
@@ -171,6 +173,8 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     if (input.files && input.files[0]) {
       this.selectedFile = input.files[0];
       this.selectedFileName = this.selectedFile.name;  // Dateiname speichern
+      this.selectedFileType = input.type;
+      console.log(input.files)
       this.uploadFile()
     }
     
@@ -188,6 +192,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     }
   }
 
+fileType:any;
 
   //File in den Storage hochladen
   async uploadFile() {
@@ -204,10 +209,28 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
       // Hol die URL der hochgeladenen Datei
       const url = await getDownloadURL(snapshot.ref);
       this.fileDownloadUrl = url;
+      this.fileType = await this.loadFileMetaData(storageRef)
+      await this.chatService.loadSafeFile(this.fileDownloadUrl);
+      await this.chatService.fetchTextFile(this.fileDownloadUrl)
     } catch (error) {
       console.error('Fehler beim Hochladen der Datei:', error);
     }
   }
+
+
+  //lädt die META-Daten der Datei um den Typ zu speichern
+  async loadFileMetaData(storageRef: StorageReference){
+
+    getMetadata(storageRef)
+    .then((metadata) => {
+      this.fileType = metadata.contentType;  // Typ der Datei
+      console.log(this.fileType)
+    })
+    .catch((error) => {
+    console.error('Fehler beim Abrufen der Metadaten:', error);
+    });
+  }
+
 
 
   //File im Browser abrufen und laden

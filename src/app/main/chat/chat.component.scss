@@ -194,8 +194,8 @@
             }
 
             .preview-img{
-                width: 40px;
-                height: 40px;
+                width: 40%;
+                height: auto;
             }
 
             .label-answers {
@@ -327,8 +327,8 @@
             }
 
             .preview-img{
-                width: 40px;
-                height: 40px;
+                width: 40%;
+                height: auto;
             }
 
             .label-answers {
@@ -467,7 +467,7 @@
 .custom-input {
     position: absolute;
     bottom: 20px;
-    height: 145px;
+    min-height: 145px;
     width: 90%;
     border-radius: 20px;
     padding: 20px;
@@ -519,6 +519,7 @@
         align-items: center;
         border-radius: 30px;
         padding: 12px 25px;
+        max-height: 84px;
     }
 
     .file-button-change{

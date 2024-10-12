@@ -10,6 +10,7 @@ export class directMessage {
     chatId!: string;
     fileDownloadUrl!: string;
     fileName!: string;
+    fileType!: string;
 
 
     constructor(obj?: any) {
@@ -23,6 +24,7 @@ export class directMessage {
         this.chatId = obj ? obj.chatId : '';
         this.fileDownloadUrl = obj ? obj.fileDownloadUrl : '';
         this.fileName = obj ? obj.fileName : '';
+        this.fileType = obj ? obj.fileType : '';
     }
 
     public toJson(){
@@ -37,6 +39,7 @@ export class directMessage {
             chatId:this.chatId,
             fileDownloadUrl:this.fileDownloadUrl,
             fileName:this.fileName,
+            fileType:this.fileType
         }
        
     }

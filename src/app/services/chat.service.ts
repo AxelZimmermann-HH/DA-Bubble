@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { addDoc, collection, doc, documentId, Firestore, getDocs, onSnapshot, query, setDoc, where } from '@angular/fire/firestore';
 import { BehaviorSubject } from 'rxjs';
 import { directMessage } from '../models/directMessage.class';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +23,7 @@ export class ChatService {
   showChannel = true;
   showChat = true;
 
-  constructor(public firestore: Firestore) {}
+  constructor(public firestore: Firestore, private sanitizer: DomSanitizer) {}
 
 
   onChannelSelected(channel: any) {
@@ -133,9 +134,17 @@ export class ChatService {
               text: messageData['text'],
               fileDownloadUrl: messageData['fileDownloadUrl'],
               fileName: messageData['fileName'],
+              fileType: messageData['fileType']
             };
 
             this.chatMessages.push(chatData);
+            if(chatData.fileType == 'text/plain'){
+              debugger
+              this.fetchTextFile(chatData.fileDownloadUrl)
+            }
+            if(chatData.fileType == 'application/pdf'){
+              this.loadSafeFile(chatData.fileDownloadUrl)
+            }
           });
 
           // Sortiere nach Timestamp und gruppiere nach Datum
@@ -149,6 +158,33 @@ export class ChatService {
       }
     });
   };
+
+  safeUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
+
+  async loadSafeFile(fileUrl: string) {
+    this.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fileUrl);
+  }
+
+
+  textContent: string | null = null;
+
+  async fetchTextFile(url: string) {
+    // Dateiinhalt als Text laden
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Fehler beim Laden der Datei');
+        }
+        return response.text();  // Dateiinhalt als Text lesen
+      })
+      .then(text => {
+        this.textContent = text;  // Inhalt im Template anzeigen
+      })
+      .catch(error => {
+        console.error('Fehler beim Lesen der Textdatei:', error);
+        this.textContent = 'Fehler beim Laden der Textdatei.';
+      });
+  }
 
 
   // Nachrichten nach Datum gruppieren
@@ -165,7 +201,7 @@ export class ChatService {
 
 
   // Nachricht senden
-  async setChatData(newDm: string, fileDownloadUrl:string, selectedFileName:string, currentUserId: string) {
+  async setChatData(newDm: string, fileDownloadUrl:string, selectedFileName:string, fileType:string, currentUserId: string) {
     const newDirectMessage = new directMessage();
     newDirectMessage.chatId = this.chatId;
     newDirectMessage.senderId = currentUserId;
@@ -176,7 +212,7 @@ export class ChatService {
     newDirectMessage.dayDateMonth = await this.getFormattedDate();
     newDirectMessage.fileName = selectedFileName;
     newDirectMessage.fileDownloadUrl = fileDownloadUrl;
-
+    newDirectMessage.fileType = fileType;
     const dmData = newDirectMessage.toJson();
 
     await this.saveNewDirectMessage(dmData);

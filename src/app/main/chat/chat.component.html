@@ -39,7 +39,13 @@
                                                 <span>{{ message.text }}</span>
                                                 <div *ngIf="message.fileName" class="file-container">
                                                     <span>{{message.fileName}}</span>
-                                                    <img class="preview-img" [src]="message.fileDownloadUrl" alt="">
+                                                    <img *ngIf="message.fileType == 'image/jpeg' || message.fileType == 'image/png'" class="preview-img" [src]="message.fileDownloadUrl" alt="">
+
+                                                    <object *ngIf="message.fileType == 'application/pdf'" [data]="this.chatService.safeUrl" type="application/pdf" width="60%" height="100%">
+                                                        Dein Browser unterstützt keine PDF-Anzeige
+                                                    </object>
+
+                                                    <pre *ngIf="message.fileType == 'text/plain'" style="overflow: auto;"> <p>{{this.chatService.textContent}}</p></pre>
                                                     <button  class="open-file-button"
                                                         (click)="downloadFile(message.fileDownloadUrl, message.fileName)">Anhang
                                                         öffnen</button>
@@ -85,7 +91,15 @@
 
                                                 <div *ngIf="message.fileName" class="file-container">
                                                     <span>{{message.fileName}}</span>
-                                                    <img class="preview-img" [src]="message.fileDownloadUrl" alt="">
+
+                                                    <img *ngIf="message.fileType == 'image/jpeg' || message.fileType == 'image/png'" class="preview-img" [src]="message.fileDownloadUrl" alt="">
+
+                                                    <object *ngIf="message.fileType == 'application/pdf'" [data]="this.chatService.safeUrl" type="application/pdf" width="60%" height="100%">
+                                                        Dein Browser unterstützt keine PDF-Anzeige
+                                                    </object>
+
+                                                    <pre *ngIf="message.fileType == 'text/plain'" style="overflow: auto;"> <p>{{this.chatService.textContent}}</p></pre>
+
                                                     <button class="open-file-button" (click)="downloadFile(message.fileDownloadUrl, message.fileName)">
                                                         Anhang öffnen
                                                     </button>
@@ -155,16 +169,28 @@
 
         @if (selectedFile) { <!-- Datei-Anzeige -->
         <div class="file-upload-container">
+
+            <img *ngIf="fileType == 'image/jpeg' || fileType == 'image/png'" style="height: 60px; width: 40%;" [src]="fileDownloadUrl" alt="">
+
+            <object *ngIf="fileType == 'application/pdf'" [data]="this.chatService.safeUrl" type="application/pdf" width="40%" height="60px">
+                Dein Browser unterstützt keine PDF-Anzeige
+            </object>
+
+            <pre *ngIf="fileType == 'text/plain'" style="overflow: auto;"> 
+                <p>{{this.chatService.textContent}}</p>
+            </pre>
+
             <span> {{ selectedFileName }}</span>
             <label for="file-change" style="height: 24px;">
                 <img class="file-button-change" src="./assets/icons/edit.png" alt="Anhang ändern">
             </label>
 
             <input style="display: none;" id="file-change" type="file"
-                (change)="onChangeFileSelected($event, selectedFileName)" />
+            (change)="onChangeFileSelected($event, selectedFileName)" />
+            
+            <img class="file-button-delete" (click)="deleteFile(selectedFileName); selectedFile = null;" 
+            src="./assets/icons/close.png" alt="Anhang löschen">
 
-           
-            <img class="file-button-delete" (click)="deleteFile(selectedFileName); selectedFile = null;" src="./assets/icons/close.png" alt="Anhang löschen">
         </div>
         }
 
