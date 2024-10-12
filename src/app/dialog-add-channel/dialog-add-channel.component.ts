@@ -1,9 +1,10 @@
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { addDoc, collection, doc, Firestore, onSnapshot, setDoc } from '@angular/fire/firestore';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Channel } from '../models/channel.class';
 import { User } from '../models/user.class';
+import { DialogAddUserComponent } from '../dialog-add-user/dialog-add-user.component';
 
 
 
@@ -17,7 +18,7 @@ import { User } from '../models/user.class';
 
 export class DialogAddChannelComponent {
 
-  constructor(public dialogRef: MatDialogRef<DialogAddChannelComponent>, public firestore: Firestore, @Inject(MAT_DIALOG_DATA) public data: { userId: string }) { }
+  constructor(public dialogRef: MatDialogRef<DialogAddChannelComponent>,public dialog:MatDialog, public firestore: Firestore, @Inject(MAT_DIALOG_DATA) public data: { userId: string }) { }
   closeButtonIcon = 'close.png'
 
   channelName = new FormControl('', [Validators.required, Validators.minLength(2)]);
@@ -50,7 +51,6 @@ export class DialogAddChannelComponent {
           this.userData.push(user);
         });
         this.creatorName = this.findUserNameById(this.data.userId);
-        console.log('creator:', this.creatorName); 
         resolve(); 
       });
     });
@@ -62,13 +62,13 @@ export class DialogAddChannelComponent {
     this.channel.tagIcon = 'tag.png';
     this.channel.creatorName = this.creatorName;  // Setze den Ersteller des Channels
 
-
     const channelData = this.channel.toJson();
 
     this.saveNewChannel(channelData).then((result: any) => {
       this.channelName.setValue('');
       this.channelDescription.setValue('');
       this.dialogRef.close();
+      this.dialog.open(DialogAddUserComponent, {data: { channel: this.channel, source: 'createNewChannel' }})
     });
   }
 

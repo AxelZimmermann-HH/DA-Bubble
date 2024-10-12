@@ -8,7 +8,6 @@ import { UserService } from '../../../services/user.service';
 import { DialogUserProfilComponent } from '../../dialog-user-profil/dialog-user-profil.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ChatService } from '../../../services/chat.service';
-import { DialogAddUserComponent } from '../../../dialog-add-user/dialog-add-user.component';
 
 @Component({
   selector: 'app-add-channel-user',
