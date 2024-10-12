@@ -197,7 +197,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
       // Initialisiere Firebase Storage
       const storage = getStorage();
       const storageRef = ref(storage, `files/${this.selectedFileName}`);
-
+      
       // Lade die Datei hoch
       const snapshot = await uploadBytes(storageRef, this.selectedFile);
 
@@ -215,6 +215,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
        // Erstellen eines unsichtbaren Links
        const link = document.createElement('a');
        link.href = fileDownloadUrl;
+       link.target = '_blank';
        link.download = fileName;
        // Anhängen des Links an das Dokument
        document.body.appendChild(link);

@@ -19,6 +19,10 @@ export class SharedService {
   }
 
   openDialogEditChannel(channel: any) {
-   this.dialog.open(DialogEditChannelComponent, { data: channel });
+    if (channel) {
+      this.dialog.open(DialogEditChannelComponent, { data: channel });
+    } else {
+      console.error('No channel selected.');
+    }
   }
 }

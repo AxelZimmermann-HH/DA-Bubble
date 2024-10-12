@@ -1,26 +1,17 @@
 <div class="channel-users">
     <div class="members-header">Mitglieder<img src="./assets/icons/close.png" (click)="dialogRef.close()"></div>
     <ul class="users-menu">
-        @for (member of channel.members; track member.name){
-        @if(userService.isNumber(member.avatar)){
-        <li class="usersList" (click)="openUserProfil(member); dialogRef.close()">
-            <img [src]="'./assets/avatars/avatar_' + member.avatar + '.png'" alt=""
+    
+     
+        <li *ngFor="let member of channel.members" class="usersList" (click)="openUserProfil(member); dialogRef.close()">
+            <img [src]="getAvatarForUser(member.name)" alt=""
                 style="width: 50px; height: 50px; border-radius: 30px;">
             <div [ngClass]="{'offline-point': !member.online}" class="online-point"></div>
             {{ member.name }}
 
         </li>
-        }
-        @else{
-        <li class="usersList" (click)="openUserProfil(member); dialogRef.close()">
-            <img [src]="member.avatar" alt="Google User Avatar" alt=""
-                style="width: 50px; height: 50px; border-radius: 30px;">
-            <div [ngClass]="{'offline-point': !member.online}" class="online-point"></div>
-            {{ member.name }}
-
-        </li>
-        }
-        }
+        
+       
 
     </ul>
     <div class="add-users" (click)="openDialogAddUser()"><img src="./assets/icons/person_add.png" alt=""> Mitglieder hinzufügen</div>

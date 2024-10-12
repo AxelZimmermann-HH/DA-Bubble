@@ -23,9 +23,6 @@ export class AddChannelUserComponent {
   user = new User();
   channel = new Channel();
   userId!: string;
-  channelUsers = [];
-
-
 
   constructor(
     public firestore: Firestore,
@@ -67,5 +64,15 @@ export class AddChannelUserComponent {
   openDialogAddUser() {
 
   }
-
+  getAvatarForUser(userName: string) {
+    const user = this.userData.find((u: { name: string; }) => u.name === userName);
+    if (user) {
+      if (this.userService.isNumber(user.avatar)) {
+        return './assets/avatars/avatar_' + user.avatar + '.png';  // Local asset avatar
+      } else {
+        return user.avatar;  // External URL avatar
+      }
+    }
+    return './assets/avatars/avatar_0.png';  // Default avatar when user not found
+  }
 }

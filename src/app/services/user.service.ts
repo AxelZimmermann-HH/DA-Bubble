@@ -22,4 +22,6 @@ export class UserService {
   isNumber(value: any): boolean {
     return typeof value === 'number';
   }
+
+
 }

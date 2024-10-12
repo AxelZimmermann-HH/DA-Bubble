@@ -7,16 +7,11 @@
             </button>
             <div class="add-members">
                 <div class="member-preview" (click)="openUsersList(selectedChannelId!)">
-                    @for (member of selectedChannel.members; track member.name) {
-                    @if (userService.isNumber(member.avatar)) {
-                    <img [src]="'./assets/avatars/avatar_' + member.avatar +'.png'" alt="" class="avatar">
-                    } @else {
-                    <img [src]="member.avatar" alt="Google User Avatar" class="avatar">
-                    }
-                    }
-                    <p *ngIf="selectedChannel.members.length>0">{{selectedChannel.members.length}}</p>
+                    <img *ngFor="let member of selectedChannel.members" [src]="getAvatarForUser(member.name)" alt=""
+                        class="avatar">
                 </div>
-
+                <p *ngIf="selectedChannel.members.length>0" class="numberofmembers">{{selectedChannel.members.length}}
+                </p>
                 <button class="addUserBtn" (click)="openDialogAddUser(selectedChannelId!)">
                     <img src="./assets/icons/person_add.png" alt="">
                 </button>
@@ -40,23 +35,13 @@
                         <td [ngClass]="{'current-user': isCurrentUser(message.user)}">
                             <div class="message-main" [ngClass]="{'current-user': isCurrentUser(message.user)}">
                                 <img [src]="getAvatarForUser(message.user)" alt="" class="avatar">
-                                <div class="message-content">
+                                <div class="message-content" *ngIf="!message.isEditing">
                                     <div class="name-time" [ngClass]="{'current-user': isCurrentUser(message.user)}">
                                         {{ message.user }}
                                         <p class="time">{{ message.formatTimestamp() }}</p>
                                     </div>
-                                    <div class="speech-bubble" [ngClass]="{'b-radius': isCurrentUser(message.user)}"
-                                        *ngIf="!message.isEditing">
+                                    <div class="speech-bubble" [ngClass]="{'b-radius': isCurrentUser(message.user)}">
                                         {{ message.text }}
-                                    </div>
-                                    <div *ngIf="message.isEditing" style="position: relative;">
-                                        <textarea [(ngModel)]="message.editedText" class="speech-bubble"
-                                            [ngClass]="{'b-radius': isCurrentUser(message.user)}" >
-                                        </textarea>
-                                        <div class="button-group">
-                                            <button (click)="saveMessageEdit(message)">Speichern</button>
-                                            <button (click)="cancelMessageEdit(message)">Abbrechen</button>
-                                        </div>
                                     </div>
                                     <div class="label-answers" (click)="openThread(message)"
                                         *ngIf="message.answers.length > 0">
@@ -64,8 +49,19 @@
                                         <p class="time">Letzte Antwort {{message.getLastAnswerTimestamp()}}</p>
                                     </div>
                                 </div>
+                                <div *ngIf="message.isEditing" class="textAreaContainer">
+                                    <textarea [(ngModel)]="message.editedText" class="textEditingArea">
+                                    </textarea>
+                                    <div class="button-icons-group">
+                                        <img src="./assets/icons/sentiment_satisfied-1.png" alt="">
+                                        <div class="button-group">
+                                            <button (click)="cancelMessageEdit(message)" class="cancelBtn">Abbrechen</button>
+                                            <button (click)="saveMessageEdit(message)" class="saveBtn">Speichern</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="reaction-hover" [ngClass]="{'reaction-left': isCurrentUser(message.user)}">
+                            <div class="reaction-hover" [ngClass]="{'reaction-left': isCurrentUser(message.user)}" *ngIf="!message.isEditing">
                                 <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
                                 <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png"
                                     alt="">

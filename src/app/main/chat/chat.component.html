@@ -2,26 +2,23 @@
     <div class="channel-header">
         <div class="user" (click)="openUserProfil(user)">
             <div class="avatar-container">
-                    @if (userService.isNumber(user.avatar)) {
-                        <img class="user-avatar" src="\assets\avatars\avatar_{{user.avatar}}.png" alt="">
-                    } @else {
-                        <img class="user-avatar" src={{user.avatar}} alt="">
-                    }
+                <img class="user-avatar" [src]="getAvatarForUser(user.name)" alt="">
                 <div [ngClass]="{'offline-point': !user.online}" class="online-point"></div>
             </div>
             <span class="header1">{{ user.name }}</span>
         </div>
     </div>
-    <div  class="channel-content" #chatContainer>
+    <div class="channel-content" #chatContainer>
 
         <!-- Gruppierte Nachrichten anzeigen -->
         <div *ngFor="let group of chatService.groupedMessages | keyvalue; let i = index">
             <div style="position: relative;">
                 <hr class="separator-line">
-                <button class="day-time-btn">{{ isToday(group.value[0].timestamp) ? 'Heute' : group.value[0].dayDateMonth }}</button>
+                <button class="day-time-btn">{{ isToday(group.value[0].timestamp) ? 'Heute' :
+                    group.value[0].dayDateMonth }}</button>
             </div>
 
-            <div *ngIf="!chatService.chatIsEmpty" >
+            <div *ngIf="!chatService.chatIsEmpty">
                 <div *ngFor="let message of group.value; let j = index">
                     <!-- Nachricht des anderen Benutzers -->
                     <div *ngIf="message.senderId == user.userId">
@@ -30,21 +27,31 @@
                                 <td>
                                     <div class="message-main">
                                         @if (userService.isNumber(user.avatar)) {
-                                            <img class="avatar" src="\assets\avatars\avatar_{{user.avatar}}.png" alt="">
+                                        <img class="avatar" src="\assets\avatars\avatar_{{user.avatar}}.png" alt="">
                                         } @else {
-                                            <img class="avatar" src={{user.avatar}} alt="">
+                                        <img class="avatar" src={{user.avatar}} alt="">
                                         }
                                         <div class="message-content">
                                             <div class="name-time"> {{ user.name }}
                                                 <p class="time">{{ message.time }} Uhr</p>
                                             </div>
-                                            <div class="speech-bubble">{{ message.text }}</div>
+                                            <div class="speech-bubble">
+                                                <span>{{ message.text }}</span>
+                                                <div *ngIf="message.fileName" class="file-container">
+                                                    <span>{{message.fileName}}</span>
+                                                    <img class="preview-img" [src]="message.fileDownloadUrl" alt="">
+                                                    <button  class="open-file-button"
+                                                        (click)="downloadFile(message.fileDownloadUrl, message.fileName)">Anhang
+                                                        öffnen</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="reaction-hover">
                                         <div>
                                             <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
-                                            <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png" alt="">
+                                            <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png"
+                                                alt="">
                                             <img src="./assets/icons/add_reaction.png" alt="">
                                             <img src="./assets/icons/comment.png" alt="">
                                         </div>
@@ -57,13 +64,15 @@
 
                     <!-- Nachricht des aktuellen Benutzers -->
                     <div *ngIf="message.senderId == currentUser.userId">
-                        <table class="chat-table-sender" >
+                        <table class="chat-table-sender">
                             <tr>
                                 <td>
-                                    <div class="reaction-hover" *ngIf="editingMessageId !== message.messageId">      
-                                            <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
-                                            <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png" alt="">
-                                            <img src="./assets/icons/more_vert.png" alt="" (click)="editDirectMessage(message)">    
+                                    <div class="reaction-hover" *ngIf="editingMessageId !== message.messageId">
+                                        <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
+                                        <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png"
+                                            alt="">
+                                        <img src="./assets/icons/more_vert.png" alt=""
+                                            (click)="editDirectMessage(message)">
                                     </div>
 
                                     <div class="message-main">
@@ -76,40 +85,48 @@
 
                                                 <div *ngIf="message.fileName" class="file-container">
                                                     <span>{{message.fileName}}</span>
-                                                    <button (click)="downloadFile(message.fileDownloadUrl, message.fileName)">Anhang herunterladen</button>
+                                                    <img class="preview-img" [src]="message.fileDownloadUrl" alt="">
+                                                    <button class="open-file-button" (click)="downloadFile(message.fileDownloadUrl, message.fileName)">
+                                                        Anhang öffnen
+                                                    </button>
                                                 </div>
-                                                
+
                                             </div>
                                         </div>
 
-                               
-                                            <div *ngIf="editingMessageId === message.messageId" class="edit-message-container">
-                                        
-                                                    <textarea class="edit-textarea" [formControl]="editedMessage"></textarea>
-                                                    <div class="bottom-container">
-                                                        <div class="reactions">
-                                                            <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji">
-                                                        </div>
-                                            
-                                                        <div class="button-container">
-                                                            <button class="cancel-button" (click)="cancelEditing()">
-                                                                Abbrechen
-                                                            </button>
-                                                            <button class="save-button" (click)="setEditedDirectMessage(message)"  [disabled]="editedMessage.invalid">
-                                                                Speichern
-                                                            </button>
-                                                        </div>
-    
-                                                    </div>
-                                             
-                                                
+
+                                        <div *ngIf="editingMessageId === message.messageId"
+                                            class="edit-message-container">
+
+                                            <textarea class="edit-textarea" [formControl]="editedMessage"></textarea>
+                                            <div class="bottom-container">
+                                                <div class="reactions">
+                                                    <img src="./assets/icons/sentiment_satisfied-1.png" alt=""
+                                                        class="add-emoji">
+                                                </div>
+
+                                                <div class="button-container">
+                                                    <button class="cancel-button" (click)="cancelEditing()">
+                                                        Abbrechen
+                                                    </button>
+                                                    <button class="save-button"
+                                                        (click)="setEditedDirectMessage(message)"
+                                                        [disabled]="editedMessage.invalid">
+                                                        Speichern
+                                                    </button>
+                                                </div>
+
                                             </div>
-                                
-                                            @if (userService.isNumber(currentUser.avatar)) {
-                                                <img class="avatar" src="\assets\avatars\avatar_{{currentUser.avatar}}.png" alt="">
-                                            } @else {
-                                                <img class="avatar" src={{currentUser.avatar}} alt="">
-                                            }
+
+
+                                        </div>
+
+                                        @if (userService.isNumber(currentUser.avatar)) {
+                                        <img class="avatar" src="\assets\avatars\avatar_{{currentUser.avatar}}.png"
+                                            alt="">
+                                        } @else {
+                                        <img class="avatar" src={{currentUser.avatar}} alt="">
+                                        }
                                     </div>
 
                                 </td>
@@ -127,7 +144,8 @@
             <img class="new-chat-user-avatar" [src]="getAvatarForUser(user.name)" alt="">
             <span class="header1">{{ user.name }}</span>
         </div>
-        <span class="info header6">Diese Unterhaltung findet nur zwischen <span class="name-colored">&#64;{{ user.name }}</span> und dir statt.</span>
+        <span class="info header6">Diese Unterhaltung findet nur zwischen <span class="name-colored">&#64;{{ user.name
+                }}</span> und dir statt.</span>
     </div>
 
     <!-- Nachrichteneingabe -->
@@ -136,36 +154,43 @@
         <textarea placeholder="Nachricht an {{ user.name }}" class="text-area" [formControl]="directMessage"></textarea>
 
         @if (selectedFile) { <!-- Datei-Anzeige -->
-            <div> 
-                <span> {{ selectedFileName }}</span>
-                <label for="file-change">
-                    <span>Anhang ändern</span>
-                </label>
-                <input style="display: none;" id="file-change" type="file" (change)="onChangeFileSelected($event, selectedFileName)" /> 
+        <div class="file-upload-container">
+            <span> {{ selectedFileName }}</span>
+            <label for="file-change" style="height: 24px;">
+                <img class="file-button-change" src="./assets/icons/edit.png" alt="Anhang ändern">
+            </label>
 
-                <button (click)="deleteFile(selectedFileName); this.selectedFile = null;">Anhang löschen</button>
-            </div>
+            <input style="display: none;" id="file-change" type="file"
+                (change)="onChangeFileSelected($event, selectedFileName)" />
+
+           
+            <img class="file-button-delete" (click)="deleteFile(selectedFileName); selectedFile = null;" src="./assets/icons/close.png" alt="Anhang löschen">
+        </div>
         }
 
         <div class="add-reaction">
             <div class="reactions">
-                
+
                 <div class="upload-area"> <!-- Datei-Upload -->
                     <label for="file-upload">
                         <img src="./assets/icons/add-1.png" alt="" class="add-icon">
                     </label>
-                      
-                    <input style="display: none;" id="file-upload" type="file" (change)="onFileSelected($event)" />  
+
+                    <input style="display: none;" id="file-upload" type="file" (change)="onFileSelected($event)" />
                 </div>
 
 
                 <div style="height: 50px; width: 1px; background-color: rgba(104, 104, 104, 1);"></div>
                 <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji">
                 <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail">
-                
+
             </div>
 
-            <button  (click)="sendDirectMessage(); this.selectedFile = null" [disabled]="directMessage.invalid">
+            <button (click)="sendDirectMessage(); 
+            selectedFile = null; 
+            this.selectedFileName = ''; 
+            this.fileDownloadUrl=''" 
+            [disabled]="directMessage.invalid && !selectedFile">
                 <img src="./assets/icons/Send icon.png">
             </button>
         </div>

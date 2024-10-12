@@ -6,6 +6,7 @@ export class Channel {
     id!: string;
     tagIcon!: string;
     members!: User[];
+    creatorName!: string; 
 
     constructor(obj?: any) {
         this.channelName = obj ? obj.channelName : '';
@@ -13,7 +14,7 @@ export class Channel {
         this.id = obj ? obj.id : '';
         this.tagIcon = obj ? obj.tagIcon : '';
         this.members = Array.isArray(obj?.members) ? obj.members : []; 
-
+        this.creatorName = obj ? obj.creatorName : '';
     }
 
     public toJson() {
@@ -22,7 +23,8 @@ export class Channel {
             channelDescription: this.channelDescription,
             id:this.id,
             tagIcon:this.tagIcon,
-            members: this.members // verwenden Sie hier das korrekte Feld
+            members: this.members,
+            creatorName: this.creatorName
         }
     }
 } 

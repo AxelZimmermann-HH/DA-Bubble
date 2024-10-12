@@ -6,33 +6,18 @@
 
   <div class="custom-dropdown">
     <div class="dropdown-selected" (click)="toggleDropdown()" [ngClass]="{'selected-user': selectedUser}">
-      <img *ngIf="selectedUser" [src]="'./assets/avatars/avatar_' + selectedUser.avatar + '.png'" alt=""
-        style="width: 40px; height: 40px; border-radius: 30px; margin-right: 8px;">
+      <img *ngIf="selectedUser" [src]="getAvatarForUser(selectedUser.name)" alt="" class="slectedUserImg">
       <span>{{ selectedUser ? selectedUser.name : 'Name eingeben' }}</span>
-      <img src="./assets/icons/close.png" alt="" *ngIf="selectedUser" (click)="removeSelectedUser($event)">
+      <img src="./assets/icons/close.png" alt="" *ngIf="selectedUser" (click)="removeSelectedUser($event)" class="closeBtn">
     </div>
+
     <ul *ngIf="dropdownOpen" class="dropdown-options">
-      @for (user of userData; track user.name){
-        @if(userService.isNumber(user.avatar)){
-          <li (click)="selectUser(user)"
-          class="usersList">
-          <img [src]="'./assets/avatars/avatar_' + user.avatar + '.png'" alt=""
-            >
-          {{ user.name }}
-        </li>
-        }
-        @else {
-          <li (click)="selectUser(user)"
-          class="usersList">
-          <img [src]="user.avatar" alt="Google User Avatar" alt=""
-            >
-          {{ user.name }}
-        </li>
-        }
-      }
-      
+      <li (click)="selectUser(user)" class="usersList" *ngFor="let user of userData">
+        <img [src]="getAvatarForUser(user.name)" alt="">
+        {{ user.name }}
+      </li>
     </ul>
+
   </div>
   <button class="createBtn" [disabled]="!selectedUser" (click)="addMember(selectedUser)">Hinzufügen</button>
 </div>
-
