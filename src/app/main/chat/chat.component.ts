@@ -9,11 +9,12 @@ import { UserService } from '../../services/user.service';
 import { ActivatedRoute, Route } from '@angular/router';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject, StorageReference, getMetadata } from '@angular/fire/storage';  // Firebase Storage imports
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, MatDialogModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, MatDialogModule, PickerComponent],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss']
 })
@@ -264,5 +265,20 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     }).catch((error) => {
       console.error('Fehler beim Löschen der Datei:', error);
     });
+  }
+
+  //Emojis
+  showEmojis:boolean = false;
+
+  toogleEmojis(){
+    this.showEmojis = !this.showEmojis;
+  }
+
+  onEmojiSelect(event: any){
+    console.log('gewähltes emojii:',event)
+    const emoji = event.emoji.native; // Das ausgewählte Emoji
+    const currentMessageValue = this.directMessage.value || '';
+    this.directMessage.setValue(currentMessageValue + emoji);
+    this.showEmojis = false;
   }
 }

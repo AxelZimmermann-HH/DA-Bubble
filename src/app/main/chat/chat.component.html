@@ -207,7 +207,19 @@
 
 
                 <div style="height: 50px; width: 1px; background-color: rgba(104, 104, 104, 1);"></div>
-                <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji">
+                <div>
+                    <img src="./assets/icons/sentiment_satisfied-1.png" (click)="toogleEmojis()" alt="" class="add-emoji">
+             
+                    <emoji-mart *ngIf="showEmojis"
+                      set="google"
+                      
+                      [emojiSize]="24"
+                      (emojiSelect)="onEmojiSelect($event)">
+                    </emoji-mart>
+                </div>
+
+              
+                
                 <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail">
 
             </div>

@@ -559,7 +559,6 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    filter: opacity(0.5);
     border-radius: 30px;
     cursor: pointer;
 
@@ -589,4 +588,9 @@
     .add-mail:hover {
         content: url('./../../../assets/icons/alternate_email-2.png');
     }
+}
+
+emoji-mart{
+        position: absolute;
+        transform: translateY(-100%);
 }
