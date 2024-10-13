@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { User } from '../models/user.class';
+import { doc, Firestore, updateDoc } from '@angular/fire/firestore';
+
 
 @Injectable({
   providedIn: 'root'
@@ -8,8 +10,8 @@ import { User } from '../models/user.class';
 export class UserService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);  // Benutzer als Observable
   currentUser$ = this.currentUserSubject.asObservable();  // Observable, auf das andere Komponenten zugreifen können
-
-  constructor() { }
+  userData: User[] = [];
+  constructor(private firestore: Firestore) { }
 
   setUser(user: User) {
     this.currentUserSubject.next(user);
@@ -23,5 +25,27 @@ export class UserService {
     return typeof value === 'number';
   }
 
-
+  updateUser(updatedUser: User): void {
+    const currentUser = this.getUser();
+    if (currentUser) {
+      const userRef = doc(this.firestore, `users/${currentUser.userId}`);
+      
+      // Use the toJson method to get the updated data
+      updateDoc(userRef, updatedUser.toJson())
+        .then(() => {
+        
+          const updatedUserInstance = new User({ 
+            ...currentUser, 
+            ...updatedUser 
+          });
+          this.setUser(updatedUserInstance);
+          console.log('User profile updated in Firestore:', updatedUser);
+        })
+        .catch((error) => {
+          console.error('Error updating user profile:', error);
+        });
+    } else {
+      console.error('No current user to update');
+    }
+  }
 }

@@ -56,7 +56,9 @@ export class AddChannelUserComponent {
   }
 
   openUserProfil(member: any) {
-    this.dialog.open(DialogUserProfilComponent, { data: member });
+    this.dialog.open(DialogUserProfilComponent, { 
+      data: { user: member, isEditable: false } // Not editable from "Add Channel User"
+    });
     console.log('add channel user ', member.name);
   }
 

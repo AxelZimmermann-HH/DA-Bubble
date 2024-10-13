@@ -7,11 +7,12 @@ import { Channel } from '../../models/channel.class';
 import { ChatService } from '../../services/chat.service';
 import { UserService } from '../../services/user.service';
 import { SharedService } from '../../services/shared.service';
+import { FormsModule, NgForm } from '@angular/forms';
 
 @Component({
   selector: 'app-dialog-user-profil',
   standalone: true,
-  imports: [CommonModule, MatDialogModule],
+  imports: [CommonModule, MatDialogModule, FormsModule],
   templateUrl: './dialog-user-profil.component.html',
   styleUrl: './dialog-user-profil.component.scss'
 })
@@ -19,8 +20,12 @@ export class DialogUserProfilComponent {
 
   channel = new Channel();
   currentUser: any;
+
   currentUserId: string = '';
   chatPerson: any;
+
+  isEditMode: boolean = false;
+  isEditable: boolean; 
 
   @Output() chatSelected = new EventEmitter<void>();
 
@@ -30,25 +35,23 @@ export class DialogUserProfilComponent {
     public chatService: ChatService,
     public userService: UserService,
     public sharedService: SharedService,
-    @Inject(MAT_DIALOG_DATA) public user: User) {
-
+    @Inject(MAT_DIALOG_DATA) public data: { user: User, isEditable: boolean }) { 
+    this.isEditable = data.isEditable; 
   }
 
   selectedChannel: Channel | null = null;
 
   ngOnInit() {
-    // Benutzer abonnieren und in currentUser speichern
     this.userService.currentUser$.subscribe(currentUser => {
       this.currentUser = currentUser;
       if (currentUser) {
-        //console.log('Angemeldeter Benutzer:', user);
         this.currentUserId = currentUser.userId;
       }
     });
   }
 
   getAvatarForUser(user: any) {
- 
+
     if (user) {
       if (this.userService.isNumber(user.avatar)) {
         return './assets/avatars/avatar_' + user.avatar + '.png';  // Local asset avatar
@@ -57,5 +60,21 @@ export class DialogUserProfilComponent {
       }
     }
     return './assets/avatars/avatar_0.png';  // Default avatar when user not found
+  }
+
+  saveProfile(form: NgForm) {
+    if (form.valid) {
+      this.userService.updateUser(this.data.user); // Pass the updated user to the service
+  
+      console.log('Profile successfully saved:', this.data.user);
+      this.toggleEditMode();  // Exit edit mode
+      this.dialogRef.close()
+    } else {
+      console.error('Form is invalid');
+    }
+  }
+
+  toggleEditMode() {
+    this.isEditMode = !this.isEditMode;
   }
 }

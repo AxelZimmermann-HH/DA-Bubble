@@ -116,3 +116,32 @@
         background: rgba(68, 77, 242, 0.603);
     }
 }
+
+.button-group {
+    display: flex;
+    padding: 0 8px;
+    gap: 16px;
+    margin-top: 40px;
+    justify-content: center;
+
+    button {
+        width: 141px;
+        height: 49px;
+        border-radius: 50px;
+        padding: 12px 25px;
+        cursor: pointer;
+        border: unset;
+    }
+
+    .saveBtn {
+        background: rgba(68, 77, 242, 1);
+        color: rgba(255, 255, 255, 1);
+    }
+
+    .cancelBtn {
+        border: 1px solid rgba(121, 126, 243, 1);
+        color: rgba(68, 77, 242, 1);
+        background-color: rgba(255, 255, 255, 1);
+
+    }
+}

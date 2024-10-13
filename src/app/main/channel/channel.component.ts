@@ -214,7 +214,6 @@ export class ChannelComponent {
       });
   }
 
-
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
     if (user) {
@@ -297,7 +296,6 @@ export class ChannelComponent {
   }
 
   openDialogAddUser(channelId: string) {
-    // Channel-Daten basierend auf der channelId abrufen
     this.getChannelData(channelId).then(channelData => {
       if (channelData) {
         this.dialog.open(DialogAddUserComponent, {
