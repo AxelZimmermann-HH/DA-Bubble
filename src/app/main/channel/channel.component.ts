@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
@@ -17,6 +16,7 @@ import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { ChatComponent } from "../chat/chat.component";
 import { DialogAddUserComponent } from '../../dialog-add-user/dialog-add-user.component';
 import { ChatService } from '../../services/chat.service';
+import { FormsModule } from '@angular/forms';
 
 
 @Component({
@@ -24,7 +24,6 @@ import { ChatService } from '../../services/chat.service';
   standalone: true,
   imports: [CommonModule,
     FormsModule,
-    ReactiveFormsModule,
     MatDialogModule,
     ThreadComponent,
     AddChannelUserComponent, PickerComponent, ChatComponent],
@@ -53,7 +52,8 @@ export class ChannelComponent {
   showChat: boolean = false;
 
 
-
+  isLoading = false;
+  inputText!: string;
   showEmojiPicker = false;
 
   @Input() selectedChannelId: string | null = null;
@@ -77,13 +77,9 @@ export class ChannelComponent {
     });
 
     this.getAllUsers().then(() => {
-      const userName = this.findUserNameById(this.userId);
-      if (userName) {
-        console.log('Benutzername:', userName);
-      } else {
-        console.log('Benutzer nicht gefunden');
-      }
+      this.findUserNameById(this.userId);
     });
+
   }
 
   findUserNameById(userId: string) {
@@ -92,16 +88,25 @@ export class ChannelComponent {
   }
 
   ngOnChanges(): void {
+    this.isLoading = true;
     if (this.selectedChannelId) {
       this.loadChannel(this.selectedChannelId).then(() => {
         this.getAllMessages();
-
+        this.isLoading = false;
       }).catch(error => {
         console.error('Fehler beim Laden des Channels:', error);
+        this.isLoading = false;
       });
     }
+    else {
+      this.resetChannelState();
+    }
   }
-
+  resetChannelState() {
+    this.selectedChannel = null;
+    this.allMessages = [];
+    this.isLoading = false;
+  }
   async loadChannel(id: string) {
     const channelDocRef = doc(this.firestore, `channels/${id}`);
     const channelSnapshot = await getDoc(channelDocRef);
@@ -109,9 +114,12 @@ export class ChannelComponent {
     if (channelSnapshot.exists()) {
       const data = channelSnapshot.data();
       this.selectedChannel = new Channel({ ...data, id });
+      this.getAllMessages();
     } else {
       console.error('Channel not found');
+      this.selectedChannel = null;
     }
+
   }
 
   subscribeToSearch() {
@@ -135,6 +143,7 @@ export class ChannelComponent {
     this.filteredMessages = this.allMessages;
   }
 
+
   getAllUsers(): Promise<void> {
     return new Promise((resolve) => {
       const userCollection = collection(this.firestore, 'users');
@@ -144,15 +153,15 @@ export class ChannelComponent {
           let user = new User({ ...doc.data(), id: doc.id });
           this.userData.push(user);
         });
-        console.log('Geladene Benutzerdaten:', this.userData); // Ausgabe zur Überprüfung
-        resolve(); // Löse das Promise, wenn die Daten geladen sind
+
+        resolve();
       });
     });
   }
 
   getAllChannels() {
     const channelCollection = collection(this.firestore, 'channels');
-    const readChannel = onSnapshot(channelCollection, (snapshot) => {
+    onSnapshot(channelCollection, (snapshot) => {
       this.channelData = [];
       snapshot.forEach((doc) => {
         let channel = new Channel({ ...doc.data(), id: doc.id });
@@ -193,8 +202,6 @@ export class ChannelComponent {
         date,
         messages: groupedMessages[date]
       }));
-
-      console.log('grouped messages', this.allMessages);
     });
   }
 
@@ -237,7 +244,6 @@ export class ChannelComponent {
     }
     const userName = this.findUserNameById(this.userId);
     if (!userName) {
-      console.log('Benutzer nicht gefunden');
       this.newMessageText = '';
       return;
     }
@@ -301,12 +307,12 @@ export class ChannelComponent {
         this.dialog.open(DialogAddUserComponent, {
           data: { channel: channelData, source: 'channelComponent' }
         });
-      } 
+      }
     }).catch(error => {
       console.error('Error retrieving channel data:', error);
     });
   }
-  
+
 
   openDialogEditChannel(channel: any) {
     this.dialog.open(DialogEditChannelComponent, { data: channel });
@@ -330,10 +336,9 @@ export class ChannelComponent {
         this.selectedAnswers = data['answers']
           ? data['answers'].map((a: any) => new Answer(a))
           : [];
-        console.log('Aktualisierte Antworten: ', this.selectedAnswers);
       } else {
         this.selectedAnswers = []; // Setze auf leer, wenn keine Antworten vorhanden
-        console.log('Keine Antworten gefunden');
+      
       }
     }, (error) => {
       console.error('Fehler beim Abrufen der Antworten: ', error);
@@ -341,7 +346,6 @@ export class ChannelComponent {
   }
 
   editDirectMessage(message: Message) {
-    console.log('edit direkt message ', message.text, message.user, this.findUserNameById(this.userId));
     message.isEditing = true;
     message.editedText = message.text;
   }

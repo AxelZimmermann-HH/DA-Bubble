@@ -1,5 +1,5 @@
 <div style="display: flex; align-items: center; gap: 16px;">
-    <div class="channel-container" *ngIf="selectedChannel">
+    <div class="channel-container" *ngIf="selectedChannel else loadingTemplate">
         <div class="channel-header">
             <button class="edit-channel" (click)="this.sharedService.openDialogEditChannel(selectedChannel)">
                 <p># {{selectedChannel.channelName}}</p>
@@ -55,13 +55,16 @@
                                     <div class="button-icons-group">
                                         <img src="./assets/icons/sentiment_satisfied-1.png" alt="">
                                         <div class="button-group">
-                                            <button (click)="cancelMessageEdit(message)" class="cancelBtn">Abbrechen</button>
-                                            <button (click)="saveMessageEdit(message)" class="saveBtn">Speichern</button>
+                                            <button (click)="cancelMessageEdit(message)"
+                                                class="cancelBtn">Abbrechen</button>
+                                            <button (click)="saveMessageEdit(message)"
+                                                class="saveBtn">Speichern</button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="reaction-hover" [ngClass]="{'reaction-left': isCurrentUser(message.user)}" *ngIf="!message.isEditing">
+                            <div class="reaction-hover" [ngClass]="{'reaction-left': isCurrentUser(message.user)}"
+                                *ngIf="!message.isEditing">
                                 <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
                                 <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png"
                                     alt="">
@@ -95,7 +98,28 @@
         </div>
 
     </div>
-
+    <ng-template #loadingTemplate>
+        <div class="channel-container">
+            <div class="channel-template-header" >
+                    <p style=" font-size: 24px; font-weight: 700;">Neue Nachricht</p>
+                    <input class="inputChannel" type="text" placeholder="An #channel, oder @jemand oder E-Mail Adresse"
+                    >
+            </div>
+            <div class="custom-input">
+                <textarea placeholder="Starte eine neue Nachricht" class="text-area"
+                    [(ngModel)]="newMessageText"></textarea>
+                <div class="add-reaction">
+                    <div class="reactions">
+                        <img src="./assets/icons/add-1.png" alt="" class="add-icon">
+                        <div style="height: 35px;width: 1px;background-color:  rgba(104, 104, 104, 1);"></div>
+                        <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji">
+                        <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail">
+                    </div>
+                    <img src="./assets/icons/Send icon.png" (click)="sendMessage()" class="send-icon">
+                </div>
+            </div>
+        </div>
+    </ng-template>
     <app-thread *ngIf="isThreadOpen" [selectedChannelId]="selectedChannelId"
         [channelName]="selectedChannel?.channelName" [message]="selectedMessage" [selectedAnswers]="selectedAnswers"
         (threadClosed)="onThreadClosed()">

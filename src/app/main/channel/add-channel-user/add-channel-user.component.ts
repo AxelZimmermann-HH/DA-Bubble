@@ -8,6 +8,7 @@ import { UserService } from '../../../services/user.service';
 import { DialogUserProfilComponent } from '../../dialog-user-profil/dialog-user-profil.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ChatService } from '../../../services/chat.service';
+import { DialogAddUserComponent } from '../../../dialog-add-user/dialog-add-user.component';
 
 @Component({
   selector: 'app-add-channel-user',
@@ -32,13 +33,12 @@ export class AddChannelUserComponent {
     public userService: UserService,
     public dialog: MatDialog,
     @Inject(MAT_DIALOG_DATA) public data: any,
-  ) 
-  {
+  ) {
     this.getAllUsers();
     this.channel = new Channel(data.channel);
     this.route.params.subscribe(params => {
       const currentUser = params['userId'];
-      console.log('Aktuelle userId:', currentUser); 
+      console.log('Aktuelle userId:', currentUser);
     });
 
   }
@@ -56,15 +56,17 @@ export class AddChannelUserComponent {
   }
 
   openUserProfil(member: any) {
-    this.dialog.open(DialogUserProfilComponent, { 
+    this.dialog.open(DialogUserProfilComponent, {
       data: { user: member, isEditable: false } // Not editable from "Add Channel User"
     });
     console.log('add channel user ', member.name);
   }
 
   openDialogAddUser() {
-
+    this.dialogRef.close()
+    this.dialog.open(DialogAddUserComponent, {data:{channel:this.channel}})
   }
+
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
     if (user) {

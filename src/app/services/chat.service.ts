@@ -25,7 +25,10 @@ export class ChatService {
   textContent: string | null = null;
   safeUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
 
-  constructor(public firestore: Firestore, private sanitizer: DomSanitizer) {}
+  constructor(public firestore: Firestore, private sanitizer: DomSanitizer) {
+    this.showChannel = true;
+    this.showChat = false;
+  }
 
 
   onChannelSelected(channel: any) {
@@ -42,13 +45,13 @@ export class ChatService {
   }
 
   //öffnet den privaten Chat
-  async openDirectMessage(currentUserId:string, userId:string){
+  async openDirectMessage(currentUserId: string, userId: string) {
     this.chatIsEmpty = true;
     this.chatMessages = []
     const chatId = await this.createChatID(currentUserId, userId);
     const checkIfChatExists = query(collection(this.firestore, "chats"), where(documentId(), "==", chatId));
     const querySnapshot = await getDocs(checkIfChatExists);
-    
+
     if (querySnapshot.empty) {
 
       //legt neuen Chat an, wenn kein Chat existiert
@@ -70,15 +73,15 @@ export class ChatService {
 
 
   //erstellt eine Chat-ID aus den Nutzer ID's
-  async createChatID(myUserId:string, userId:string){
+  async createChatID(myUserId: string, userId: string) {
     return [myUserId, userId].sort().join('_');
   };
 
 
   //erstellt einen neuen Chat
-  async createNewChat(chatId: string, myUserId: string, userId:string){
+  async createNewChat(chatId: string, myUserId: string, userId: string) {
 
-    const collectionRef = "chats"; 
+    const collectionRef = "chats";
     try {
       const docRef = doc(this.firestore, collectionRef, chatId);
       await setDoc(docRef, {
@@ -124,7 +127,7 @@ export class ChatService {
 
           messagesSnapshot.forEach((messageDoc) => {
             const messageData = messageDoc.data();
-            
+
             const chatData = {
               chatId: chatDoc.id,
               messageId: messageDoc.id,
@@ -141,7 +144,7 @@ export class ChatService {
             };
 
             this.chatMessages.push(chatData);
-            if(chatData.fileType == 'text/plain'){
+            if (chatData.fileType == 'text/plain') {
               this.textContent = '';
               this.fetchTextFile(chatData.fileDownloadUrl)
             }
@@ -162,7 +165,7 @@ export class ChatService {
 
   // Dateiinhalt als Text laden
   async fetchTextFile(url: string) {
-    
+
     fetch(url)
       .then(response => {
         if (!response.ok) {
@@ -194,7 +197,7 @@ export class ChatService {
 
 
   // Nachricht senden
-  async setChatData(newDm: string, fileDownloadUrl:string, selectedFileName:string, fileType:string, currentUserId: string) {
+  async setChatData(newDm: string, fileDownloadUrl: string, selectedFileName: string, fileType: string, currentUserId: string) {
     const newDirectMessage = new directMessage();
     newDirectMessage.chatId = this.chatId;
     newDirectMessage.senderId = currentUserId;
@@ -224,7 +227,7 @@ export class ChatService {
 
 
   // Setze Daten für den editierten Chat
-  async setEditedChatData(editedDM:string, message:any) {
+  async setEditedChatData(editedDM: string, message: any) {
     const newDirectMessage = new directMessage();
     newDirectMessage.chatId = message.chatId;
     newDirectMessage.messageId = message.messageId;
@@ -241,7 +244,7 @@ export class ChatService {
 
 
   // Bearbeitete Nachricht speichern
-  async saveEditedMessage(dmData:any) {
+  async saveEditedMessage(dmData: any) {
     try {
       await setDoc(doc(this.firestore, 'chats', dmData.chatId, 'messages', dmData.messageId), dmData
       );
@@ -250,7 +253,7 @@ export class ChatService {
     }
   };
 
-  
+
   // Timestamp generieren
   async getTimeStamp() {
     const now = new Date();
@@ -263,7 +266,7 @@ export class ChatService {
 
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
   };
-  
+
 
   // Formatiertes Datum generieren
   async getFormattedDate(): Promise<string> {

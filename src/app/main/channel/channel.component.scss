@@ -6,6 +6,7 @@
     display: flex;
     flex-direction: column;
     position: relative;
+    z-index: 111;
 }
 
 .channel-header {
@@ -21,14 +22,13 @@
     .edit-channel {
         border: unset;
         background-color: unset;
-        font-family: Nunito;
         font-size: 24px;
         font-weight: 700;
         text-align: left;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        width: 278px;
+        width: auto;
         height: 45px;
         border-radius: 100px;
         padding: 6px 10px;
@@ -118,7 +118,7 @@
 
 .speech-bubble {
     font-family: Nunito;
-    width: 352px;
+    width: auto;
     height: 55px;
     padding: 15px;
     gap: 8px;
@@ -249,7 +249,7 @@ td:hover .speech-bubble {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 189px;
+    width: auto;
     height: 35px;
     border-radius: 30px;
     padding: 5px 15px;
@@ -357,20 +357,24 @@ td:hover .speech-bubble {
 .reaction-left {
     left: 16px;
 }
+
 .b-radius {
     border-radius: 30px 0px 30px 30px;
     background: #797EF3;
     color: #FFFFFF
 }
+
 td:hover .b-radius {
     background-color: #797EF3 !important;
     color: #FFFFFF
 }
+
 .message-edit-container {
     position: relative;
     display: inline-block;
     width: 100%;
 }
+
 .edit-text-message {
     position: absolute;
     width: 100%;
@@ -385,17 +389,20 @@ td:hover .b-radius {
     align-items: center;
     justify-content: space-between;
     width: 100%;
+
     img {
         margin: 0 8px;
         width: 30px;
         height: 30px;
         border-radius: 30px;
+
         &:hover {
             cursor: pointer;
             background: #ECEEFE;
             content: url('./../../../assets/icons/sentiment_satisfied-2.png');
         }
     }
+
     .button-group {
         display: flex;
         padding: 0 8px;
@@ -409,6 +416,7 @@ td:hover .b-radius {
             cursor: pointer;
             border: unset;
         }
+
         .saveBtn {
             background: rgba(68, 77, 242, 1);
             color: rgba(255, 255, 255, 1);
@@ -422,12 +430,15 @@ td:hover .b-radius {
         }
     }
 }
-.textAreaContainer{
+
+.textAreaContainer {
     position: relative;
-    width: 100%; 
-    min-width: 300px; 
-    height: 170px; 
+    width: 100%;
+    min-width: 300px;
+    height: 170px;
+    background-color: #ECEEFE;
 }
+
 .textEditingArea {
     width: 100%;
     height: 100%;
@@ -436,20 +447,39 @@ td:hover .b-radius {
     font-weight: 400;
     font-size: 18px;
     border-radius: 20px;
-    resize: none; 
+    resize: none;
     box-sizing: border-box;
 }
 
 emoji-mart {
-    // position: absolute;
-    // top: 20px;
-    // right: 20px;
+
     background-color: white;
     width: 350px;
     height: 350px;
     z-index: 1111;
-    // border-radius: 30px;
     overflow-y: scroll;
     scrollbar-width: none;
     display: flex;
+}
+
+.channel-template-header {
+    width: auto;
+    height: 96px;
+    padding: 25px 45px;
+    box-shadow: 0px 2px 10px 0px #00000014;
+    border-radius: 30px 30px 0 0;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    .inputChannel {
+        border-radius: 30px;
+        height: 25px;
+        padding: 15px 20px;
+        border: 1px solid rgba(173, 176, 217, 1);
+        outline: none;
+
+        &:focus {
+            border-color: rgba(68, 77, 242, 1);
+        }
+    }
 }

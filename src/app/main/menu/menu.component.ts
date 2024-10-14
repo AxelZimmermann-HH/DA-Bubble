@@ -44,7 +44,8 @@ export class MenuComponent {
   currentUserId:string = '';
   currentUser:any;
 
-  userId!:string
+  userId!:string;
+  selectedChannel: any = null; 
 
   @Output() channelSelected = new EventEmitter<any>();
   @Output() chatSelected = new EventEmitter<void>();
@@ -67,7 +68,7 @@ export class MenuComponent {
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
     });
-    
+  
   }
 
   subscribeToSearch() {
@@ -123,14 +124,15 @@ export class MenuComponent {
           };
           
         });
-        // Standardmäßig:
+        Standardmäßig:
         this.filteredChannels = this.channelData;
-        if (this.filteredChannels.length > 0) {
-          this.onChannelClick(this.filteredChannels[0]); // Erster Kanal wird ausgewählt
-        } else {
-          console.warn('Keine Kanäle verfügbar');
-          // Hier könntest du z.B. einen Platzhalter anzeigen oder eine Meldung, dass keine Kanäle verfügbar sind
-        }
+      //   if (this.filteredChannels.length > 0) {
+      //     this.onChannelClick(this.filteredChannels[0]);
+      // } else {
+      //     console.warn('Keine Kanäle verfügbar');
+      //     this.selectedChannel = null;  // Setzt selectedChannel auf null, wenn keine Kanäle vorhanden sind
+      // }
+    
       },
       (error) => {
         console.error('Fehler beim laden der Channel-Daten:', error);
@@ -239,8 +241,8 @@ export class MenuComponent {
 
   //edit
   onChannelClick(channel: any) {
+    this.selectedChannel = channel;
     this.channelSelected.emit(channel);  // Leitet das ausgewählte Kanal-Objekt weiter
-    //console.log('channel name', channel.channelName )
   }
  
 

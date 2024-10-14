@@ -17,6 +17,8 @@ import { ChatService } from '../services/chat.service';
 })
 export class MainComponent {
 
-  constructor(public chatService: ChatService){}
+  constructor(public chatService: ChatService) { }
+
+
 
 }
