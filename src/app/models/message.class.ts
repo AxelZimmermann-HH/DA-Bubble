@@ -7,6 +7,7 @@ export interface MessageData {
   timestamp?: any; // Use a more specific type if applicable
   answers?: Answer[];
   emojis?: [];
+  fileUrl?: string;
 }
 
 export class Message {
@@ -17,10 +18,12 @@ export class Message {
   fullDate!: string;
   answers: Answer[] = []; 
   emojis!:[];
+  fileUrl?: string;
 
   isEditing: boolean = false;
   editedText: string = '';
 
+  
   constructor(obj: MessageData = {}, messageId: string = '') {
     this.messageId = messageId; // should be set from Firestore
     this.text = obj.text || '';
@@ -30,6 +33,7 @@ export class Message {
     this.fullDate = this.formatFullDate(date);
     this.answers = Array.isArray(obj.answers) ? obj.answers.map(a => new Answer(a)) : []; // Initialize answers
     this.emojis = obj.emojis || [];
+    this.fileUrl = obj.fileUrl || '';
     this.editedText = this.text; 
 }
 
@@ -75,7 +79,8 @@ public getLastAnswerTimestamp():string|any {
       timestamp: this.timestamp,
       fullDate: this.fullDate,
       answers: this.answers,
-      emojis:this.emojis
+      emojis:this.emojis,
+      fileUrl: this.fileUrl
     };
   }
 }

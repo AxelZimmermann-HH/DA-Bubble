@@ -22,7 +22,8 @@ export class User {
             mail:this.mail,
             name:this.name,
             online:this.online,
-            userId:this.userId
+            userId:this.userId,
+            password:this.password
         }
     }
 }
