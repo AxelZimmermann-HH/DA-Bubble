@@ -25,6 +25,8 @@ export class UserService {
     return typeof value === 'number';
   }
 
+
+
   updateUser(updatedUser: User): void {
     const currentUser = this.getUser();
     if (currentUser) {
