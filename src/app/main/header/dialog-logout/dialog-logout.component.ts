@@ -65,6 +65,7 @@ export class DialogLogoutComponent implements OnInit {
   }
 
   openProfil() {
+    this.dialogRef.close()
     this.dialog.open(DialogUserProfilComponent, { 
       data: { user: this.currentUser, isEditable: true } 
     });

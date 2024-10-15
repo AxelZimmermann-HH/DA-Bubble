@@ -9,11 +9,11 @@
     </div>
 
     <div class="thread-content">
-       
+
         <!-- Main message section -->
         <div class="message-main" [ngClass]="{'current-user': isCurrentUser(message.user)}">
             <img [src]="getAvatarForUser(message.user)" alt="Avatar" class="avatar">
-            <div class="message-content" [ngClass]="{'a-flex': isCurrentUser(message.user)}">
+            <div class="message-content" *ngIf="!message.isEditing" [ngClass]="{'a-flex': isCurrentUser(message.user)}">
                 <div class="name-time" [ngClass]="{'current-user': isCurrentUser(message.user)}">
                     {{ message.user }}
                     <p class="time">{{ message.formatTimestamp() }}</p>
@@ -21,6 +21,10 @@
                 <div class="speech-bubble" [ngClass]="{'border-radius': isCurrentUser(message.user)}">
                     {{ message.text }}
                 </div>
+            </div>
+            <div class="reaction-hover" [ngClass]="{'reaction-left': isCurrentUser(message.user)}"
+                *ngIf="!message.isEditing">
+                <img src="./assets/icons/add_reaction.png" alt="">
             </div>
         </div>
 
@@ -33,22 +37,35 @@
         </div>
 
         <!-- Answer list -->
-       
-        
-            <div class="message-main" [ngClass]="{'current-user': isCurrentUser(answer.user)}"
-                *ngFor="let answer of selectedAnswers">
-                <img [src]="getAvatarForUser(answer.user)" alt="Avatar" class="avatar">
-                <div class="message-content" [ngClass]="{'a-flex': isCurrentUser(answer.user)}">
-                    <div class="name-time" [ngClass]="{'current-user': isCurrentUser(answer.user)}">
-                        {{ answer.user }}
-                        <p class="time">{{ answer.formatTimestamp() }}</p>
-                    </div>
-                    <div class="speech-bubble" [ngClass]="{'border-radius': isCurrentUser(answer.user)}">
-                        {{ answer.text }}
+        <div class="message-main" [ngClass]="{'current-user': isCurrentUser(answer.user)}"
+            *ngFor="let answer of selectedAnswers">
+            <img [src]="getAvatarForUser(answer.user)" alt="Avatar" class="avatar">
+            <div class="message-content" *ngIf="!answer.isEditing" [ngClass]="{'a-flex': isCurrentUser(answer.user)}">
+                <div class="name-time" [ngClass]="{'current-user': isCurrentUser(answer.user)}">
+                    {{ answer.user }}
+                    <p class="time">{{ answer.formatTimestamp() }}</p>
+                </div>
+                <div class="speech-bubble" [ngClass]="{'border-radius': isCurrentUser(answer.user)}">
+                    {{ answer.text }}
+                </div>
+            </div>
+            <div class="reaction-hover"  *ngIf="!answer.isEditing" [ngClass]="{'reaction-left': isCurrentUser(answer.user)}">
+                <img src="./assets/icons/add_reaction.png" alt="">
+                <img src="./assets/icons/more_vert.png" alt="" *ngIf="isCurrentUser(answer.user)"
+                (click)="editDirectMessage(answer)">
+            </div>
+            <div *ngIf="answer.isEditing" class="textAreaContainer" >
+                <textarea [(ngModel)]="answer.editedText" class="textEditingArea">
+                </textarea>
+                <div class="button-icons-group">
+                    <div class="button-group">
+                        <button class="cancelBtn" (click)="cancelEditAnswer(answer)">Abbrechen</button>
+                        <button class="saveBtn" (click)="saveEditAnswer(answer)">Speichern</button>
                     </div>
                 </div>
             </div>
-        
+        </div>
+
         <!-- Input for new answers -->
 
         <div class="custom-input">
@@ -60,10 +77,11 @@
                     <img src="./assets/icons/sentiment_satisfied-1.png" alt="Emoji" class="add-emoji">
                     <img src="./assets/icons/alternate_email-1.png" alt="Email" class="add-mail">
                 </div>
-                <img src="./assets/icons/Send icon.png" alt="Send" class="send-icon" (click)="addAnswer(message.messageId)">
+                <img src="./assets/icons/Send icon.png" alt="Send" class="send-icon"
+                    (click)="addAnswer(message.messageId)">
             </div>
         </div>
     </div>
-    
-    
+
+
 </div>

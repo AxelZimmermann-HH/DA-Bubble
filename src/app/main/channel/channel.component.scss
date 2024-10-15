@@ -183,9 +183,6 @@
                 color: rgba(104, 104, 104, 1);
                 margin: 0;
             }
-
-
-
             .label-answers {
                 display: flex;
                 align-items: center;
@@ -235,6 +232,7 @@ td:hover .reaction-hover {
         &:hover {
             cursor: pointer;
             background: #ECEEFE;
+          
         }
     }
 }

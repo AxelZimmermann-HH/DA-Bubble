@@ -4,12 +4,16 @@ export class Answer {
     text!: string;
     user!: string;
     timestamp!: Date;
+    isEditing: boolean = false;
+    editedText: string = '';
+  static isEditing: boolean;
 
     constructor(obj?: any) {
         this.text = obj ? obj.text : '';
         this.user = obj ? obj.user : '';
         const date = obj && obj.timestamp ? this.getDateFromTimestamp(obj.timestamp) : new Date();
-        this.timestamp = date; 
+        this.timestamp = date;
+        this.editedText = this.text; 
     }
 
     private getDateFromTimestamp(timestamp: any): Date {

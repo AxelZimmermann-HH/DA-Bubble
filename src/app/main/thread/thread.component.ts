@@ -22,20 +22,20 @@ export class ThreadComponent {
   user = new User();
   userId!: string;
   userData: User[] = [];
+
   newAnswerText!: string;
+
   channel = new Channel();
   channelData: Channel[] = [];
+
   allMessages: Message[] = [];
 
-
-
   @Output() threadClosed = new EventEmitter<void>();
-
 
   @Input() selectedChannelId: string | null = null;
   @Input() channelName: string | undefined;
   @Input() message!: Message;
-  @Input() selectedAnswers: Answer[]=[]
+  @Input() selectedAnswers: Answer[] = []
 
 
   constructor(
@@ -86,7 +86,7 @@ export class ThreadComponent {
         return new Message({
           ...data,
           timestamp: data['timestamp'],
-          answers: data['answers'] ? data['answers'].map((a:any) => new Answer(a)) : []
+          answers: data['answers'] ? data['answers'].map((a: any) => new Answer(a)) : []
         }, doc.id); // Create a new Message instance with the data and message ID
       });
       console.log('All Messages:', this.allMessages); // Log all messages after mapping
@@ -95,26 +95,26 @@ export class ThreadComponent {
 
   getAnswers(messageId: string) {
     const messageDocRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}`);
-    
+
     onSnapshot(messageDocRef, (docSnapshot) => {
-        if (docSnapshot.exists()) {
-            const data = docSnapshot.data();
-            this.selectedAnswers = data['answers'] 
-              ? data['answers'].map((a: any) => new Answer(a)) 
-              : [];
-            console.log('Aktualisierte Antworten: ', this.selectedAnswers);
-        } else {
-            this.selectedAnswers = []; // Setze auf leer, wenn keine Antworten vorhanden
-            console.log('Keine Antworten gefunden');
-        }
+      if (docSnapshot.exists()) {
+        const data = docSnapshot.data();
+        this.selectedAnswers = data['answers']
+          ? data['answers'].map((a: any) => new Answer(a))
+          : [];
+        console.log('Aktualisierte Antworten: ', this.selectedAnswers);
+      } else {
+        this.selectedAnswers = []; // Setze auf leer, wenn keine Antworten vorhanden
+        console.log('Keine Antworten gefunden');
+      }
     }, (error) => {
-        console.error('Fehler beim Abrufen der Antworten: ', error);
+      console.error('Fehler beim Abrufen der Antworten: ', error);
     });
-}
+  }
 
 
-  
-  
+
+
   addAnswer(messageId: any) {
     if (this.newAnswerText.trim() !== '') {
       const username = this.findUserNameById(this.userId);
@@ -122,16 +122,16 @@ export class ThreadComponent {
         this.newAnswerText = '';
         return;
       }
-  
+
       const answer = new Answer({
         text: this.newAnswerText,
         user: username,
         timestamp: new Date()
       });
-  
+
       // Antworten zuerst lokal hinzufügen
       this.selectedAnswers.push(answer);
-      
+
       // Dann die Antwort in Firestore speichern
       this.saveAnswerToFirestore(messageId, answer);
       this.getAnswers(messageId)
@@ -139,22 +139,22 @@ export class ThreadComponent {
       this.newAnswerText = '';
     }
   }
-  
+
   saveAnswerToFirestore(messageId: string, answer: Answer) {
     const messageDocRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}`);
-    
+
     updateDoc(messageDocRef, {
       answers: arrayUnion(answer.toJson())
     })
-    .then(() => {
-      console.log("Antwort erfolgreich gespeichert");
-      
-    })
-    .catch(error => {
-      console.error("Fehler beim Speichern der Antwort: ", error);
-    });
+      .then(() => {
+        console.log("Antwort erfolgreich gespeichert");
+
+      })
+      .catch(error => {
+        console.error("Fehler beim Speichern der Antwort: ", error);
+      });
   }
-  
+
 
   getAvatarForUser(userName: string) {
 
@@ -177,5 +177,42 @@ export class ThreadComponent {
 
   closeThread() {
     this.threadClosed.emit();
+  }
+
+  editDirectMessage(answer: any) {
+    answer.isEditing = true;
+    answer.editedText = answer.text;
+  }
+
+  saveEditAnswer(answer: Answer) {
+    const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${this.message.messageId}`);
+
+    getDoc(messageRef).then((docSnap) => {
+      if (docSnap.exists()) {
+        const messageData = docSnap.data();
+        if (Array.isArray(messageData['answers'])) {
+          const updatedAnswers = messageData['answers'].map((a: any) => {
+            if (a.text === answer.text && a.user === answer.user) {
+              a.text = answer.editedText;
+            }
+            return a;
+          });
+          updateDoc(messageRef, { answers: updatedAnswers })
+            .then(() => {
+              answer.text = answer.editedText;
+              answer.isEditing = false;
+            })
+            .catch((error) => {
+              console.error("Fehler beim Speichern der Antwort: ", error);
+            });
+        }
+      }
+    }).catch((error) => {
+      console.error('Fehler beim Abrufen der Nachricht: ', error);
+    });
+  }
+  cancelEditAnswer(answer: Answer) {
+    answer.isEditing = false;
+    answer.editedText = answer.text;
   }
 }

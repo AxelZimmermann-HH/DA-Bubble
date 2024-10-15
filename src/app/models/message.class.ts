@@ -19,7 +19,6 @@ export class Message {
   answers: Answer[] = []; 
   emojis!:[];
   fileUrl?: string;
-
   isEditing: boolean = false;
   editedText: string = '';
 

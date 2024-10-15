@@ -1,4 +1,4 @@
-<div class="dialog-user-profil">
+<div class="dialog-user-profil" [ngClass]="{'edit-profil': isEditable}">
     <div class="profil-header" *ngIf="!isEditMode">
         Profil <img src="./assets/icons/close.png" alt="" class="closebtn" (click)="dialogRef.close()">
     </div>
