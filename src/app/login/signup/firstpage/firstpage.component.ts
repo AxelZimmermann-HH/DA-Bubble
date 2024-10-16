@@ -5,6 +5,8 @@ import { collection, addDoc, updateDoc, Firestore, onSnapshot, doc, getDoc, setD
 import { User } from '../../../models/user.class';
 import { Router } from '@angular/router'; 
 import { UserService } from '../../../services/user.service';  
+import { Auth, createUserWithEmailAndPassword } from '@angular/fire/auth';
+
 
 @Component({
   selector: 'app-firstpage',
@@ -31,7 +33,7 @@ export class FirstpageComponent implements OnInit {
   checked: boolean = false;
   buttonEnabled: boolean = false;
 
-  constructor(private firestore: Firestore) {}
+  constructor(private firestore: Firestore, private auth: Auth) {}
 
   validateName(): void {
     const nameParts = this.user.name.trim().split(/\s+/);
@@ -102,23 +104,31 @@ export class FirstpageComponent implements OnInit {
     });
     console.log('User updated with ID: ', this.user.userId);
   }
-  
+
   async addNewUser() {
-    const newUser = new User({
-      name: this.user.name,
-      mail: this.user.mail,
-      password: this.user.password,
-    });
+    try {
+      // Erstelle den neuen Nutzer in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(this.auth, this.user.mail, this.user.password);
   
-    const userCollection = collection(this.firestore, 'users');
-    const docRef = await addDoc(userCollection, newUser.toJson());
-    newUser.userId = docRef.id;
+      // Nutzer-ID aus Firebase Auth
+      const userId = userCredential.user.uid;
   
-    const userDocRef = doc(this.firestore, `users/${docRef.id}`);
-    await updateDoc(userDocRef, { userId: docRef.id });
+      // Speichere die zusätzlichen Benutzerdaten in Firestore
+      const newUser = new User({
+        name: this.user.name,
+        mail: this.user.mail,
+        password: this.user.password, // Passwort solltest du vielleicht nicht direkt speichern
+        userId: userId
+      });
+
+      const userDocRef = doc(this.firestore, 'users', userId);
+      await setDoc(userDocRef, newUser.toJson());
   
-    console.log('User created with ID: ', docRef.id);
-    this.user = newUser;
+      console.log('User created with ID: ', userId);
+      this.user = newUser;
+    } catch (error) {
+      console.error('Fehler beim Erstellen des Benutzers: ', error);
+    }
   }
   
   handleSuccess() {

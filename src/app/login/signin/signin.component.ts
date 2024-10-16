@@ -6,7 +6,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from '@angular/fire/stor
 import { User } from '../../models/user.class';
 import { Router } from '@angular/router'; 
 import { UserService } from '../../services/user.service';  
-import { Auth, signInWithPopup, GoogleAuthProvider } from '@angular/fire/auth';
+import { Auth, signInWithPopup, signInWithEmailAndPassword, GoogleAuthProvider } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-signin',
@@ -43,7 +43,62 @@ export class SigninComponent {
     });
   }
 
-  onSubmit(ngForm: NgForm) {
+  validateEmail(email: string) {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailPattern.test(email);
+  }
+
+  async onSubmit(ngForm: NgForm) {
+    let enteredMail = this.user.mail.trim();
+    let enteredPassword = this.user.password;
+
+    // Debugging: Ausgabe der E-Mail vor der Validierung
+    console.log('Eingegebene E-Mail:', enteredMail);
+
+    if (!this.validateEmail(enteredMail)) {
+        console.error('Ungültige E-Mail-Adresse:', enteredMail);
+        return;  // Verhindere den Login, wenn die E-Mail ungültig ist
+    }
+
+    try {
+        // Firebase Auth verwendet zur Anmeldung die E-Mail und das Passwort
+        const userCredential = await signInWithEmailAndPassword(this.auth, enteredMail, enteredPassword);
+        const firebaseUser = userCredential.user;
+
+        // Debugging: Ausgabe der User-ID von Firebase Auth
+        console.log('Firebase Auth userId:', firebaseUser.uid);
+
+        // Prüfe, ob der Benutzer in Firestore existiert und handle die Anmeldung
+        const userDocRef = doc(this.firestore, `users/${firebaseUser.uid}`);
+        const userSnapshot = await getDoc(userDocRef);
+
+        // Debugging: Ausgabe des Firestore-Pfads, den du abfragst
+        console.log('Abfrage des Firestore-Dokuments unter Pfad:', `users/${firebaseUser.uid}`);
+
+        if (userSnapshot.exists()) {
+            const userData = userSnapshot.data() as User;
+            this.handleSuccess(userData, enteredMail); // Erfolgshandling
+            this.router.navigate(['/login', firebaseUser.uid]);
+        } else {
+            console.error('Benutzer in Firestore nicht gefunden.');
+        }
+
+        // Leere die Eingabefelder nach erfolgreicher Authentifizierung
+        this.emptyValue();
+
+    } catch (error: any) {
+        console.error('Fehler bei der Anmeldung:', error);
+        if (error.code === 'auth/wrong-password') {
+            this.falsePassword();
+        } else if (error.code === 'auth/user-not-found') {
+            this.falseMail();
+        }
+    }
+}
+
+  
+
+  onSubmit2(ngForm: NgForm) {
     let enteredMail = this.user.mail;
     let enteredPassword = this.user.password;
     let user = this.userData.find((user: User) => user.mail === enteredMail);
@@ -213,64 +268,7 @@ export class SigninComponent {
     this.handleSuccess(existingUser, email);
   }
 
-  async createNewUser2(userDocRef: any, googleUser: any, email: string, userId: string) {
-    const newUser = new User();
-    newUser.name = googleUser.displayName || 'Unbekannter Benutzer';
-    newUser.mail = email;
-    newUser.online = true;
-    newUser.userId = userId;
-  
-    // Versuch das Google-Bild zu laden, aber mit direktem Fallback bei Fehler
-    try {
-      const avatarUrl = googleUser.photoURL || 'assets/avatars/avatar_1.png'; // Google-Avatar oder Fallback
-      //  
-      // Avatar abrufen und hochladen (aber mit maximal 3 Versuchen bei Fehlern)
-      const avatarBlob = await this.fetchAvatarWithRetry(avatarUrl);
-  
-      const storage = getStorage();
-      const storageRef = ref(storage, `avatars/${userId}`);
-      await uploadBytes(storageRef, avatarBlob);
-  
-      const avatarDownloadUrl = await getDownloadURL(storageRef);
-      newUser.avatar = avatarDownloadUrl; // Gespeicherte URL in User-Dokument speichern
-  
-    } catch (error) {
-      console.error('Fehler beim Laden des Avatars:', error);
-      // Fallback-Avatar verwenden
-      newUser.avatar = 'assets/avatars/avatar_1.png'; 
-    }
-  
-    // Speichern des neuen Benutzers in Firestore
-    await setDoc(userDocRef, newUser.toJson());
-    console.log('Neuer Benutzer angelegt:', newUser);
-  
-    this.handleSuccess(newUser, email);
-  }
-  
-  async fetchAvatarWithRetry(avatarUrl: string, retryCount = 0): Promise<Blob> {
-    try {
-      const response = await fetch(avatarUrl);
-      if (!response.ok) {
-        console.warn(`Fehler beim Laden des Bildes (Status: ${response.status})`);
-        throw new Error(`Fehler beim Laden des Bildes: ${response.statusText}`);
-      }
-  
-      return await response.blob();
-    } catch (error: any) {
-      if (error.message.includes('429') && retryCount < 3) {
-        console.warn('Zu viele Anfragen (429). Warte 1 Sekunde und versuche erneut.');
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return this.fetchAvatarWithRetry(avatarUrl, retryCount + 1); // Erneuter Versuch
-      } else {
-        throw new Error('Fehler beim Laden des Avatars oder zu viele Versuche.');
-      }
-    }
-  }
-  
-  
 
-
-  
   
   async createNewUser(userDocRef: any, googleUser: any, email: string, userId: string) {
     const newUser = new User();
