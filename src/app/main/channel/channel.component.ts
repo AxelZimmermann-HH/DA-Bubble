@@ -97,9 +97,6 @@ export class ChannelComponent {
       this.loadChannel(this.selectedChannelId).then(() => {
         this.getAllMessages();
         this.isLoading = false;
-        this.threadService.threadClosed$.subscribe(isClosed => {
-          this.isThreadOpen = !isClosed;
-        });
       }).catch(error => {
         console.error('Fehler beim Laden des Channels:', error);
         this.isLoading = false;
@@ -302,13 +299,13 @@ export class ChannelComponent {
 
   onThreadClosed() {
     this.isThreadOpen = false;
-    this.threadService.closeThread();
+    
   }
 
   openThread(message: Message) {
     this.isThreadOpen = true;
     this.selectedMessage = message;
-    this.threadService.openThread();
+
   }
 
   getAnswers(messageId: string) {
@@ -358,10 +355,23 @@ export class ChannelComponent {
   }
 
   addEmojiToNewMessage(event: any) {
+    console.log('gewähltes emojii:',event)
+    const emoji = event.emoji.native; // Das ausgewählte Emoji
+    
+    this.newMessageText += emoji
+    this.showEmojiPicker = false;
   }
 
-  addEmojiToEditMessage(event: any) {
+  addEmojiToEditMessage(event: any, message: Message) {
+    const emoji = event.emoji.native;
+    if (message.isEditing) {
+      message.editedText = `${message.editedText}${emoji}`;
+      this.showEmojiPicker = false;
+
+    }
+
   }
+  
 
   addEmojiToMessageReaction(event: any) {
   }

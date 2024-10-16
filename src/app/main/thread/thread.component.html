@@ -11,19 +11,19 @@
     <div class="thread-content">
 
         <!-- Main message section -->
-        <div class="message-main" [ngClass]="{'current-user': isCurrentUser(message.user)}">
-            <img [src]="getAvatarForUser(message.user)" alt="Avatar" class="avatar">
-            <div class="message-content" *ngIf="!message.isEditing" [ngClass]="{'a-flex': isCurrentUser(message.user)}">
-                <div class="name-time" [ngClass]="{'current-user': isCurrentUser(message.user)}">
-                    {{ message.user }}
-                    <p class="time">{{ message.formatTimestamp() }}</p>
+        <div class="message-main" [ngClass]="{'current-user': isCurrentUser(message!.user)}">
+            <img [src]="getAvatarForUser(message!.user)" alt="Avatar" class="avatar">
+            <div class="message-content" *ngIf="!message?.isEditing" [ngClass]="{'a-flex': isCurrentUser(message!.user)}">
+                <div class="name-time" [ngClass]="{'current-user': isCurrentUser(message!.user)}">
+                    {{ message?.user }}
+                    <p class="time">{{ message?.formatTimestamp() }}</p>
                 </div>
-                <div class="speech-bubble" [ngClass]="{'border-radius': isCurrentUser(message.user)}">
-                    {{ message.text }}
+                <div class="speech-bubble" [ngClass]="{'border-radius': isCurrentUser(message!.user)}">
+                    {{ message?.text }}
                 </div>
             </div>
-            <div class="reaction-hover" [ngClass]="{'reaction-left': isCurrentUser(message.user)}"
-                *ngIf="!message.isEditing">
+            <div class="reaction-hover" [ngClass]="{'reaction-left': isCurrentUser(message!.user)}"
+                *ngIf="!message!.isEditing">
                 <img src="./assets/icons/add_reaction.png" alt="">
             </div>
         </div>
@@ -78,7 +78,7 @@
                     <img src="./assets/icons/alternate_email-1.png" alt="Email" class="add-mail">
                 </div>
                 <img src="./assets/icons/Send icon.png" alt="Send" class="send-icon"
-                    (click)="addAnswer(message.messageId)">
+                    (click)="addAnswer(message!.messageId)">
             </div>
         </div>
     </div>

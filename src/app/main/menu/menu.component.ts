@@ -17,7 +17,14 @@ import { ActivatedRoute } from '@angular/router';
   styleUrl: './menu.component.scss'
 })
 export class MenuComponent {
-  constructor(public firestore: Firestore, public route: ActivatedRoute,public dialog: MatDialog, private sharedService: SharedService, public chatService: ChatService, public userService: UserService){}
+  constructor(
+    public firestore: Firestore, 
+    public route: ActivatedRoute,
+    public dialog: MatDialog, 
+    private sharedService: SharedService, 
+    public chatService: ChatService, 
+    public userService: UserService,
+    ){}
 
   newDmIcon = 'edit_square.png'
   channelIcon1:string = 'arrow_drop_down.png';
@@ -234,10 +241,11 @@ export class MenuComponent {
 
   //edit
   onChannelClick(channel: any) {
+   
     this.selectedChannel = channel;
     this.channelSelected.emit(channel);  // Leitet das ausgewählte Kanal-Objekt weiter
-
     this.selectedChannel.id = channel.id;
+  
   }
  
 

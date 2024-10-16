@@ -47,18 +47,14 @@
                                         *ngIf="message.answers.length > 0">
                                         {{ message.answers.length }} Antworten
                                         <p class="time">Letzte Antwort {{message.getLastAnswerTimestamp()}} </p>
-                                        <emoji-mart
-                                            *ngIf="showEmojiPicker"
-                                            >
-                                        </emoji-mart>
+                                       
                                     </div>
                                 </div>
                                 <div *ngIf="message.isEditing" class="textAreaContainer">
                                     <textarea [(ngModel)]="message.editedText" class="textEditingArea">
                                     </textarea>
                                     <div class="button-icons-group">
-                                        <img src="./assets/icons/sentiment_satisfied-1.png" alt=""
-                                            >
+                                        <img src="./assets/icons/sentiment_satisfied-1.png" alt="" (click)="toggleEmojiPicker()">
                                         <div class="button-group">
                                             <button (click)="cancelMessageEdit(message)"
                                                 class="cancelBtn">Abbrechen</button>
@@ -66,23 +62,22 @@
                                                 class="saveBtn">Speichern</button>
                                         </div>
                                     </div>
-                                    <emoji-mart
-                                        *ngIf="showEmojiPicker"
-                                        (emojiSelect)="addEmojiToEditMessage($event)">
-                                    </emoji-mart>
                                 </div>
+                                <emoji-mart *ngIf="showEmojiPicker && message.isEditing" 
+                                (emojiSelect)="addEmojiToEditMessage($event, message)">
+                    </emoji-mart>
+                    
                             </div>
                             <div class="reaction-hover" [ngClass]="{'reaction-left': isCurrentUser(message.user)}"
                                 *ngIf="!message.isEditing">
                                 <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
                                 <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png"
                                     alt="">
-                                <img src="./assets/icons/add_reaction.png" alt="">
+                                <img src="./assets/icons/add_reaction.png" alt="" >
                                 <img src="./assets/icons/comment.png" alt="" (click)="openThread(message)">
                                 <img src="./assets/icons/more_vert.png" alt="" *ngIf="isCurrentUser(message.user)"
                                     (click)="editDirectMessage(message)">
-
-                            </div>
+                                </div>
                         </td>
                     </tr>
                 </ng-container>
@@ -99,7 +94,7 @@
                     <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji"  (click)="toggleEmojiPicker()">
                     <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail">
                 </div>
-                <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"></emoji-mart>
+                <emoji-mart *ngIf="showEmojiPicker && !message.isEditing" (emojiSelect)="addEmojiToNewMessage($event)"></emoji-mart>
                 <img src="./assets/icons/Send icon.png" (click)="sendMessage()" class="send-icon">
             </div>
         </div>

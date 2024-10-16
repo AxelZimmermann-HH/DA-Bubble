@@ -61,10 +61,14 @@ export class ThreadComponent {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['message'] && this.message && this.message.messageId) {
+    if (changes['message'] && this.message && this.message.messageId ) {
       this.getAnswers(this.message.messageId);
     }
 
+    if (changes['selectedChannelId'] && !changes['selectedChannelId'].isFirstChange() ) {
+      console.log('selected channel changed');
+    this.selectedAnswers=[]
+    }
   }
 
  
