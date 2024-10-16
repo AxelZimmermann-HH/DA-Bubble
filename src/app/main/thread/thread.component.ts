@@ -2,20 +2,21 @@ import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
-import { addDoc, arrayUnion, collection, doc, Firestore, getDoc, onSnapshot, query, Timestamp, updateDoc } from '@angular/fire/firestore';
+import { arrayUnion, collection, doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Answer } from '../../models/answer.class';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../services/user.service';
+import { ThreadService } from '../../services/thread.service';
 
 @Component({
   selector: 'app-thread',
   standalone: true,
   imports: [CommonModule, MatDialogModule, FormsModule],
   templateUrl: './thread.component.html',
-  styleUrls: ['./thread.component.scss'] // Fixed `styleUrl` to `styleUrls`
+  styleUrls: ['./thread.component.scss']
 })
 export class ThreadComponent {
 
@@ -42,7 +43,8 @@ export class ThreadComponent {
     public firestore: Firestore,
     public dialog: MatDialog,
     private route: ActivatedRoute,
-    public userService: UserService
+    public userService: UserService,
+    public threadService: ThreadService,
   ) { }
 
   ngOnInit(): void {
@@ -50,25 +52,22 @@ export class ThreadComponent {
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
     });
-    console.log('message id', this.message.messageId);
     this.getAnswers(this.message.messageId);
   }
-
 
   findUserNameById(userId: string) {
     const user = this.userData.find((user: User) => user.userId === userId);
     return user ? user.name : undefined;
   }
 
-
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['message'] && this.message && this.message.messageId) {
-      console.log('message id', this.message.messageId);
       this.getAnswers(this.message.messageId);
     }
+
   }
 
-
+ 
   getAllUsers() {
     const userCollection = collection(this.firestore, 'users');
     onSnapshot(userCollection, (snapshot) => {
@@ -102,7 +101,7 @@ export class ThreadComponent {
         this.selectedAnswers = data['answers']
           ? data['answers'].map((a: any) => new Answer(a))
           : [];
-        console.log('Aktualisierte Antworten: ', this.selectedAnswers);
+
       } else {
         this.selectedAnswers = []; // Setze auf leer, wenn keine Antworten vorhanden
         console.log('Keine Antworten gefunden');
@@ -112,9 +111,6 @@ export class ThreadComponent {
     });
   }
 
-
-
-
   addAnswer(messageId: any) {
     if (this.newAnswerText.trim() !== '') {
       const username = this.findUserNameById(this.userId);
@@ -122,20 +118,14 @@ export class ThreadComponent {
         this.newAnswerText = '';
         return;
       }
-
       const answer = new Answer({
         text: this.newAnswerText,
         user: username,
         timestamp: new Date()
       });
-
-      // Antworten zuerst lokal hinzufügen
       this.selectedAnswers.push(answer);
-
-      // Dann die Antwort in Firestore speichern
       this.saveAnswerToFirestore(messageId, answer);
       this.getAnswers(messageId)
-      // Textfeld zurücksetzen
       this.newAnswerText = '';
     }
   }
@@ -148,27 +138,23 @@ export class ThreadComponent {
     })
       .then(() => {
         console.log("Antwort erfolgreich gespeichert");
-
       })
       .catch(error => {
         console.error("Fehler beim Speichern der Antwort: ", error);
       });
   }
 
-
   getAvatarForUser(userName: string) {
-
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
     if (user) {
       if (this.userService.isNumber(user.avatar)) {
-        return './assets/avatars/avatar_' + user.avatar + '.png';  // Local asset avatar
+        return './assets/avatars/avatar_' + user.avatar + '.png';
       } else {
-        return user.avatar;  // External URL avatar
+        return user.avatar;
       }
     }
-    return './assets/avatars/avatar_0.png';  // Default avatar when user not found
+    return './assets/avatars/avatar_0.png';
   }
-
 
   isCurrentUser(currentUser: string): boolean {
     const currentUserObj = this.userData.find(u => u.userId === this.userId);
@@ -186,7 +172,6 @@ export class ThreadComponent {
 
   saveEditAnswer(answer: Answer) {
     const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${this.message.messageId}`);
-
     getDoc(messageRef).then((docSnap) => {
       if (docSnap.exists()) {
         const messageData = docSnap.data();
@@ -211,6 +196,7 @@ export class ThreadComponent {
       console.error('Fehler beim Abrufen der Nachricht: ', error);
     });
   }
+
   cancelEditAnswer(answer: Answer) {
     answer.isEditing = false;
     answer.editedText = answer.text;

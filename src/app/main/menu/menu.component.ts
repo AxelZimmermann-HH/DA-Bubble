@@ -126,13 +126,6 @@ export class MenuComponent {
         });
         Standardmäßig:
         this.filteredChannels = this.channelData;
-      //   if (this.filteredChannels.length > 0) {
-      //     this.onChannelClick(this.filteredChannels[0]);
-      // } else {
-      //     console.warn('Keine Kanäle verfügbar');
-      //     this.selectedChannel = null;  // Setzt selectedChannel auf null, wenn keine Kanäle vorhanden sind
-      // }
-    
       },
       (error) => {
         console.error('Fehler beim laden der Channel-Daten:', error);
@@ -243,6 +236,8 @@ export class MenuComponent {
   onChannelClick(channel: any) {
     this.selectedChannel = channel;
     this.channelSelected.emit(channel);  // Leitet das ausgewählte Kanal-Objekt weiter
+
+    this.selectedChannel.id = channel.id;
   }
  
 

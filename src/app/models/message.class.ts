@@ -6,7 +6,7 @@ export interface MessageData {
   user?: string;
   timestamp?: any; // Use a more specific type if applicable
   answers?: Answer[];
-  emojis?: [];
+  emojis?: string[];
   fileUrl?: string;
 }
 
@@ -17,7 +17,7 @@ export class Message {
   timestamp!: Date;
   fullDate!: string;
   answers: Answer[] = []; 
-  emojis!:[];
+  emojis: string[] = [];
   fileUrl?: string;
   isEditing: boolean = false;
   editedText: string = '';
@@ -31,7 +31,7 @@ export class Message {
     this.timestamp = date;
     this.fullDate = this.formatFullDate(date);
     this.answers = Array.isArray(obj.answers) ? obj.answers.map(a => new Answer(a)) : []; // Initialize answers
-    this.emojis = obj.emojis || [];
+    this.emojis = obj.emojis || []
     this.fileUrl = obj.fileUrl || '';
     this.editedText = this.text; 
 }

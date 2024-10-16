@@ -64,7 +64,10 @@ export class AddChannelUserComponent {
 
   openDialogAddUser() {
     this.dialogRef.close()
-    this.dialog.open(DialogAddUserComponent, {data:{channel:this.channel}})
+    // this.dialog.open(DialogAddUserComponent, {data:{channel:this.channel}})
+    this.dialog.open(DialogAddUserComponent, {
+      data: { channel: this.channel, source: 'channelComponent' }
+    });
   }
 
   getAvatarForUser(userName: string) {

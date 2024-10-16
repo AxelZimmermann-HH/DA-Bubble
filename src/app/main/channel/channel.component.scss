@@ -183,6 +183,7 @@
                 color: rgba(104, 104, 104, 1);
                 margin: 0;
             }
+
             .label-answers {
                 display: flex;
                 align-items: center;
@@ -232,7 +233,7 @@ td:hover .reaction-hover {
         &:hover {
             cursor: pointer;
             background: #ECEEFE;
-          
+
         }
     }
 }
@@ -414,17 +415,22 @@ td:hover .b-radius {
             cursor: pointer;
             border: unset;
         }
-
         .saveBtn {
             background: rgba(68, 77, 242, 1);
             color: rgba(255, 255, 255, 1);
+            &:hover{
+                background:rgba(68, 77, 242, 0.61);
+            }
         }
-
         .cancelBtn {
             border: 1px solid rgba(121, 126, 243, 1);
             color: rgba(68, 77, 242, 1);
             background-color: rgba(255, 255, 255, 1);
-
+            &:hover{
+                background:rgba(68, 77, 242, 0.61);
+                color: #FFFFFF;
+                border:unset;
+            }
         }
     }
 }
@@ -447,17 +453,15 @@ td:hover .b-radius {
     border-radius: 20px;
     resize: none;
     box-sizing: border-box;
+    &:focus {
+        outline: none;
+        border:1px solid #797EF3 ;;
+    }
 }
 
 emoji-mart {
-
-    background-color: white;
-    width: 350px;
-    height: 350px;
-    z-index: 1111;
-    overflow-y: scroll;
-    scrollbar-width: none;
-    display: flex;
+    position: absolute;
+    bottom: 0;
 }
 
 .channel-template-header {
@@ -469,6 +473,7 @@ emoji-mart {
     display: flex;
     justify-content: space-between;
     flex-direction: column;
+
     .inputChannel {
         border-radius: 30px;
         height: 25px;

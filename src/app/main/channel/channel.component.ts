@@ -17,7 +17,7 @@ import { ChatComponent } from "../chat/chat.component";
 import { DialogAddUserComponent } from '../../dialog-add-user/dialog-add-user.component';
 import { ChatService } from '../../services/chat.service';
 import { FormsModule } from '@angular/forms';
-
+import { ThreadService } from '../../services/thread.service';
 
 @Component({
   selector: 'app-channel',
@@ -30,6 +30,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './channel.component.html',
   styleUrl: './channel.component.scss'
 })
+
 export class ChannelComponent {
   userData: any = [];
   user = new User();
@@ -54,31 +55,34 @@ export class ChannelComponent {
 
   isLoading = false;
   inputText!: string;
-  showEmojiPicker = false;
+
+
+  showEmojiPicker: boolean = false;
 
   @Input() selectedChannelId: string | null = null;
   @Output() chatSelected = new EventEmitter<void>();
 
-  selectedChannel: Channel | null = null;
+  selectedChannel: Channel | any;
   isThreadOpen: boolean = false;
   selectedMessage = new Message();// Selected message for the thread
   selectedAnswers: Answer[] = [];
-
 
   constructor(public dialog: MatDialog,
     public firestore: Firestore,
     public sharedService: SharedService,
     public userService: UserService,
     private route: ActivatedRoute,
-    public chatService: ChatService) {
+    public chatService: ChatService,
+    private threadService: ThreadService) {
     this.subscribeToSearch();
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
     });
-
     this.getAllUsers().then(() => {
       this.findUserNameById(this.userId);
     });
+    this.getAllChannels();
+ 
 
   }
 
@@ -93,33 +97,40 @@ export class ChannelComponent {
       this.loadChannel(this.selectedChannelId).then(() => {
         this.getAllMessages();
         this.isLoading = false;
+        this.threadService.threadClosed$.subscribe(isClosed => {
+          this.isThreadOpen = !isClosed;
+        });
       }).catch(error => {
         console.error('Fehler beim Laden des Channels:', error);
         this.isLoading = false;
+        
       });
     }
     else {
       this.resetChannelState();
     }
   }
+
   resetChannelState() {
     this.selectedChannel = null;
     this.allMessages = [];
+    this.channelMembers = [];
     this.isLoading = false;
   }
+
   async loadChannel(id: string) {
     const channelDocRef = doc(this.firestore, `channels/${id}`);
-    const channelSnapshot = await getDoc(channelDocRef);
-
-    if (channelSnapshot.exists()) {
-      const data = channelSnapshot.data();
-      this.selectedChannel = new Channel({ ...data, id });
-      this.getAllMessages();
-    } else {
-      console.error('Channel not found');
-      this.selectedChannel = null;
-    }
-
+    onSnapshot(channelDocRef, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        this.selectedChannel = new Channel({ ...data, id });
+        console.log('Channel-Daten aktualisiert:', this.selectedChannel);
+        this.updateChannelMembers();
+      } else {
+        console.error('Channel not found');
+        this.selectedChannel = null;
+      }
+    });
   }
 
   subscribeToSearch() {
@@ -143,7 +154,6 @@ export class ChannelComponent {
     this.filteredMessages = this.allMessages;
   }
 
-
   getAllUsers(): Promise<void> {
     return new Promise((resolve) => {
       const userCollection = collection(this.firestore, 'users');
@@ -153,7 +163,6 @@ export class ChannelComponent {
           let user = new User({ ...doc.data(), id: doc.id });
           this.userData.push(user);
         });
-
         resolve();
       });
     });
@@ -170,6 +179,26 @@ export class ChannelComponent {
     });
   }
 
+  updateChannelMembers() {
+    if (this.selectedChannel) {
+      const currentMemberIds = this.selectedChannel.members.map((member: any) => member.userId);
+      const updatedMembers = this.selectedChannel.members.filter((member: any) =>
+        this.userData.some((user: User) => user.userId === member.userId)
+      );
+
+      if (updatedMembers.length !== currentMemberIds.length) {
+        const channelRef = doc(this.firestore, 'channels', this.selectedChannelId!);
+        updateDoc(channelRef, { members: updatedMembers })
+          .then(() => {
+            this.selectedChannel.members = updatedMembers;
+            console.log('Channel members updated:', this.selectedChannel.members);
+          })
+          .catch((error) => {
+            console.error('Error updating channel members:', error);
+          });
+      }
+    }
+  }
   getAllMessages() {
     const messagesQuery = query(
       collection(this.firestore, `channels/${this.selectedChannelId}/messages`),
@@ -203,22 +232,6 @@ export class ChannelComponent {
         messages: groupedMessages[date]
       }));
     });
-  }
-
-  updateMessageInFirestore(message: Message) {
-    const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${message.messageId}`);
-    updateDoc(messageRef, {
-      text: message.text,
-      user: message.user,
-      timestamp: message.timestamp,
-      emojis: message.answers // Hier kannst du die Emojis speichern, z. B. in einem Array
-    })
-      .then(() => {
-        console.log("Nachricht erfolgreich aktualisiert!");
-      })
-      .catch((error) => {
-        console.error("Fehler beim Aktualisieren der Nachricht: ", error);
-      });
   }
 
   getAvatarForUser(userName: string) {
@@ -267,49 +280,18 @@ export class ChannelComponent {
       });
   }
 
-
-  async getChannelData(channelId: string): Promise<Channel> {
-    const channelDocRef = doc(this.firestore, 'channels', channelId);
-    try {
-      const docSnap = await getDoc(channelDocRef);
-      if (docSnap.exists()) {
-        return new Channel({ ...docSnap.data(), id: docSnap.id });
-      } else {
-        throw new Error('Channel not found');
+  openUsersList(channelId: string) {
+    this.dialog.open(AddChannelUserComponent, {
+      data: {
+        channelId: channelId,
+        channel: this.selectedChannel
       }
-    } catch (error) {
-      console.error('Error fetching channel data:', error);
-      throw error;
-    }
-  }
-
-  openDialog(component: any, channelId: string): any {
-    return this.getChannelData(channelId).then(channelData => {
-      return this.dialog.open(component, {
-        data: {
-          channelId: channelId,
-          channel: channelData
-        }
-      });
-    }).catch(error => {
-      console.error("Error opening dialog:", error);
-      return null;
     });
   }
 
-  openUsersList(channelId: string) {
-    const dialogRef = this.openDialog(AddChannelUserComponent, channelId);
-  }
-
-  openDialogAddUser(channelId: string) {
-    this.getChannelData(channelId).then(channelData => {
-      if (channelData) {
-        this.dialog.open(DialogAddUserComponent, {
-          data: { channel: channelData, source: 'channelComponent' }
-        });
-      }
-    }).catch(error => {
-      console.error('Error retrieving channel data:', error);
+  openDialogAddUser() {
+    this.dialog.open(DialogAddUserComponent, {
+      data: { channel: this.selectedChannel, source: 'channelComponent' }
     });
   }
 
@@ -320,11 +302,13 @@ export class ChannelComponent {
 
   onThreadClosed() {
     this.isThreadOpen = false;
+    this.threadService.closeThread();
   }
 
   openThread(message: Message) {
     this.isThreadOpen = true;
     this.selectedMessage = message;
+    this.threadService.openThread();
   }
 
   getAnswers(messageId: string) {
@@ -338,7 +322,7 @@ export class ChannelComponent {
           : [];
       } else {
         this.selectedAnswers = []; // Setze auf leer, wenn keine Antworten vorhanden
-      
+
       }
     }, (error) => {
       console.error('Fehler beim Abrufen der Antworten: ', error);
@@ -361,19 +345,25 @@ export class ChannelComponent {
         console.error("Fehler beim Speichern der Nachricht: ", error);
       });
   }
+
   cancelMessageEdit(message: Message) {
     message.isEditing = false;
     message.editedText = message.text;
   }
 
-  openEmojiPicker(message: any) {
-    if (message === this.selectedMessage.messageId) {
-      this.showEmojiPicker = true;
-    }
+
+
+  toggleEmojiPicker() {
+    this.showEmojiPicker = !this.showEmojiPicker
   }
 
-  addEmoji(event: any) {
-    console.log('emoji :', event.emoji.native); // Hier kannst du das ausgewählte Emoji verwenden
-    this.showEmojiPicker = false;
+  addEmojiToNewMessage(event: any) {
   }
+
+  addEmojiToEditMessage(event: any) {
+  }
+
+  addEmojiToMessageReaction(event: any) {
+  }
+
 }
