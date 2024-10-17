@@ -5,7 +5,7 @@ import { UserService } from '../../app/services/user.service';
 import { User } from '../models/user.class';
 import { getAuth, updatePassword } from '@angular/fire/auth';  // Firebase Auth importieren
 import { ActivatedRoute } from '@angular/router';
-
+import { Router } from '@angular/router';  // Router importieren
 import { Auth, confirmPasswordReset, verifyPasswordResetCode } from '@angular/fire/auth';
 
 
@@ -27,17 +27,7 @@ export class PasswordResetComponent {
   mode: string = '';
 
 
-  constructor(private userService: UserService, private route: ActivatedRoute, private auth: Auth) {}
-
-  // Hier wird der Benutzer abgerufen
-  // ngOnInit() {
-  //   this.user = this.userService.getUser();
-  //   if (this.user) {
-  //     console.log('Benutzer für Passwort-Änderung:', this.user);
-  //   } else {
-  //     console.error('Kein Benutzer gefunden.');
-  //   }
-  // }
+  constructor(private userService: UserService, private route: ActivatedRoute, private auth: Auth, private router: Router) {}
 
   ngOnInit(): void {
     // Abonniere die Query-Parameter, um zu überprüfen, ob 'oobCode' und 'mode' korrekt empfangen werden
@@ -71,10 +61,14 @@ export class PasswordResetComponent {
     confirmPasswordReset(this.auth, this.oobCode, newPassword)
       .then(() => {
         console.log('Passwort erfolgreich zurückgesetzt');
-        // Leite den Benutzer zu einer anderen Seite weiter oder zeige eine Erfolgsmeldung an
+        this.success = true;  // Erfolgsmeldung anzeigen
+        setTimeout(() => {
+          this.router.navigate(['/']);
+        }, 1200);
       })
       .catch(error => {
-        console.error('Fehler beim Zurücksetzen des Passworts', error);
+        console.error('Fehler beim Zurücksetzen des Passworts:', error);
+        this.success = false;  // Fehler anzeigen
       });
   }
 
