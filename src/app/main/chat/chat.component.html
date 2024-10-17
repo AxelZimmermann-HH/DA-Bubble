@@ -51,13 +51,164 @@
                                                         öffnen</button>
                                                 </div>
                                             </div>
+
+                                            <div class="reaction-container">
+                                                <div *ngIf="message.reactionNerd && message.reactionNerd.length > 0" style="position: relative;">
+                                                    <button class="reaction-button" 
+                                                    (click)="this.addReaction(currentUser, message, 'reactionNerd')"
+                                                    (mouseenter)="isHovered = true" 
+                                                    (mouseleave)="isHovered = false">
+                                                        <img src="./assets/icons/emoji _nerd face_.png" alt="">
+                                                        <span>{{message.reactionNerd.length}}</span>
+                                                    </button>
+    
+                                                    <div class="reaction-bubble" [ngClass]="{ 'visible': isHovered, 'hidden': !isHovered }">
+                                                            <img src="./assets/icons/emoji _nerd face_.png" alt="">
+                                                            @for (user of message.reactionNerd; track $index) {
+                                                                
+                                                                @if(user.name !== currentUser.name) {
+                                                                    <span class="header5">{{user.name}}</span>
+                                                                    @if(user.name !== currentUser.name && message.reactionNerd.length == 1){
+                                                                        <span>hat reagiert</span>
+                                                                    }
+                                                                }
+                                                                @else if(user.name == currentUser.name){
+                                                                    @if(message.reactionNerd.length == 2){
+                                                                        <span class="header5">und</span>
+                                                                    }
+                                                                    <span class="header5">Du</span>
+                                                                    @if(user.name == currentUser.name && message.reactionNerd.length == 1){
+                                                                        <span>hast reagiert</span>
+                                                                    }
+                                                                    @if(message.reactionNerd.length == 2){
+                                                                        <span>haben reagiert</span>
+                                                                    }
+                                                                }
+                                                            }
+                                                    </div>
+                                                </div>
+
+                                                <div *ngIf="message.reactionCelebrate && message.reactionCelebrate.length > 0" style="position: relative;">
+                                                    <button class="reaction-button" 
+                                                    (click)="this.addReaction(currentUser, message, 'reactionCelebrate')"
+                                                    (mouseenter)="isHovered = true" 
+                                                    (mouseleave)="isHovered = false">
+                                                        <img src="./assets/icons/emoji _person raising both hands in celebration_.png" alt="">
+                                                        <span>{{message.reactionCelebrate.length}}</span>
+                                                    </button>
+    
+                                                    <div class="reaction-bubble" [ngClass]="{ 'visible': isHovered, 'hidden': !isHovered }">
+                                                            <img src="./assets/icons/emoji _person raising both hands in celebration_.png" alt="">
+                                                            
+                                                            @for (user of message.reactionCelebrate; track $index) {
+                                                                
+                                                                @if(user.name !== currentUser.name) {
+                                                                    <span class="header5">{{user.name}}</span>
+                                                                    @if(user.name !== currentUser.name && message.reactionCelebrate.length == 1){
+                                                                        <span>hat reagiert</span>
+                                                                    }
+                                                                }
+                                                                @else if(user.name == currentUser.name){
+                                                                    @if(message.reactionCelebrate.length == 2){
+                                                                        <span class="header5">und</span>
+                                                                    }
+                                                                    <span class="header5">Du</span>
+                                                                    @if(user.name == currentUser.name && message.reactionCelebrate.length == 1){
+                                                                        <span>hast reagiert</span>
+                                                                    }
+                                                                    @if(message.reactionCelebrate.length == 2){
+                                                                        <span>haben reagiert</span>
+                                                                    }
+                                                                }
+                                                            }
+                                                    </div>
+                                                </div>
+
+                                                <div *ngIf="message.reactionCheck && message.reactionCheck.length > 0" style="position: relative;">
+                                                    <button class="reaction-button" 
+                                                    (click)="this.addReaction(currentUser, message, 'reactionCheck')"
+                                                    (mouseenter)="isHovered = true" 
+                                                    (mouseleave)="isHovered = false">
+                                                        <img src="./assets/icons/emoji _white heavy check mark_.png" alt="">
+                                                        <span>{{message.reactionCheck.length}}</span>
+                                                    </button>
+    
+                                                    <div class="reaction-bubble" [ngClass]="{ 'visible': isHovered, 'hidden': !isHovered }">
+                                                            <img src="./assets/icons/emoji _person raising both hands in celebration_.png" alt="">
+                                                            
+                                                            @for (user of message.reactionCheck; track $index) {
+                                                                
+                                                                @if(user.name !== currentUser.name) {
+                                                                    <span class="header5">{{user.name}}</span>
+                                                                    @if(user.name !== currentUser.name && message.reactionCheck.length == 1){
+                                                                        <span>hat reagiert</span>
+                                                                    }
+                                                                }
+                                                                @else if(user.name == currentUser.name){
+                                                                    @if(message.reactionCheck.length == 2){
+                                                                        <span class="header5">und</span>
+                                                                    }
+                                                                    <span class="header5">Du</span>
+                                                                    @if(user.name == currentUser.name && message.reactionCheck.length == 1){
+                                                                        <span>hast reagiert</span>
+                                                                    }
+                                                                    @if(message.reactionCheck.length == 2){
+                                                                        <span>haben reagiert</span>
+                                                                    }
+                                                                }
+                                                            }
+                                                    </div>
+                                                </div>
+
+                                                <div *ngIf="message.reactionRocket && message.reactionRocket.length > 0" style="position: relative;">
+                                                    <button class="reaction-button" 
+                                                    (click)="this.addReaction(currentUser, message, 'reactionRocket')"
+                                                    (mouseenter)="isHovered = true" 
+                                                    (mouseleave)="isHovered = false">
+                                                        <img src="./assets/icons/emoji _rocket_.png" alt="">
+                                                        <span>{{message.reactionRocket.length}}</span>
+                                                    </button>
+    
+                                                    <div class="reaction-bubble" [ngClass]="{ 'visible': isHovered, 'hidden': !isHovered }">
+                                                            <img src="./assets/icons/emoji _rocket_.png" alt="">
+                                                            
+                                                            @for (user of message.reactionRocket; track $index) {
+                                                                
+                                                                @if(user.name !== currentUser.name) {
+                                                                    <span class="header5">{{user.name}}</span>
+                                                                    @if(user.name !== currentUser.name && message.reactionRocket.length == 1){
+                                                                        <span>hat reagiert</span>
+                                                                    }
+                                                                }
+                                                                @else if(user.name == currentUser.name){
+                                                                    @if(message.reactionRocket.length == 2){
+                                                                        <span class="header5">und</span>
+                                                                    }
+                                                                    <span class="header5">Du</span>
+                                                                    @if(user.name == currentUser.name && message.reactionRocket.length == 1){
+                                                                        <span>hast reagiert</span>
+                                                                    }
+                                                                    @if(message.reactionRocket.length == 2){
+                                                                        <span>haben reagiert</span>
+                                                                    }
+                                                                }
+                                                            }
+                                                    </div>
+                                                </div>
+
+                                                <button class="add-reaction-button">
+                                                    <img src="./assets/icons/add_reaction.png" alt="">
+                                                </button>
+                                            </div>
+
                                         </div>
                                     </div>
                                     <div class="reaction-hover">
                                         <div>
-                                            <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
-                                            <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png"
-                                                alt="">
+                                            <img (click)="this.addReaction(currentUser, message, 'reactionNerd')" src="./assets/icons/emoji _nerd face_.png" alt="">
+                                            <img (click)="this.addReaction(currentUser, message, 'reactionCelebrate')" src="./assets/icons/emoji _person raising both hands in celebration_.png"alt="">
+                                            <img (click)="this.addReaction(currentUser, message, 'reactionCheck')" src="./assets/icons/emoji _white heavy check mark_.png" alt="">
+                                            <img (click)="this.addReaction(currentUser, message, 'reactionRocket')" src="./assets/icons/emoji _rocket_.png" alt="">
                                             <img src="./assets/icons/add_reaction.png" alt="">
                                             <img src="./assets/icons/comment.png" alt="">
                                         </div>
@@ -74,9 +225,11 @@
                             <tr>
                                 <td>
                                     <div class="reaction-hover" *ngIf="editingMessageId !== message.messageId">
-                                        <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
-                                        <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png"
-                                            alt="">
+                                        <img (click)="this.addReaction(currentUser, message, 'reactionNerd')" src="./assets/icons/emoji _nerd face_.png" alt="">
+                                        <img (click)="this.addReaction(currentUser, message, 'reactionCelebrate')" src="./assets/icons/emoji _person raising both hands in celebration_.png"alt="">
+                                        <img (click)="this.addReaction(currentUser, message, 'reactionCheck')" src="./assets/icons/emoji _white heavy check mark_.png" alt="">
+                                        <img (click)="this.addReaction(currentUser, message, 'reactionRocket')" src="./assets/icons/emoji _rocket_.png" alt="">
+
                                         <img src="./assets/icons/more_vert.png" alt=""
                                             (click)="editDirectMessage(message)">
                                     </div>
@@ -104,7 +257,155 @@
                                                         Anhang öffnen
                                                     </button>
                                                 </div>
+                                            </div>
 
+                                            <div class="reaction-container">
+                                                <div *ngIf="message.reactionNerd && message.reactionNerd.length > 0" style="position: relative;">
+                                                    <button class="reaction-button" 
+                                                    (click)="this.addReaction(currentUser, message, 'reactionNerd')"
+                                                    (mouseenter)="isHovered = true" 
+                                                    (mouseleave)="isHovered = false">
+                                                        <img src="./assets/icons/emoji _nerd face_.png" alt="">
+                                                        <span>{{message.reactionNerd.length}}</span>
+                                                    </button>
+    
+                                                    <div class="reaction-bubble" [ngClass]="{ 'visible': isHovered, 'hidden': !isHovered }">
+                                                            <img src="./assets/icons/emoji _nerd face_.png" alt="">
+                                                            @for (user of message.reactionNerd; track $index) {
+                                                                
+                                                                @if(user.name !== currentUser.name) {
+                                                                    <span class="header5">{{user.name}}</span>
+                                                                    @if(user.name !== currentUser.name && message.reactionNerd.length == 1){
+                                                                        <span>hat reagiert</span>
+                                                                    }
+                                                                }
+                                                                @else if(user.name == currentUser.name){
+                                                                    @if(message.reactionNerd.length == 2){
+                                                                        <span class="header5">und</span>
+                                                                    }
+                                                                    <span class="header5">Du</span>
+                                                                    @if(user.name == currentUser.name && message.reactionNerd.length == 1){
+                                                                        <span>hast reagiert</span>
+                                                                    }
+                                                                    @if(message.reactionNerd.length == 2){
+                                                                        <span>haben reagiert</span>
+                                                                    }
+                                                                }
+                                                            }
+                                                    </div>
+                                                </div>
+
+                                                <div *ngIf="message.reactionCelebrate && message.reactionCelebrate.length > 0" style="position: relative;">
+                                                    <button class="reaction-button" 
+                                                    (click)="this.addReaction(currentUser, message, 'reactionCelebrate')"
+                                                    (mouseenter)="isHovered = true" 
+                                                    (mouseleave)="isHovered = false">
+                                                        <img src="./assets/icons/emoji _person raising both hands in celebration_.png" alt="">
+                                                        <span>{{message.reactionCelebrate.length}}</span>
+                                                    </button>
+    
+                                                    <div class="reaction-bubble" [ngClass]="{ 'visible': isHovered, 'hidden': !isHovered }">
+                                                            <img src="./assets/icons/emoji _person raising both hands in celebration_.png" alt="">
+                                                            
+                                                            @for (user of message.reactionCelebrate; track $index) {
+                                                                
+                                                                @if(user.name !== currentUser.name) {
+                                                                    <span class="header5">{{user.name}}</span>
+                                                                    @if(user.name !== currentUser.name && message.reactionCelebrate.length == 1){
+                                                                        <span>hat reagiert</span>
+                                                                    }
+                                                                }
+                                                                @else if(user.name == currentUser.name){
+                                                                    @if(message.reactionCelebrate.length == 2){
+                                                                        <span class="header5">und</span>
+                                                                    }
+                                                                    <span class="header5">Du</span>
+                                                                    @if(user.name == currentUser.name && message.reactionCelebrate.length == 1){
+                                                                        <span>hast reagiert</span>
+                                                                    }
+                                                                    @if(message.reactionCelebrate.length == 2){
+                                                                        <span>haben reagiert</span>
+                                                                    }
+                                                                }
+                                                            }
+                                                    </div>
+                                                </div>
+
+                                                <div *ngIf="message.reactionCheck && message.reactionCheck.length > 0" style="position: relative;">
+                                                    <button class="reaction-button" 
+                                                    (click)="this.addReaction(currentUser, message, 'reactionCheck')"
+                                                    (mouseenter)="isHovered = true" 
+                                                    (mouseleave)="isHovered = false">
+                                                        <img src="./assets/icons/emoji _white heavy check mark_.png" alt="">
+                                                        <span>{{message.reactionCheck.length}}</span>
+                                                    </button>
+    
+                                                    <div class="reaction-bubble" [ngClass]="{ 'visible': isHovered, 'hidden': !isHovered }">
+                                                            <img src="./assets/icons/emoji _person raising both hands in celebration_.png" alt="">
+                                                            
+                                                            @for (user of message.reactionCheck; track $index) {
+                                                                
+                                                                @if(user.name !== currentUser.name) {
+                                                                    <span class="header5">{{user.name}}</span>
+                                                                    @if(user.name !== currentUser.name && message.reactionCheck.length == 1){
+                                                                        <span>hat reagiert</span>
+                                                                    }
+                                                                }
+                                                                @else if(user.name == currentUser.name){
+                                                                    @if(message.reactionCheck.length == 2){
+                                                                        <span class="header5">und</span>
+                                                                    }
+                                                                    <span class="header5">Du</span>
+                                                                    @if(user.name == currentUser.name && message.reactionCheck.length == 1){
+                                                                        <span>hast reagiert</span>
+                                                                    }
+                                                                    @if(message.reactionCheck.length == 2){
+                                                                        <span>haben reagiert</span>
+                                                                    }
+                                                                }
+                                                            }
+                                                    </div>
+                                                </div>
+
+                                                <div *ngIf="message.reactionRocket && message.reactionRocket.length > 0" style="position: relative;">
+                                                    <button class="reaction-button" 
+                                                    (click)="this.addReaction(currentUser, message, 'reactionRocket')"
+                                                    (mouseenter)="isHovered = true" 
+                                                    (mouseleave)="isHovered = false">
+                                                        <img src="./assets/icons/emoji _person raising both hands in celebration_.png" alt="">
+                                                        <span>{{message.reactionRocket.length}}</span>
+                                                    </button>
+    
+                                                    <div class="reaction-bubble" [ngClass]="{ 'visible': isHovered, 'hidden': !isHovered }">
+                                                            <img src="./assets/icons/emoji _rocket_.png" alt="">
+                                                            
+                                                            @for (user of message.reactionRocket; track $index) {
+                                                                
+                                                                @if(user.name !== currentUser.name) {
+                                                                    <span class="header5">{{user.name}}</span>
+                                                                    @if(user.name !== currentUser.name && message.reactionRocket.length == 1){
+                                                                        <span>hat reagiert</span>
+                                                                    }
+                                                                }
+                                                                @else if(user.name == currentUser.name){
+                                                                    @if(message.reactionRocket.length == 2){
+                                                                        <span class="header5">und</span>
+                                                                    }
+                                                                    <span class="header5">Du</span>
+                                                                    @if(user.name == currentUser.name && message.reactionRocket.length == 1){
+                                                                        <span>hast reagiert</span>
+                                                                    }
+                                                                    @if(message.reactionRocket.length == 2){
+                                                                        <span>haben reagiert</span>
+                                                                    }
+                                                                }
+                                                            }
+                                                    </div>
+                                                </div>
+
+                                                <button class="add-reaction-button">
+                                                    <img src="./assets/icons/add_reaction.png" alt="">
+                                                </button>
                                             </div>
                                         </div>
 
@@ -113,6 +414,17 @@
                                             class="edit-message-container">
 
                                             <textarea class="edit-textarea" [formControl]="editedMessage"></textarea>
+                                            <div *ngIf="message.fileName" class="file-container">
+                                                <span>{{message.fileName}}</span>
+
+                                                <img *ngIf="message.fileType == 'image/jpeg' || message.fileType == 'image/png'" class="preview-img" [src]="message.fileDownloadUrl" alt="">
+
+                                                <object *ngIf="message.fileType == 'application/pdf'" [data]="message.safeUrl" type="application/pdf" width="60%" height="100%">
+                                                    Dein Browser unterstützt keine PDF-Anzeige
+                                                </object>
+
+                                                <pre *ngIf="message.fileType == 'text/plain'" style="overflow: auto;"> <p>{{this.chatService.textContent}}</p></pre>
+                                            </div>
                                             <div class="bottom-container">
                                                 <div class="reactions">
                                                     <img src="./assets/icons/sentiment_satisfied-1.png" alt=""

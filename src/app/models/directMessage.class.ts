@@ -1,4 +1,5 @@
 import { SafeResourceUrl } from "@angular/platform-browser";
+import { User } from "./user.class";
 
 export class directMessage {
 
@@ -14,6 +15,11 @@ export class directMessage {
     fileName!: string;
     fileType!: string;
     safeUrl?: SafeResourceUrl;  // Neue Property für die sichere URL
+    //Reactions
+    reactionCelebrate!: User[];
+    reactionCheck!: User[];
+    reactionNerd!: User[];
+    reactionRocket!: User[];
 
 
     constructor(obj?: any) {
@@ -29,6 +35,12 @@ export class directMessage {
         this.fileName = obj ? obj.fileName : '';
         this.fileType = obj ? obj.fileType : '';
         this.safeUrl = obj ? obj.safeUrl : '';
+
+        this.reactionCelebrate = Array.isArray(obj?.reactionCelebrate) ? obj.reactionCelebrate : []; 
+        this.reactionCheck = Array.isArray(obj?.reactionCheck) ? obj.reactionCheck : []; 
+        this.reactionNerd = Array.isArray(obj?.reactionNerd) ? obj.reactionNerd : []; 
+        this.reactionRocket = Array.isArray(obj?.reactionRocket) ? obj.reactionRocket : []; 
+        
     }
 
     public toJson(){
@@ -44,6 +56,12 @@ export class directMessage {
             fileDownloadUrl:this.fileDownloadUrl,
             fileName:this.fileName,
             fileType:this.fileType,
+            reactionCelebrate: this.reactionCelebrate,
+            reactionCheck: this.reactionCheck,
+            reactionNerd: this.reactionNerd,
+            reactionRocket: this.reactionRocket,
+
+
         }
        
     }

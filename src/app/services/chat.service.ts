@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { addDoc, collection, doc, documentId, Firestore, getDocs, onSnapshot, query, setDoc, where } from '@angular/fire/firestore';
+import { addDoc, collection, doc, documentId, Firestore, getDocs, onSnapshot, query, setDoc, updateDoc, where } from '@angular/fire/firestore';
 import { BehaviorSubject } from 'rxjs';
 import { directMessage } from '../models/directMessage.class';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -140,7 +140,11 @@ export class ChatService {
               fileDownloadUrl: messageData['fileDownloadUrl'],
               fileName: messageData['fileName'],
               fileType: messageData['fileType'],
-              safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(messageData['fileDownloadUrl'])
+              safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(messageData['fileDownloadUrl']),
+              reactionCelebrate: messageData['reactionCelebrate'],
+              reactionCheck: messageData['reactionCheck'],
+              reactionNerd: messageData['reactionNerd'],
+              reactionRocket: messageData['reactionRocket']
             };
 
             this.chatMessages.push(chatData);
@@ -237,6 +241,9 @@ export class ChatService {
     newDirectMessage.timestamp = message.timestamp;
     newDirectMessage.time = message.time;
     newDirectMessage.dayDateMonth = message.dayDateMonth;
+    newDirectMessage.fileName = message.fileName;
+    newDirectMessage.fileDownloadUrl = message.fileDownloadUrl;
+    newDirectMessage.fileType = message.fileType;
     const dmData = newDirectMessage.toJson();
 
     this.saveEditedMessage(dmData);
@@ -279,4 +286,6 @@ export class ChatService {
 
     return `${dayOfWeek}, ${day}. ${month}`;
   }
+
+
 }

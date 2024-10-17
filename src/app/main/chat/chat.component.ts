@@ -10,6 +10,7 @@ import { ActivatedRoute, Route } from '@angular/router';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject, StorageReference, getMetadata } from '@angular/fire/storage';  // Firebase Storage imports
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
+import { doc, Firestore, updateDoc } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-chat',
@@ -38,7 +39,8 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     public dialog: MatDialog, 
     public userService: UserService,
     public route: ActivatedRoute,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    public firestore: Firestore,
   ) {}
 
 
@@ -171,7 +173,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
   selectedFileType: string = '';
   fileDownloadUrl: string = '';
 
-
   //Datei hinzufügen
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -181,7 +182,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
       this.selectedFileType = input.files[0]['type'];
       this.uploadFile()
     }
-    
   }
 
 
@@ -198,6 +198,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
   }
   safeUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
   
+  //Holt sich eine sichere URL
   async loadSafeFile(fileUrl: string) {
     if (!fileUrl) {
       console.error('Die Datei-URL ist ungültig.');
@@ -205,6 +206,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     }
     this.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fileUrl);
   }
+
 
   //File in den Storage hochladen
   async uploadFile() {
@@ -267,6 +269,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     });
   }
 
+
   //Emojis
   showEmojis:boolean = false;
 
@@ -280,5 +283,31 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     const currentMessageValue = this.directMessage.value || '';
     this.directMessage.setValue(currentMessageValue + emoji);
     this.showEmojis = false;
+  }
+
+
+  //Reactions
+    //if: wenn der aktuelle Nutzer noch nicht die angeklickte Reaktion gewählt hat, wird er dieser Reaktion hinzugefügt
+    //else: wenn schon gewählt, dann wird er wieder entfernt
+
+    isHovered:boolean = false;
+
+  async addReaction(currentUser:User, message:any, reaction:string){
+    console.log(message)
+    const currentUsers =  message[reaction] || [];
+    const currentUserReactedAlready = currentUsers.some((user: { userId: string; }) => user.userId === this.currentUserId);
+    const chatDocRef = doc(this.firestore, 'chats', message.chatId, 'messages', message.messageId);
+
+   if(!currentUserReactedAlready){
+      await updateDoc(chatDocRef, {
+        [reaction]: [...currentUsers, currentUser]
+      });
+   }else{
+      const updatedUsers = currentUsers.filter((user: User) => user.userId !== this.currentUserId);
+      await updateDoc(chatDocRef, {
+        [reaction]: updatedUsers
+      });
+      console.log()
+   }
   }
 }
