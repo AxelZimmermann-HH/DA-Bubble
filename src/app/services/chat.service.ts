@@ -47,7 +47,7 @@ export class ChatService {
   //öffnet den privaten Chat
   async openDirectMessage(currentUserId: string, userId: string) {
     this.chatIsEmpty = true;
-    this.chatMessages = []
+    this.chatMessages = [];
     const chatId = await this.createChatID(currentUserId, userId);
     const checkIfChatExists = query(collection(this.firestore, "chats"), where(documentId(), "==", chatId));
     const querySnapshot = await getDocs(checkIfChatExists);
@@ -286,6 +286,4 @@ export class ChatService {
 
     return `${dayOfWeek}, ${day}. ${month}`;
   }
-
-
 }

@@ -290,7 +290,27 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     //if: wenn der aktuelle Nutzer noch nicht die angeklickte Reaktion gewählt hat, wird er dieser Reaktion hinzugefügt
     //else: wenn schon gewählt, dann wird er wieder entfernt
 
-    isHovered:boolean = false;
+    //isHovered:boolean = false;
+    hoveredMessageId: string | null = null;  // Speichert die ID des gehoverten Elements
+    hoveredReaction: string | null = null;
+
+    hoveredElement: { messageId: string | null; reactionType: string | null } = {
+      messageId: null,
+      reactionType: null,
+    };
+
+      // Funktion, um das gehoverte Element zu setzen
+  isHovered(messageId: string | null, reactionType: string | null) {
+    this.hoveredElement = { messageId, reactionType };
+  }
+
+  // Funktion, um die Sichtbarkeit zu prüfen
+  isBubbleVisible(messageId: string, reactionType: string): boolean {
+    return (
+      this.hoveredElement.messageId === messageId &&
+      this.hoveredElement.reactionType === reactionType
+    );
+  }
 
   async addReaction(currentUser:User, message:any, reaction:string){
     console.log(message)
