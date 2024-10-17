@@ -1,12 +1,12 @@
 <div class="login-header">
     <div class="logo">
-        <img src="../../../assets/icons/Logo.svg" alt="">
+        <img src="./assets/icons/Logo.svg" alt="">
         <p>DABubble</p>
     </div>
 </div>
 <div class="login-content">
     <div class="header">
-        <img (click)="getBack()" src="../../../../assets/icons/arrow_back.png" alt="">
+        <img (click)="getBack()" src="./assets/icons/arrow_back.png" alt="">
         <h1>Passwort zurücksetzen</h1>
     </div>
 
@@ -14,7 +14,7 @@
 
     <form (ngSubmit)="checkEmail(mailInput.value, $event)" #form="ngForm">
         <div class="input">
-            <img [ngStyle]="{'width': '20px'}" src="../../assets/icons/login-mail.svg" alt="">
+            <img [ngStyle]="{'width': '20px'}" src="./assets/icons/login-mail.svg" alt="">
             <input 
                 name="mailInput" 
                 #mailInput="ngModel"  

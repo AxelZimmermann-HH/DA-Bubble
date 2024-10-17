@@ -1,6 +1,6 @@
 <div class="login-header">
     <div class="logo">
-        <img src="../../../assets/icons/Logo.svg" alt="">
+        <img src="./assets/icons/Logo.svg" alt="">
         <p>DABubble</p>
     </div>
     <div class="gotoregister">
@@ -17,7 +17,7 @@
         
         
         <div class="input">
-            <img [ngStyle]="{'width': '20px'}" src="../../assets/icons/login-mail.svg" alt="">
+            <img [ngStyle]="{'width': '20px'}" src="./assets/icons/login-mail.svg" alt="">
             <input 
                 name="mailInput" 
                 [(ngModel)]="user.mail" 
@@ -32,7 +32,7 @@
 
 
         <div class="input">
-            <img [ngStyle]="{'width': '16px'}" src="../../assets/icons/login-lock.svg" alt="">
+            <img [ngStyle]="{'width': '16px'}" src="./assets/icons/login-lock.svg" alt="">
             <input name="passwordInput" 
             [(ngModel)]="user.password" 
             required 
@@ -57,7 +57,7 @@
         <div class="submit-area">
 
             <button class="google-button" type="button" (click)="googleLogin()">
-                <img src="../../assets/icons/Google.svg" alt="">
+                <img src="./assets/icons/Google.svg" alt="">
                 <p>Anmelden mit Google</p>
             </button> 
 
