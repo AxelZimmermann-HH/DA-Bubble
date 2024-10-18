@@ -322,21 +322,22 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
   }
 
   async addReaction(currentUser: User, message: any, reaction: string) {
-    console.log(message)
+    console.log(message); // Nachricht prüfen
     const currentUsers = message[reaction] || [];
+    
     const currentUserReactedAlready = currentUsers.some((user: { userId: string; }) => user.userId === this.currentUserId);
     const chatDocRef = doc(this.firestore, 'chats', message.chatId, 'messages', message.messageId);
-
+  
     if (!currentUserReactedAlready) {
       await updateDoc(chatDocRef, {
-        [reaction]: [...currentUsers, currentUser]
+        [reaction]: [...currentUsers, currentUser.toJson()]  // Sicherstellen, dass user im richtigen Format ist
       });
     } else {
       const updatedUsers = currentUsers.filter((user: User) => user.userId !== this.currentUserId);
       await updateDoc(chatDocRef, {
-        [reaction]: updatedUsers
+        [reaction]: updatedUsers  
       });
-      console.log()
     }
   }
+  
 }
