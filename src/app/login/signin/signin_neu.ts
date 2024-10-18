@@ -42,29 +42,29 @@ export class SigninComponent {
     });
   }
 
-  async checkEmail() {
-  const enteredMail = this.user.mail.trim();
+ 
 
-  if (!this.validateEmail(enteredMail)) {
-    this.handleMailError();
-    return;
+
+
+  async checkEmail() {
+    const enteredMail = this.user.mail.trim();
+
+    if (!this.validateEmail(enteredMail)) {
+      this.handleMailError();
+      return;
     }
 
     try {
-      await this.searchEmailInDatabase(enteredMail);
+      const q = query(collection(this.firestore, 'users'), where('mail', '==', enteredMail));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        this.handleMailError();
+      } else {
+        this.validMail = true;
+      }
     } catch (error) {
       this.handleMailError();
-    }
-  }
-
-  async searchEmailInDatabase(email: string) {
-    const q = query(collection(this.firestore, 'users'), where('mail', '==', email));
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      this.handleMailError();
-    } else {
-      this.validMail = true;
     }
   }
 
@@ -81,48 +81,209 @@ export class SigninComponent {
     }, 2000);
 }
 
-  async onSubmit(ngForm: NgForm) {
-    let enteredMail = this.user.mail.trim();
-    let enteredPassword = this.user.password;
+async onSubmit(ngForm: NgForm) {
+  let enteredMail = this.user.mail.trim();
+  let enteredPassword = this.user.password;
 
-    try {
+  // Debugging: Ausgabe der E-Mail vor der Validierung
+  console.log('Eingegebene E-Mail:', enteredMail);
+
+  if (!this.validateEmail(enteredMail)) {
+      console.error('Ungültige E-Mail-Adresse:', enteredMail);
+      return;  // Verhindere den Login, wenn die E-Mail ungültig ist
+  }
+
+  try {
+      // Firebase Auth verwendet zur Anmeldung die E-Mail und das Passwort
       const userCredential = await signInWithEmailAndPassword(this.auth, enteredMail, enteredPassword);
       const firebaseUser = userCredential.user;
 
-      await this.checkFirestore(firebaseUser);
+      // Debugging: Ausgabe der User-ID von Firebase Auth
+      console.log('Firebase Auth userId:', firebaseUser.uid);
+
+      // Prüfe, ob der Benutzer in Firestore existiert und handle die Anmeldung
+      const userDocRef = doc(this.firestore, 'users/${firebaseUser.uid}');
+      const userSnapshot = await getDoc(userDocRef);
+
+      // Debugging: Ausgabe des Firestore-Pfads, den du abfragst
+      console.log('Abfrage des Firestore-Dokuments unter Pfad:', 'users/${firebaseUser.uid}');
+
+      if (userSnapshot.exists()) {
+          const userData = userSnapshot.data() as User;
+          this.handleSuccess(userData, enteredMail); // Erfolgshandling
+          this.router.navigate(['/login', firebaseUser.uid]);
+      } else {
+          console.error('Benutzer in Firestore nicht gefunden.');
+      }
+
+      // Leere die Eingabefelder nach erfolgreicher Authentifizierung
       this.emptyValue();
-    } catch (error: any) {
-      this.handleAuthError(error);
-    }
+
+  } catch (error: any) {
+      console.error('Fehler bei der Anmeldung:', error);
+      if (error.code === 'auth/wrong-password') {
+          this.falsePassword();
+      } else if (error.code === 'auth/user-not-found') {
+          this.falseMail();
+      }
   }
+}
 
-  handleAuthError(error: any) {
-    switch (error.code) {
-      case 'auth/wrong-password':
-      case 'auth/invalid-credential':
-      case 'auth/too-many-requests':
-        this.handlePasswordError();
-        break;
-      case 'auth/user-not-found':
-        this.handleMailError();
-        break;
-      default:
-        this.handlePasswordError();
-    }
-  }
+async onSubmitNeu(ngForm: NgForm) {
+  let enteredMail = this.user.mail.trim();
+  let enteredPassword = this.user.password;
 
-  async checkFirestore(firebaseUser: any) {
-    const userDocRef = doc(this.firestore, `users/${firebaseUser.uid}`);
-    const userSnapshot = await getDoc(userDocRef);
+  try {
+    // Versuche, den Benutzer anzumelden
+    const userCredential = await signInWithEmailAndPassword(this.auth, enteredMail, enteredPassword);
+    const firebaseUser = userCredential.user;
 
-    if (userSnapshot.exists()) {
-      const userData = userSnapshot.data() as User;
-      this.handleSuccess(userData, firebaseUser.email);
-      this.router.navigate(['/login', firebaseUser.uid]);
+    console.log('Erfolgreicher Login:', firebaseUser.uid);
+
+
+    
+    // Nach erfolgreichem Login weiterleiten
+    this.router.navigate(['/login', firebaseUser.uid]);
+
+    // Optional: Leere die Eingabefelder
+    this.emptyValue();
+
+  } catch (error: any) {
+    // Unterdrücke den Konsolenfehler
+    if (error.code === 'auth/wrong-password') {
+      console.log('Fehler: Falsches Passwort');
+      this.handlePasswordError();  // Leert das Passwortfeld und zeigt den Fehler an
+    } else if (error.code === 'auth/user-not-found') {
+      console.log('Fehler: Benutzer nicht gefunden');
+      this.handleMailError();  // Leert das Mailfeld und zeigt den Fehler an
     } else {
-      console.error('Benutzer in Firestore nicht gefunden.');
+      // Unbekannter Fehler
+      console.log('Unbekannter Fehler:', error.message);
     }
   }
+}
+
+handlePasswordError() {
+  this.user.password = ''; // Passwortfeld leeren
+  this.validPassword = false;  // Fehler anzeigen
+  setTimeout(() => {
+    this.validPassword = true;  // Fehler nach 2 Sekunden zurücksetzen
+  }, 2000);
+}
+
+
+
+
+  async onSubmit4(ngForm: NgForm) {
+    let enteredMail = this.user.mail.trim();
+    let enteredPassword = this.user.password;
+
+    // Debugging: Ausgabe der E-Mail vor der Validierung
+    console.log('Eingegebene E-Mail:', enteredMail);
+
+    if (!this.validateEmail(enteredMail)) {
+        this.validMail = false;
+        return;  // Verhindere den Login, wenn die E-Mail ungültig ist
+    }
+
+    if (!enteredPassword) {
+        // Wenn kein Passwort eingegeben wurde, setze validPassword auf false
+        this.validPassword = false;
+        setTimeout(() => {
+          this.validPassword = true;
+      }, 2000);
+        return;
+    }
+
+    try {
+        // Firebase Auth verwendet zur Anmeldung die E-Mail und das Passwort
+        const userCredential = await signInWithEmailAndPassword(this.auth, enteredMail, enteredPassword);
+        const firebaseUser = userCredential.user;
+
+        // Debugging: Ausgabe der User-ID von Firebase Auth
+        console.log('Firebase Auth userId:', firebaseUser.uid);
+
+        // Prüfe, ob der Benutzer in Firestore existiert und handle die Anmeldung
+        const userDocRef = doc(this.firestore, `users/${firebaseUser.uid}`);
+        const userSnapshot = await getDoc(userDocRef);
+
+        // Debugging: Ausgabe des Firestore-Pfads, den du abfragst
+        console.log('Abfrage des Firestore-Dokuments unter Pfad:', `users/${firebaseUser.uid}`);
+
+        if (userSnapshot.exists()) {
+            const userData = userSnapshot.data() as User;
+            this.handleSuccess(userData, enteredMail); // Erfolgshandling
+            this.router.navigate(['/login', firebaseUser.uid]);
+        } else {
+            console.error('Benutzer in Firestore nicht gefunden.');
+        }
+
+        // Leere die Eingabefelder nach erfolgreicher Authentifizierung
+        this.emptyValue();
+
+    } catch (error: any) {
+        console.error('Fehler bei der Anmeldung:', error);
+        if (error.code === 'auth/wrong-password') {
+            // Setze validPassword auf false, um den Fehler-Placeholder anzuzeigen
+            this.validPassword = false;
+            
+        } else if (error.code === 'auth/user-not-found') {
+            this.falseMail();
+        }
+    }
+}
+
+
+
+
+  async onSubmit2(ngForm: NgForm) {
+    let enteredMail = this.user.mail.trim();
+    let enteredPassword = this.user.password;
+
+    // Debugging: Ausgabe der E-Mail vor der Validierung
+    console.log('Eingegebene E-Mail:', enteredMail);
+
+    if (!this.validateEmail(enteredMail)) {
+        console.error('Ungültige E-Mail-Adresse:', enteredMail);
+        return;  // Verhindere den Login, wenn die E-Mail ungültig ist
+    }
+
+    try {
+        // Firebase Auth verwendet zur Anmeldung die E-Mail und das Passwort
+        const userCredential = await signInWithEmailAndPassword(this.auth, enteredMail, enteredPassword);
+        const firebaseUser = userCredential.user;
+
+        // Debugging: Ausgabe der User-ID von Firebase Auth
+        console.log('Firebase Auth userId:', firebaseUser.uid);
+
+        // Prüfe, ob der Benutzer in Firestore existiert und handle die Anmeldung
+        const userDocRef = doc(this.firestore, `users/${firebaseUser.uid}`);
+        const userSnapshot = await getDoc(userDocRef);
+
+        // Debugging: Ausgabe des Firestore-Pfads, den du abfragst
+        console.log('Abfrage des Firestore-Dokuments unter Pfad:', `users/${firebaseUser.uid}`);
+
+        if (userSnapshot.exists()) {
+            const userData = userSnapshot.data() as User;
+            this.handleSuccess(userData, enteredMail); // Erfolgshandling
+            this.router.navigate(['/login', firebaseUser.uid]);
+        } else {
+            console.error('Benutzer in Firestore nicht gefunden.');
+        }
+
+        // Leere die Eingabefelder nach erfolgreicher Authentifizierung
+        this.emptyValue();
+
+    } catch (error: any) {
+        if (error.code === 'auth/wrong-password') {
+            this.falsePassword();
+        } else if (error.code === 'auth/user-not-found') {
+            this.falseMail();
+        }
+    }
+}
+
+
 
   emptyValue() {
     this.user.mail = '';  
@@ -138,20 +299,28 @@ export class SigninComponent {
     await updateDoc(userDocRef, { online: true });
     this.userService.setUser(user);
     this.router.navigate(['/login',user.userId]);
+    //console.log('let user id',user.userId);
   }
 
-  handlePasswordError() {
-    console.log('Error-Funktion GEHT');
-    this.validPassword = false;
-    this.user.password = '';  // Leert das Passwortfeld
-    setTimeout(() => {
-      this.validPassword = true;
-    }, 2000);
-    console.log('geleert!');
+  falsePassword() {
+    this.validMail = true;  
+    this.validPassword = false;  
+  }
+
+  falseMail() {
+    this.validMail = false;  
+    this.validPassword = true;  
+  }
+
+  returnError() {
+    if (!this.validMail || !this.validPassword) {
+      return; 
+    }
   }
 
   guestLogin() {
     const userCollection = collection(this.firestore, 'users');
+    
     const guestUserId = '12345guest';
     const guestUserDocRef = doc(userCollection, guestUserId);
 
@@ -288,7 +457,4 @@ export class SigninComponent {
   goToPasswordReset() {
     this.passwordChange.emit(true)
   }
-
 }
-
-

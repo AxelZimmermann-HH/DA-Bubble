@@ -26,7 +26,8 @@
                 placeholder="beispielname@email.com" 
                 [placeholder]="validMail ? 'beispielname@email.com' : 'Die Mailadresse wurde nicht gefunden!'"
                 pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
-                [ngClass]="{'placeholder-error': !validMail}" />
+                [ngClass]="{'placeholder-error': !validMail}"
+                (blur)="checkEmail()" />
         </div>
 
 
@@ -36,8 +37,8 @@
             <input name="passwordInput" 
             [(ngModel)]="user.password" 
             required 
-            placeholder="Passwort" 
-            [placeholder]="validPassword ? 'Passwort' : 'Falsches Passwort!'"
+            placeholder="Passwort (min. 6 Zeichen)" 
+            [placeholder]="validPassword ? 'Passwort (min. 6 Zeichen)' : 'Falsches Passwort!'"
             [ngClass]="{'placeholder-error': !validPassword}"
             type="password" />
         </div>
@@ -62,7 +63,7 @@
             </button> 
 
             <div class="login-buttons">
-                <button class="login-button" (click)="onSubmit(ngForm)">Anmelden</button>
+                <button class="login-button" >Anmelden</button>
                 <button class="login-button guest" (click)="guestLogin()">Gäste-Login</button>
             </div>
         </div>
