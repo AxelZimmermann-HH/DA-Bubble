@@ -19,37 +19,37 @@ import { doc, Firestore, updateDoc } from '@angular/fire/firestore';
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss']
 })
-export class ChatComponent implements AfterViewInit, AfterViewChecked{
+export class ChatComponent implements AfterViewInit, AfterViewChecked {
 
   directMessage = new FormControl('', [Validators.required, Validators.minLength(2)]);
   editedMessage = new FormControl('', [Validators.required, Validators.minLength(2)]);
   file = new FormControl('', [Validators.required, Validators.minLength(2)]);
 
   editingMessageId: string | null = null;
-  currentUser: any|string;
+  currentUser: any | string;
   currentUserId: string = '';
   user = new User();
   chat: any;
- 
+
   @ViewChild('chatContainer') chatContainer!: ElementRef;
-  
+
 
   constructor(
-    public chatService: ChatService, 
-    public dialog: MatDialog, 
+    public chatService: ChatService,
+    public dialog: MatDialog,
     public userService: UserService,
     public route: ActivatedRoute,
     private sanitizer: DomSanitizer,
     public firestore: Firestore,
-  ) {}
+  ) { }
 
 
-  getAvatarForUser(userName: string):any {
+  getAvatarForUser(userName: string): any {
 
     if (userName === this.user.name) {
       if (this.userService.isNumber(this.user.avatar)) {
         return './assets/avatars/avatar_' + this.user.avatar + '.png';  // Local asset avatar
-      } else { 
+      } else {
         return this.user.avatar;  // External URL avatar
       }
     }
@@ -79,13 +79,13 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
 
 
     // Abonniere aktuellen Benutzer
-    this.userService.currentUser$.subscribe(user => {
-      this.currentUser = user;
-      if (user) {
-        this.currentUserId = user.userId;
-      }
-    });
-    
+    // this.userService.currentUser$.subscribe(user => {
+    //   this.currentUser = user;
+    //   if (user) {
+    //     this.currentUserId = user.userId;
+    //   }
+    // });
+
 
     // Abonniere und lade den Chat
     this.chatService.chat$.subscribe((chatSubject) => {
@@ -98,8 +98,17 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
 
     this.route.params.subscribe(params => {
       const userId = params['userId'];
-  });
-  };
+      if (userId) {
+        this.currentUserId = userId;
+        // Lade den aktuellen Benutzer basierend auf der userId
+        this.userService.loadCurrentUser(userId);   
+        // Falls du weiterhin den Benutzer in einer Variable speichern willst
+        this.userService.currentUser$.subscribe(user => {
+          this.currentUser = user;
+        });
+      }
+    });
+  }
 
 
   //sendet neue DM an den Chat Service
@@ -120,7 +129,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
   scrollToBottom(): void {
     if (!this.chatService.chatIsEmpty && this.chatContainer) {
       try {
-          this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
+        this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
       } catch (err) {
         console.error('Scrollen fehlgeschlagen:', err);
       }
@@ -140,13 +149,13 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     const date = new Date(dateString);
 
     return today.getFullYear() === date.getFullYear() &&
-           today.getMonth() === date.getMonth() &&
-           today.getDate() === date.getDate();
+      today.getMonth() === date.getMonth() &&
+      today.getDate() === date.getDate();
   };
 
-  
+
   // öffnet das Bearbeitungsfeld
-  editDirectMessage(message:any){
+  editDirectMessage(message: any) {
     this.editingMessageId = message.messageId;
     this.editedMessage.setValue(message.text)
   }
@@ -159,7 +168,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
 
 
   // setzt die bearbeitete Nachricht 
-  async setEditedDirectMessage(message:any){
+  async setEditedDirectMessage(message: any) {
     const editedDM = this.editedMessage.value!;
     await this.chatService.setEditedChatData(editedDM, message);
     this.editedMessage.setValue('');
@@ -186,7 +195,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
 
 
   //Datei ändern
-  async onChangeFileSelected(event: Event, fileToDelete:string) {
+  async onChangeFileSelected(event: Event, fileToDelete: string) {
     this.deleteFile(fileToDelete); //Alte Datei löschen
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
@@ -197,7 +206,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     }
   }
   safeUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
-  
+
   //Holt sich eine sichere URL
   async loadSafeFile(fileUrl: string) {
     if (!fileUrl) {
@@ -216,42 +225,42 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
       // Initialisiere Firebase Storage
       const storage = getStorage();
       const storageRef = ref(storage, `files/${this.selectedFileName}`);
-  
+
       // Lade die Datei hoch
       const snapshot = await uploadBytes(storageRef, this.selectedFile);
 
       // Hol die URL der hochgeladenen Datei
       const url = await getDownloadURL(snapshot.ref);
       this.fileDownloadUrl = url;
-      
-      if(this.selectedFileType == 'application/pdf'){
+
+      if (this.selectedFileType == 'application/pdf') {
         console.log('Lade die Datei von URL:', this.fileDownloadUrl);
         await this.loadSafeFile(this.fileDownloadUrl)
       }
-      if(this.selectedFileType == 'text/plain'){
+      if (this.selectedFileType == 'text/plain') {
         await this.chatService.fetchTextFile(this.fileDownloadUrl)
       }
-      } catch (error) {
-        console.error('Fehler beim Hochladen der Datei:', error);
-      }
+    } catch (error) {
+      console.error('Fehler beim Hochladen der Datei:', error);
+    }
   }
 
 
   //File im Browser abrufen und laden
-  downloadFile(fileDownloadUrl:string, fileName:string){
-       // Erstellen eines unsichtbaren Links
-       const link = document.createElement('a');
-       link.href = fileDownloadUrl;
-       link.target = '_blank';
-       link.download = fileName;
-       // Anhängen des Links an das Dokument
-       document.body.appendChild(link);
-   
-       // Automatisches Klicken des Links, um den Download zu starten
-       link.click();
-   
-       // Entfernen des Links nach dem Download
-       document.body.removeChild(link);
+  downloadFile(fileDownloadUrl: string, fileName: string) {
+    // Erstellen eines unsichtbaren Links
+    const link = document.createElement('a');
+    link.href = fileDownloadUrl;
+    link.target = '_blank';
+    link.download = fileName;
+    // Anhängen des Links an das Dokument
+    document.body.appendChild(link);
+
+    // Automatisches Klicken des Links, um den Download zu starten
+    link.click();
+
+    // Entfernen des Links nach dem Download
+    document.body.removeChild(link);
   }
 
 
@@ -271,14 +280,14 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
 
 
   //Emojis
-  showEmojis:boolean = false;
+  showEmojis: boolean = false;
 
-  toogleEmojis(){
+  toogleEmojis() {
     this.showEmojis = !this.showEmojis;
   }
 
-  onEmojiSelect(event: any){
-    console.log('gewähltes emojii:',event)
+  onEmojiSelect(event: any) {
+    console.log('gewähltes emojii:', event)
     const emoji = event.emoji.native; // Das ausgewählte Emoji
     const currentMessageValue = this.directMessage.value || '';
     this.directMessage.setValue(currentMessageValue + emoji);
@@ -287,19 +296,19 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
 
 
   //Reactions
-    //if: wenn der aktuelle Nutzer noch nicht die angeklickte Reaktion gewählt hat, wird er dieser Reaktion hinzugefügt
-    //else: wenn schon gewählt, dann wird er wieder entfernt
+  //if: wenn der aktuelle Nutzer noch nicht die angeklickte Reaktion gewählt hat, wird er dieser Reaktion hinzugefügt
+  //else: wenn schon gewählt, dann wird er wieder entfernt
 
-    //isHovered:boolean = false;
-    hoveredMessageId: string | null = null;  // Speichert die ID des gehoverten Elements
-    hoveredReaction: string | null = null;
+  //isHovered:boolean = false;
+  hoveredMessageId: string | null = null;  // Speichert die ID des gehoverten Elements
+  hoveredReaction: string | null = null;
 
-    hoveredElement: { messageId: string | null; reactionType: string | null } = {
-      messageId: null,
-      reactionType: null,
-    };
+  hoveredElement: { messageId: string | null; reactionType: string | null } = {
+    messageId: null,
+    reactionType: null,
+  };
 
-      // Funktion, um das gehoverte Element zu setzen
+  // Funktion, um das gehoverte Element zu setzen
   isHovered(messageId: string | null, reactionType: string | null) {
     this.hoveredElement = { messageId, reactionType };
   }
@@ -312,22 +321,22 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked{
     );
   }
 
-  async addReaction(currentUser:User, message:any, reaction:string){
+  async addReaction(currentUser: User, message: any, reaction: string) {
     console.log(message)
-    const currentUsers =  message[reaction] || [];
+    const currentUsers = message[reaction] || [];
     const currentUserReactedAlready = currentUsers.some((user: { userId: string; }) => user.userId === this.currentUserId);
     const chatDocRef = doc(this.firestore, 'chats', message.chatId, 'messages', message.messageId);
 
-   if(!currentUserReactedAlready){
+    if (!currentUserReactedAlready) {
       await updateDoc(chatDocRef, {
         [reaction]: [...currentUsers, currentUser]
       });
-   }else{
+    } else {
       const updatedUsers = currentUsers.filter((user: User) => user.userId !== this.currentUserId);
       await updateDoc(chatDocRef, {
         [reaction]: updatedUsers
       });
       console.log()
-   }
+    }
   }
 }

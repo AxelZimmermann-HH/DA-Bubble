@@ -10,7 +10,7 @@ import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-ch
 import { AddChannelUserComponent } from './add-channel-user/add-channel-user.component';
 import { Answer } from '../../models/answer.class';
 import { ActivatedRoute } from '@angular/router';
-import { addDoc, collection, doc, Firestore, getDoc, onSnapshot, orderBy, query, Timestamp, updateDoc } from '@angular/fire/firestore';
+import { addDoc, collection, doc, Firestore, getDoc, getDocs, onSnapshot, orderBy, query, Timestamp, updateDoc, where } from '@angular/fire/firestore';
 import { UserService } from '../../services/user.service';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { ChatComponent } from "../chat/chat.component";
@@ -18,6 +18,7 @@ import { DialogAddUserComponent } from '../../dialog-add-user/dialog-add-user.co
 import { ChatService } from '../../services/chat.service';
 import { FormsModule } from '@angular/forms';
 import { ThreadService } from '../../services/thread.service';
+import { SearchService } from '../../services/search.service';
 
 @Component({
   selector: 'app-channel',
@@ -32,22 +33,23 @@ import { ThreadService } from '../../services/thread.service';
 })
 
 export class ChannelComponent {
-  userData: any = [];
+  userData: User[] = [];
   user = new User();
   userId!: string;
 
   channel = new Channel();
-  channelData: any = [];
+  channelData: Channel[] = [];
 
   message = new Message();
   allMessages: any = [];
   filteredMessages: any = [];
+  newMessageText: string = '';
 
   answer = new Answer();
   allAnswers: any = [];
 
   channelMembers: any = [];
-  newMessageText: string = '';
+
 
   showChannel: boolean = true;
   showChat: boolean = false;
@@ -55,8 +57,14 @@ export class ChannelComponent {
 
   isLoading = false;
   inputText!: string;
+  inputValue: string = '';
 
+  filteredUsers: User[] = [];
+  showAutocomplete: boolean = false;
+  selectedUser: User | null = null;
+  // filteredResults: (User | Channel)[] = [];
 
+  emailPattern: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   showEmojiPicker: boolean = false;
 
   @Input() selectedChannelId: string | null = null;
@@ -73,7 +81,8 @@ export class ChannelComponent {
     public userService: UserService,
     private route: ActivatedRoute,
     public chatService: ChatService,
-    private threadService: ThreadService) {
+    public searchService: SearchService
+  ) {
     this.subscribeToSearch();
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
@@ -82,7 +91,7 @@ export class ChannelComponent {
       this.findUserNameById(this.userId);
     });
     this.getAllChannels();
- 
+    this.searchInput();
 
   }
 
@@ -100,7 +109,7 @@ export class ChannelComponent {
       }).catch(error => {
         console.error('Fehler beim Laden des Channels:', error);
         this.isLoading = false;
-        
+
       });
     }
     else {
@@ -129,6 +138,52 @@ export class ChannelComponent {
       }
     });
   }
+  searchInput() {
+    this.searchService.filteredUsers$.subscribe(users => {
+      this.filteredUsers = users;
+    });
+
+    this.searchService.filteredUsers$.subscribe(users => {
+      this.searchService.showAutocomplete = users.length > 0;
+    });
+  }
+
+  onInput(event: any) {
+    const searchTerm = event.target.value;
+    this.searchService.showAutocomplete = true;
+  
+    if (searchTerm.startsWith('#')) {
+      const query = searchTerm.slice(1).toLowerCase();
+      this.searchService.filterChannels(this.channelData, query);
+    } else if (searchTerm.startsWith('@')) {
+      const query = searchTerm.slice(1).toLowerCase();
+      this.searchService.filterUsers(this.userData, query);
+    } else if (this.emailPattern.test(searchTerm)) {
+      this.searchService.filterEmails(this.userData, searchTerm);
+    } else {
+      this.searchService.filteredChannels = [];
+      this.searchService.filteredUsers = [];
+    }
+  }
+  
+  selectValue(value: any) {
+    console.log('value ausgewählt:', value);
+
+    if (typeof value === 'string' && value.startsWith('#')) {
+      this.inputValue = value;
+    } else if (typeof value === 'string') {
+
+      this.inputValue = `#${value}`;
+    } else if (value instanceof User) {
+      this.inputValue = `@${value.name}`;
+      this.selectedUser = value;
+    } else if (typeof value === 'string') {
+      this.inputValue = value;
+      this.selectedUser = null;
+    }
+    this.searchService.showAutocomplete = false;
+  }
+
 
   subscribeToSearch() {
     this.sharedService.searchTerm$.subscribe((term) => {
@@ -145,6 +200,7 @@ export class ChannelComponent {
       message.text.toLowerCase().includes(term.toLowerCase()) ||
       message.user.toLowerCase().includes(term.toLowerCase())
     );
+
   }
 
   resetFilteredData() {
@@ -248,6 +304,90 @@ export class ChannelComponent {
     return user ? user.name === currentUser : false;
   }
 
+  async sendNeuMessage() {
+    if (this.newMessageText.trim() === '') {
+      return; // Leere Nachrichten nicht senden
+    }
+    const inputValue = this.inputValue.trim(); // Eingabewert
+    let messageData: any;
+    const userName = this.findUserNameById(this.userId); // Benutzername ermitteln
+    if (!userName) {
+      this.newMessageText = '';
+      return;
+    }
+
+    const currentDate = new Date();
+    const timestamp = Timestamp.now();
+    if (inputValue.startsWith('#')) {
+
+      const channelName = inputValue.slice(1); // Kanalnamen ohne #
+      const channelRef = collection(this.firestore, 'channels');
+      const q = query(channelRef, where('channelName', '==', channelName));
+
+      getDocs(q).then(querySnapshot => {
+        if (!querySnapshot.empty) {
+          const channelDoc = querySnapshot.docs[0];
+          const channelId = channelDoc.id;
+          messageData = {
+            text: this.newMessageText,
+            user: userName,
+            timestamp,
+            fullDate: currentDate.toDateString(),
+            answers: []
+          };
+
+          const messagesCollection = collection(this.firestore, `channels/${channelId}/messages`);
+          addDoc(messagesCollection, messageData)
+            .then(() => {
+              this.newMessageText = '';
+            })
+            .catch((error) => {
+              console.error('Fehler beim Senden der Nachricht:', error);
+            });
+        } else {
+          console.error('Der angegebene Kanal existiert nicht:', channelName);
+          this.newMessageText = '';
+        }
+      }).catch((error) => {
+        console.error('Fehler beim Überprüfen des Kanals:', error);
+      });
+    }
+    else if (inputValue.startsWith('@')) {
+      const recipientUserName = inputValue.slice(1);
+      console.log('recipient user', recipientUserName);
+      const chatId = await this.chatService.createChatID(this.userId, recipientUserName);
+      if (!chatId) {
+        await this.chatService.createChatID(this.userId, recipientUserName);
+      }
+
+      const messageData = {
+        text: this.newMessageText,
+        user: userName,
+        timestamp: Timestamp.now(),
+        fullDate: new Date().toDateString(),
+        answers: []
+      };
+
+      // Speichere die Nachricht in der Firestore-Collection
+      addDoc(collection(this.firestore, 'chats', chatId, 'messages'), messageData)
+        .then(() => {
+          console.log('Nachricht erfolgreich gespeichert:', messageData);
+        })
+        .catch((error) => {
+          console.error('Fehler beim Speichern der Nachricht:', error);
+        });
+
+      // Nachricht zurücksetzen
+      this.newMessageText = '';
+    }
+  }
+
+
+  sendEmail(email: string, message: string) {
+    // Implementiere hier deine Logik, um die E-Mail zu senden
+    console.log(`E-Mail an ${email}: ${message}`);
+  }
+
   sendMessage() {
     if (this.newMessageText.trim() === '') {
       return; // Don't send empty messages
@@ -299,7 +439,7 @@ export class ChannelComponent {
 
   onThreadClosed() {
     this.isThreadOpen = false;
-    
+
   }
 
   openThread(message: Message) {
@@ -355,9 +495,8 @@ export class ChannelComponent {
   }
 
   addEmojiToNewMessage(event: any) {
-    console.log('gewähltes emojii:',event)
+    console.log('gewähltes emojii:', event)
     const emoji = event.emoji.native; // Das ausgewählte Emoji
-    
     this.newMessageText += emoji
     this.showEmojiPicker = false;
   }
@@ -367,13 +506,18 @@ export class ChannelComponent {
     if (message.isEditing) {
       message.editedText = `${message.editedText}${emoji}`;
       this.showEmojiPicker = false;
-
     }
-
   }
-  
 
   addEmojiToMessageReaction(event: any) {
   }
 
+
+
+
 }
+
+
+
+
+

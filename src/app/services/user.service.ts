@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { User } from '../models/user.class';
-import { doc, Firestore, updateDoc } from '@angular/fire/firestore';
+import { doc, Firestore, getDoc, updateDoc } from '@angular/fire/firestore';
 
 
 @Injectable({
@@ -25,7 +25,20 @@ export class UserService {
     return typeof value === 'number';
   }
 
-
+  loadCurrentUser(userId: string) {
+    const userRef = doc(this.firestore, `users/${userId}`);
+    getDoc(userRef).then(docSnap => {
+      if (docSnap.exists()) {
+        const user = new User(docSnap.data());
+        this.setUser(user);
+      } else {
+        console.error('No such user!');
+      }
+    }).catch(error => {
+      console.error('Error fetching user:', error);
+    });
+  }
+  
 
   updateUser(updatedUser: User): void {
     const currentUser = this.getUser();

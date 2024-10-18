@@ -459,7 +459,10 @@ td:hover .b-radius {
     }
 }
 
-
+emoji-mart{
+    position: absolute;
+    bottom: 0;
+}
 
 .channel-template-header {
     width: auto;
@@ -482,4 +485,20 @@ td:hover .b-radius {
             border-color: rgba(68, 77, 242, 1);
         }
     }
+}
+
+.searchListe{
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: auto;
+    height: 150px;
+    background: #ffff;
+    border: 1px solid;
+    border-radius: 15px;
+    padding-inline-start: 0;
+    padding: 10px;
+    overflow-y: scroll;
+    scrollbar-width: none;
 }
