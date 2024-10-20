@@ -3,18 +3,24 @@
         <img src="./assets/icons/Logo.svg" alt="">
         <p>DABubble</p>
     </div>
-    <div class="input">
-        <input id="search" type="text" placeholder="Devspace durchsuchen" (input)="onSearchInput($event)">
-        <img src="./assets/icons/search-2.png" alt="">
+    <div class="desktop-search">
+        <div class="input">
+            <input id="search" type="text" placeholder="Devspace durchsuchen" (input)="onSearchInput($event)">
+            <img src="./assets/icons/search-2.png" alt="">
+        </div>
     </div>
     <div class="header-user">
 
         @if (currentUser) {
             <p>{{ currentUser.name }}</p>
             @if (userService.isNumber(currentUser.avatar)) {
-                <img class="test" [src]="'./assets/avatars/avatar_' + currentUser.avatar + '.png'" alt="User Avatar">
+                <!-- <img class="avatar" [src]="'./assets/avatars/avatar_' + currentUser.avatar + '.png'" alt="User Avatar"> -->
+                <div class="avatar-container">
+                    <img class="avatar" [src]="'./assets/avatars/avatar_' + currentUser.avatar + '.png'" alt="User Avatar">
+                    <div class="online-point"></div>
+                </div>
               } @else {
-                <img class="test" [src]="currentUser.avatar" alt="Google User Avatar">
+                <img class="avatar" [src]="currentUser.avatar" alt="Google User Avatar">
               }
             
         } @else {
@@ -23,5 +29,11 @@
         }
         
         <img (click)="openDialogLogout()" class="header-menu" src="./assets/icons/keyboard_arrow_down_1.png" alt="">
+    </div>
+</div>
+<div class="responsive-search">
+    <div class="input">
+        <input id="search" class="res-search" type="text" placeholder="Devspace durchsuchen" (input)="onSearchInput($event)">
+        <img src="./assets/icons/search-2.png" alt="">
     </div>
 </div>
