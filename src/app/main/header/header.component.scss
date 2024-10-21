@@ -67,7 +67,7 @@
 
 .header-user {
     display: flex;
-    width: 400px;
+    width: 500px;
     justify-content: flex-end;
     align-items: center;
     gap: 20px;
@@ -126,8 +126,11 @@
 }
 
 @media (max-width: 1400px) {
-    .logo, .header-user {
+    .logo {
         width: 300px;
+    }
+    .header-user {
+        width: 500px;
     }
 }
 
