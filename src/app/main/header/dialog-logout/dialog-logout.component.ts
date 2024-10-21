@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
+import { SharedService } from '../../../services/shared.service';
 import { collection, Firestore, onSnapshot, doc, updateDoc, deleteDoc, getDoc, setDoc } from '@angular/fire/firestore';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Channel } from '../../../models/channel.class';
@@ -24,25 +25,27 @@ export class DialogLogoutComponent implements OnInit {
   user = new User();
   selectedOption: string | null = null;
   currentUser: User | null = null;
+  isLogoutContainerActive = false;
+
 
 
   constructor(public firestore: Firestore, 
     public dialog: MatDialog, 
     public dialogRef: MatDialogRef<DialogLogoutComponent>, 
     private userService: UserService,
+    private sharedService: SharedService,
     @Inject(MAT_DIALOG_DATA) public data: { user: User }) {
       this.currentUser = data.user;
   }
 
   ngOnInit() {
-    // Benutzer abonnieren und in currentUser speichern
-    // this.userService.currentUser$.subscribe(user => {
-    //   this.currentUser = user;
-    //   if (user) {
-    //     console.log('Angemeldeter Benutzer:', user);
-    //   }
-    // });
-  
+    this.sharedService.logoutContainerActive$.subscribe((isActive) => {
+      this.isLogoutContainerActive = isActive;
+    });
+  }
+
+  closeDialog() {
+    this.dialogRef.close();
   }
 
   addUser() {
@@ -53,16 +56,12 @@ export class DialogLogoutComponent implements OnInit {
   async logOut() {
     if (this.currentUser) {
       const userDocRef = doc(this.firestore, `users/${this.currentUser.userId}`);
-      // Prüfen, ob der Benutzername "Gast" ist
+
       if (this.currentUser.name === 'Gast') {
-        // Benutzer löschen, wenn es sich um einen Gast handelt
         await deleteDoc(userDocRef);
-        console.log('Gast-Nutzer wurde gelöscht');
       } else {
-        // Nur den Online-Status auf false setzen, wenn es kein Gast ist
         await updateDoc(userDocRef, { online: false });
       }
-
       this.dialogRef.close();
     } else {
       console.error('Kein Benutzer zum Ausloggen gefunden');

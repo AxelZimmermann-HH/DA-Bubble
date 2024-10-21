@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { SharedService } from '../../services/shared.service';
 import { DialogLogoutComponent } from './dialog-logout/dialog-logout.component';
 import { CommonModule } from '@angular/common';
@@ -20,12 +20,17 @@ import { ActivatedRoute } from '@angular/router';
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent implements OnInit {
-
+  isMobile = false;
   currentUser: User | null = null;
   userData: any = [];
   userId!: string;
 
   constructor(public dialog: MatDialog, private sharedService: SharedService, public userService: UserService, public firestore: Firestore, public route: ActivatedRoute) { }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.isMobile = window.innerWidth <= 500;
+  }
 
   ngOnInit() {
     // Benutzer abonnieren und in currentUser speichern
@@ -35,6 +40,9 @@ export class HeaderComponent implements OnInit {
     //     console.log('Angemeldeter Benutzer:', user);
     //   }
     // });
+
+    this.isMobile = window.innerWidth <= 500;
+
 
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
@@ -80,6 +88,8 @@ export class HeaderComponent implements OnInit {
   }
 
   openDialogLogout() {
+    console.log('go');
+    
     this.dialog.open(DialogLogoutComponent, {
       data: { user: this.currentUser }
     })

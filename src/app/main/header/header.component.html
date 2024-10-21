@@ -15,7 +15,7 @@
             <p>{{ currentUser.name }}</p>
             @if (userService.isNumber(currentUser.avatar)) {
                 <!-- <img class="avatar" [src]="'./assets/avatars/avatar_' + currentUser.avatar + '.png'" alt="User Avatar"> -->
-                <div class="avatar-container">
+                <div class="avatar-container" (click)="isMobile ? openDialogLogout() : null">
                     <img class="avatar" [src]="'./assets/avatars/avatar_' + currentUser.avatar + '.png'" alt="User Avatar">
                     <div class="online-point"></div>
                 </div>

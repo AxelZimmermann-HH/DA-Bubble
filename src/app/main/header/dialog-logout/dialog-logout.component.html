@@ -1,4 +1,5 @@
-<div class="logout-container">
+<div class="logout-container" >
+    <div (click)="closeDialog()" class="close-mobile" ></div>
     <a (click)="openProfil()">Profil</a>
     <a href="#" [routerLink]="['/login']" (click)="logOut()">Logout</a>
 </div>
