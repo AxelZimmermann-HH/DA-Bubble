@@ -464,7 +464,8 @@ export class ChannelComponent {
       timestamp: Timestamp.now(),
       fullDate: currentDate.toDateString(),
       answers: [],
-      fileUrl: this.selectedFile ? this.fileUrl : undefined
+      fileUrl: this.selectedFile ? this.fileUrl : undefined,
+      fileType: this.selectedFile ? this.selectedFile.type : undefined // Speichern des Dateityps
     };
 
     const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
@@ -493,20 +494,17 @@ export class ChannelComponent {
     });
   }
 
-
   openDialogEditChannel(channel: any) {
     this.dialog.open(DialogEditChannelComponent, { data: channel });
   }
 
   onThreadClosed() {
     this.isThreadOpen = false;
-
   }
 
   openThread(message: Message) {
     this.isThreadOpen = true;
     this.selectedMessage = message;
-
   }
 
   getAnswers(messageId: string) {
@@ -549,8 +547,6 @@ export class ChannelComponent {
     message.editedText = message.text;
   }
 
-
-
   toggleEmojiPicker() {
     this.showEmojiPicker = !this.showEmojiPicker
   }
@@ -570,10 +566,8 @@ export class ChannelComponent {
     }
   }
 
-  addEmojiToMessageReaction(event: any) {
-  }
-
-
+  // addEmojiToMessageReaction(event: any) {
+  // }
 
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
@@ -587,6 +581,7 @@ export class ChannelComponent {
       }
     }
   }
+
   setFileUrl(file: File) {
     this.selectedFile = file; // Setzt die ausgewählte Datei
     const objectUrl = URL.createObjectURL(file);
@@ -596,6 +591,11 @@ export class ChannelComponent {
   getSafeUrl(url: string) {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
+
+  getFileNameFromUrl(fileUrl: string): string {
+    return fileUrl.split('/').pop() || 'Datei';
+  }
+
   closePreview() {
     this.fileUrl = null;
     this.selectedFile = null;

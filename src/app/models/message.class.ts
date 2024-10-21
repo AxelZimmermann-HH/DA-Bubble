@@ -8,6 +8,7 @@ export interface MessageData {
   answers?: Answer[];
   emojis?: string[];
   fileUrl?: string;
+  fileType?: string;
 }
 
 export class Message {
@@ -19,6 +20,7 @@ export class Message {
   answers: Answer[] = []; 
   emojis: string[] = [];
   fileUrl?: string;
+  fileType?: string;
   isEditing: boolean = false;
   editedText: string = '';
 
@@ -33,6 +35,7 @@ export class Message {
     this.answers = Array.isArray(obj.answers) ? obj.answers.map(a => new Answer(a)) : []; // Initialize answers
     this.emojis = obj.emojis || []
     this.fileUrl = obj.fileUrl || '';
+    this.fileType = obj.fileType || '';
     this.editedText = this.text; 
 }
 
@@ -79,7 +82,8 @@ public getLastAnswerTimestamp():string|any {
       fullDate: this.fullDate,
       answers: this.answers,
       emojis:this.emojis,
-      fileUrl: this.fileUrl
+      fileUrl: this.fileUrl,
+      fileType: this.fileType
     };
   }
 }

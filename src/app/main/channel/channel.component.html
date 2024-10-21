@@ -41,21 +41,13 @@
                                         <p class="time">{{ message.formatTimestamp() }}</p>
                                     </div>
                                     <div class="speech-bubble"  [ngClass]="{'b-radius': isCurrentUser(message.user)}">
-                                        {{ message.text }}
-                                        <!-- <a *ngIf="message.fileUrl" [href]="getSafeUrl(message.fileUrl)" target="_blank">Anhang öffnen</a> -->
-                                        <div *ngIf="message.fileUrl" class="file-preview">
-                                            <!-- Vorschau für Bilder -->
-                                            <img *ngIf="message.fileUrl.type.startsWith('image/')" [src]="getSafeUrl(message.fileUrl)" alt="Image Preview" style="max-width: 100px; max-height: 100px;">
-                                            
-                                            <!-- Vorschau für PDF-Dateien -->
-                                            <iframe *ngIf="message.fileUrl.type === 'application/pdf'" [src]="getSafeUrl(message.fileUrl)" width="200" height="200" style="border: none;"></iframe>
-                                            
-                                            <!-- Vorschau für andere Dateitypen -->
-                                            <span *ngIf="!message.fileUrl.type.startsWith('image/') && message.fileUrl.type !== 'application/pdf'">
-                                              {{ message.fileUrl.name }}
-                                            </span>
-                                          </div>
-
+                                       
+                                        <div> {{ message.text }} 
+                                            <div *ngIf="message.fileUrl">
+                                                <a *ngIf="message.fileUrl" [href]="getSafeUrl(message.fileUrl)" target="_blank">
+                                                Anhang öffnen</a></div>
+                                        </div>
+                                       
                                     </div>
                                     <div class="label-answers" (click)="openThread(message)"
                                         *ngIf="message.answers.length > 0">
