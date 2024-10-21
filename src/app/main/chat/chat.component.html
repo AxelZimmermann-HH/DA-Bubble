@@ -478,13 +478,14 @@
 
 
                                         </div>
-
-                                        @if (userService.isNumber(currentUser.avatar)) {
+                                        <img class="avatar" [src]="getAvatarForUser(currentUser.name)"
+                                        alt="">
+                                        <!-- @if (userService.isNumber(currentUser.avatar)) {
                                         <img class="avatar" src="\assets\avatars\avatar_{{currentUser.avatar}}.png"
                                             alt="">
                                         } @else {
                                         <img class="avatar" src={{currentUser.avatar}} alt="">
-                                        }
+                                        } -->
                                     </div>
 
                                 </td>
@@ -514,7 +515,7 @@
         @if (selectedFile) { <!-- Datei-Anzeige -->
         <div class="file-upload-container">
 
-            <img *ngIf="this.selectedFileType == 'image/jpeg' || this.selectedFileType  == 'image/png'" style="height: 60px; width: 40%;" [src]="fileDownloadUrl" alt="">
+            <img *ngIf="this.selectedFileType == 'image/jpeg' || this.selectedFileType  == 'image/png'" style="height: 60px; width: 40%;object-fit: contain;" [src]="fileDownloadUrl" alt="">
 
             <iframe *ngIf="this.selectedFileType == 'application/pdf' && safeUrl" [src]="this.safeUrl" type="application/pdf" width="40%" height="60px">
                 Dein Browser unterstützt keine PDF-Anzeige

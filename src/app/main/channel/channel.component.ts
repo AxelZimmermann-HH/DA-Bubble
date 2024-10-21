@@ -10,15 +10,16 @@ import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-ch
 import { AddChannelUserComponent } from './add-channel-user/add-channel-user.component';
 import { Answer } from '../../models/answer.class';
 import { ActivatedRoute } from '@angular/router';
-import { addDoc, collection, doc, Firestore, getDoc, getDocs, onSnapshot, orderBy, query, Timestamp, updateDoc, where } from '@angular/fire/firestore';
+import { addDoc, collection, doc, Firestore, getDocs, onSnapshot, orderBy, query, Timestamp, updateDoc, where } from '@angular/fire/firestore';
 import { UserService } from '../../services/user.service';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { ChatComponent } from "../chat/chat.component";
 import { DialogAddUserComponent } from '../../dialog-add-user/dialog-add-user.component';
 import { ChatService } from '../../services/chat.service';
 import { FormsModule } from '@angular/forms';
-import { ThreadService } from '../../services/thread.service';
 import { SearchService } from '../../services/search.service';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { getDownloadURL, getStorage, ref, uploadBytes } from '@angular/fire/storage';
 
 @Component({
   selector: 'app-channel',
@@ -62,7 +63,9 @@ export class ChannelComponent {
   filteredUsers: User[] = [];
   showAutocomplete: boolean = false;
   selectedUser: User | null = null;
-  // filteredResults: (User | Channel)[] = [];
+
+  fileUrl: SafeResourceUrl | null = null;
+  selectedFile: File | null = null;
 
   emailPattern: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   showEmojiPicker: boolean = false;
@@ -81,7 +84,8 @@ export class ChannelComponent {
     public userService: UserService,
     private route: ActivatedRoute,
     public chatService: ChatService,
-    public searchService: SearchService
+    public searchService: SearchService,
+    private sanitizer: DomSanitizer
   ) {
     this.subscribeToSearch();
     this.route.params.subscribe(params => {
@@ -151,7 +155,7 @@ export class ChannelComponent {
   onInput(event: any) {
     const searchTerm = event.target.value;
     this.searchService.showAutocomplete = true;
-  
+
     if (searchTerm.startsWith('#')) {
       const query = searchTerm.slice(1).toLowerCase();
       this.searchService.filterChannels(this.channelData, query);
@@ -165,7 +169,7 @@ export class ChannelComponent {
       this.searchService.filteredUsers = [];
     }
   }
-  
+
   selectValue(value: any) {
     console.log('value ausgewählt:', value);
 
@@ -267,7 +271,8 @@ export class ChannelComponent {
           user: data['user'],
           timestamp: data['timestamp'],
           answers: data['answers'] || [],
-          emojis: data['emojis'] || []
+          emojis: data['emojis'] || [],
+          fileUrl: data['fileUrl'] || null // Hier wird fileUrl hinzugefügt
         }, doc.id);
       });
       const groupedMessages: { [date: string]: Message[] } = {};
@@ -388,10 +393,64 @@ export class ChannelComponent {
     console.log(`E-Mail an ${email}: ${message}`);
   }
 
+  // async sendMessage() {
+  //   if (this.newMessageText.trim() === '' && !this.selectedFile) {
+  //     return; // Don't send empty messages
+  //   }
+  //   const userName = this.findUserNameById(this.userId);
+  //   if (!userName) {
+  //     this.newMessageText = '';
+  //     return;
+  //   }
+
+  //   let fileUrl = '';
+
+  //   if (this.selectedFile) {
+  //     try {
+  //       // Datei hochladen
+  //       const storage = getStorage();
+  //       const storageRef = ref(storage, `files/${this.selectedFile.name}`);
+  //       const snapshot = await uploadBytes(storageRef, this.selectedFile);
+
+  //       // URL der hochgeladenen Datei abrufen
+  //       fileUrl = await getDownloadURL(snapshot.ref);
+  //       console.log('File URL:', fileUrl);
+  //     } catch (error) {
+  //       console.error('Fehler beim Hochladen der Datei:', error);
+  //       return; // Datei konnte nicht hochgeladen werden, Nachricht nicht senden
+  //     }
+  //   }
+
+
+  //   const currentDate = new Date();
+  //   const messageData = {
+  //     text: this.newMessageText,
+  //     user: userName, // Use the found username
+  //     timestamp: Timestamp.now(),
+  //     fullDate: currentDate.toDateString(),
+  //     answers: [],
+  //     fileUrl: fileUrl
+  //   };
+
+  //   const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
+  //   addDoc(messagesCollection, messageData)
+  //     .then(() => {
+  //       this.newMessageText = '';
+  //       this.selectedFile = null;
+  //       this.fileUrl = null;
+  //     })
+  //     .catch((error) => {
+  //       console.error('Fehler beim Senden der Nachricht:', error);
+  //     });
+  // }
+
+
   sendMessage() {
-    if (this.newMessageText.trim() === '') {
-      return; // Don't send empty messages
+    // Überprüfen, ob weder eine Nachricht noch eine Datei vorhanden ist
+    if (this.newMessageText.trim() === '' && !this.selectedFile) {
+      return; // Wenn keine Nachricht und keine Datei ausgewählt wurde, abbrechen
     }
+
     const userName = this.findUserNameById(this.userId);
     if (!userName) {
       this.newMessageText = '';
@@ -399,18 +458,20 @@ export class ChannelComponent {
     }
 
     const currentDate = new Date();
-    const messageData = {
+    const messageData: any = {
       text: this.newMessageText,
-      user: userName, // Use the found username
+      user: userName,
       timestamp: Timestamp.now(),
       fullDate: currentDate.toDateString(),
-      answers: []
+      answers: [],
+      fileUrl: this.selectedFile ? this.fileUrl : undefined
     };
 
     const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
     addDoc(messagesCollection, messageData)
-      .then((docRef) => {
+      .then(() => {
         this.newMessageText = '';
+        this.fileUrl = null; 
       })
       .catch((error) => {
         console.error('Fehler beim Senden der Nachricht:', error);
@@ -514,6 +575,31 @@ export class ChannelComponent {
 
 
 
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+      if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+        const objectUrl = URL.createObjectURL(file);
+        this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
+      } else {
+        this.fileUrl = null; // Keine Vorschau für nicht unterstützte Dateitypen
+      }
+    }
+  }
+  setFileUrl(file: File) {
+    this.selectedFile = file; // Setzt die ausgewählte Datei
+    const objectUrl = URL.createObjectURL(file);
+    this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
+    console.log('Selected file:', this.selectedFile); // Debugging: Protokolliere die ausgewählte Datei
+  }
+  getSafeUrl(url: string) {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+  closePreview() {
+    this.fileUrl = null;
+    this.selectedFile = null;
+  }
 
 }
 
