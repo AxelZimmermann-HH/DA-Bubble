@@ -41,16 +41,28 @@
                                         <p class="time">{{ message.formatTimestamp() }}</p>
                                     </div>
                                     <div class="speech-bubble" [ngClass]="{'b-radius': isCurrentUser(message.user)}">
-
-                                        <div> {{ message.text }}
-                                            <div *ngIf="message.fileUrl">
-                                                <a *ngIf="message.fileUrl" [href]="getSafeUrl(message.fileUrl)"
-                                                    target="_blank">
-                                                    Anhang öffnen</a>
+                                       
+                                            <div>
+                                                {{ message.text }}
+                                               <div *ngIf="message.fileUrl">
+                                                <img src="{{message.fileUrl}}" alt="" style="width: 50px;height: auto;">
                                             </div>
-                                        </div>
 
+                                                    <div *ngIf="message.fileType === 'application/pdf'">
+                                                        <iframe src="{{message.fileUrl}}" style="width: 50px; height: auto;" frameborder="0">
+                                                            PDF kann nicht angezeigt werden.
+                                                        </iframe>
+                                                    </div>
+                                                    <a *ngIf="!message.fileType.startsWith('image/') && message.fileType !== 'application/pdf'" 
+                                                       [href]="getSafeUrl(message.fileUrl)" target="_blank">
+                                                        Anhang öffnen
+                                                    </a>
+                                                
+                                           
+                                        </div>
                                     </div>
+                                    
+                                    
                                     <div class="label-answers" (click)="openThread(message)"
                                         *ngIf="message.answers.length > 0">
                                         {{ message.answers.length }} Antworten
@@ -95,45 +107,48 @@
 
         <div class="custom-input">
             <textarea placeholder="Nachricht an #{{selectedChannel.channelName}}" class="text-area"
-                [(ngModel)]="newMessageText"></textarea>
-
-            <div *ngIf="selectedFile"
-                style="position: relative; background-color: #797EF3; color: #FFFFFF; display: flex; width: fit-content; gap: 16px;  border-radius: 30px; padding: 12px 25px; margin: 0 20px">
-                <div class="file-preview" style="display: flex; align-items: center;flex-direction: column;">
-                    <!-- Vorschau von Bildern -->
-                    <div *ngIf="selectedFile.type.startsWith('image/') && fileUrl">
-                        <img [src]="fileUrl" alt="Image Preview" class="image-preview"
-                            style="max-width: 100px; max-height: 100px;">
-                    </div>
-                    <!-- Vorschau von PDF-Dateien -->
-                    <div *ngIf="selectedFile.type === 'application/pdf' && fileUrl">
-                        <iframe [src]="fileUrl" width="200" height="200" style="border: none;"></iframe>
-                    </div>
-                    <!-- Vorschau für nicht unterstützte Dateitypen -->
-                    <div *ngIf="!fileUrl || !selectedFile.type.startsWith('image/')">
-                        <p style="margin: 0;">{{ selectedFile.name }}</p>
-                    </div>
-                </div>
-                <!-- Close-Button -->
-                <img src="./../../../assets/icons/close.png" alt="Close" class="close-icon" (click)="closePreview()"
-                    style="cursor: pointer;">
+                      [(ngModel)]="newMessageText"></textarea>
+          
+            <!-- Vorschau der ausgewählten Datei -->
+            <div *ngIf="selectedFile" style="position: relative; background-color: #797EF3; color: #FFFFFF; display: flex; width: fit-content; gap: 16px; border-radius: 30px; padding: 12px 25px; margin: 0 20px">
+              <!-- Datei-Vorschau für Bilder -->
+              <div *ngIf="selectedFile.type.startsWith('image/') && fileUrl" class="file-preview" style="display: flex; align-items: center; flex-direction: column;">
+                <img [src]="fileUrl" alt="Image Preview" class="image-preview" style="max-width: 100px; max-height: 100px;">
+              </div>
+          
+              <!-- Datei-Vorschau für PDFs -->
+              <div *ngIf="selectedFile.type === 'application/pdf' && fileUrl" class="file-preview" style="display: flex; align-items: center; flex-direction: column;">
+                <iframe [src]="fileUrl" width="200" height="200" style="border: none;"></iframe>
+              </div>
+          
+              <!-- Anzeige für andere Dateitypen -->
+              <div *ngIf="!fileUrl || (!selectedFile.type.startsWith('image/') && selectedFile.type !== 'application/pdf')" class="file-preview" style="display: flex; align-items: center; flex-direction: column;">
+                <p>{{ selectedFile.name }}</p>
+              </div>
+          
+              <!-- Schließen-Button für Datei-Vorschau -->
+              <img src="./../../../assets/icons/close.png" alt="Close" class="close-icon" (click)="closePreview()" style="cursor: pointer;">
             </div>
-
+          
+            <!-- Datei hochladen und Emoji hinzufügen -->
             <div class="add-reaction">
-                <div class="reactions">
-                    <img src="./assets/icons/add-1.png" alt="" class="add-icon" (click)="fileInput.click()">
-                    <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)">
-
-
-                    <div style="height: 35px;width: 1px;background-color:  rgba(104, 104, 104, 1);"></div>
-                    <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji"
-                        (click)="toggleEmojiPicker()">
-                    <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail">
-                </div>
+              <div class="reactions">
+                <img src="./assets/icons/add-1.png" alt="Datei hinzufügen" class="add-icon" (click)="fileInput.click()">
+                <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)">
+                
+                <!-- Trennlinie -->
+                <div style="height: 35px;width: 1px;background-color: rgba(104, 104, 104, 1);"></div>
+                
+                <!-- Emoji hinzufügen -->
+                <img src="./assets/icons/sentiment_satisfied-1.png" alt="Emoji hinzufügen" class="add-emoji" (click)="toggleEmojiPicker()">
                 <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"></emoji-mart>
+                
+                <!-- Nachricht senden -->
                 <img src="./assets/icons/Send icon.png" (click)="sendMessage()" class="send-icon">
+              </div>
             </div>
-        </div>
+          </div>
+          
 
 
     </div>

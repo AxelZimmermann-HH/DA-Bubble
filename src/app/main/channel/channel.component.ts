@@ -21,6 +21,7 @@ import { SearchService } from '../../services/search.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { getDownloadURL, getStorage, ref, uploadBytes } from '@angular/fire/storage';
 
+
 @Component({
   selector: 'app-channel',
   standalone: true,
@@ -86,7 +87,7 @@ export class ChannelComponent {
     private route: ActivatedRoute,
     public chatService: ChatService,
     public searchService: SearchService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
   ) {
     this.subscribeToSearch();
     this.route.params.subscribe(params => {
@@ -471,39 +472,61 @@ onInput(event: any): void {
   // }
 
 
-  sendMessage() {
+  async sendMessage() {
     // Überprüfen, ob weder eine Nachricht noch eine Datei vorhanden ist
     if (this.newMessageText.trim() === '' && !this.selectedFile) {
       return; // Wenn keine Nachricht und keine Datei ausgewählt wurde, abbrechen
     }
-
+  
     const userName = this.findUserNameById(this.userId);
     if (!userName) {
       this.newMessageText = '';
       return;
     }
-
+  
     const currentDate = new Date();
+    let fileUrl = null; // Variable für die Datei-URL
+  
+    if (this.selectedFile) {
+      // Wenn eine Datei ausgewählt ist, lade sie zu Firebase Storage hoch
+      const storage = getStorage(); // Initialisiere Firebase Storage
+      const filePath = `channels/${this.selectedChannelId}/files/${this.selectedFile.name}`;
+      const storageRef = ref(storage, filePath); // Erstelle eine Referenz zu dem Speicherort
+  
+      try {
+        // Datei hochladen
+        await uploadBytes(storageRef, this.selectedFile);
+        // URL der hochgeladenen Datei abrufen
+        fileUrl = await getDownloadURL(storageRef);
+      } catch (error) {
+        console.error('Fehler beim Hochladen der Datei:', error);
+        return; // Wenn das Hochladen fehlschlägt, brich den Vorgang ab
+      }
+    }
+  
+    // Nachrichtendaten erstellen
     const messageData: any = {
       text: this.newMessageText,
       user: userName,
       timestamp: Timestamp.now(),
       fullDate: currentDate.toDateString(),
       answers: [],
-      fileUrl: this.selectedFile ? this.fileUrl : undefined,
-      fileType: this.selectedFile ? this.selectedFile.type : undefined // Speichern des Dateityps
+      ...(fileUrl && { fileUrl, fileType: this.selectedFile?.type }) // Datei-URL und Dateityp speichern, wenn vorhanden
     };
-
+  
     const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
     addDoc(messagesCollection, messageData)
       .then(() => {
         this.newMessageText = '';
         this.fileUrl = null;
+        this.selectedFile = null;
       })
       .catch((error) => {
         console.error('Fehler beim Senden der Nachricht:', error);
       });
   }
+  
+  
 
   openUsersList(channelId: string) {
     this.dialog.open(AddChannelUserComponent, {
@@ -598,15 +621,19 @@ onInput(event: any): void {
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
     if (file) {
-      this.selectedFile = file;
+      this.selectedFile = file;  // Speichere die Datei
+      const objectUrl = URL.createObjectURL(file);  // Erstelle eine Objekt-URL
+      
+      // Erstelle eine sichere URL für die Vorschau von Bildern und PDFs
       if (file.type.startsWith('image/') || file.type === 'application/pdf') {
-        const objectUrl = URL.createObjectURL(file);
         this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
       } else {
-        this.fileUrl = null; // Keine Vorschau für nicht unterstützte Dateitypen
+        // Für andere Dateitypen kann die Vorschau weggelassen werden
+        this.fileUrl = null; // Keine Vorschau
       }
     }
   }
+  
 
   setFileUrl(file: File) {
     this.selectedFile = file; // Setzt die ausgewählte Datei
