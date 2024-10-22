@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { User } from '../models/user.class';
-import { doc, Firestore, getDoc, updateDoc } from '@angular/fire/firestore';
+import { doc, Firestore, getDoc, updateDoc, collection, getDocs } from '@angular/fire/firestore';
 
 
 @Injectable({
@@ -11,7 +11,27 @@ export class UserService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);  // Benutzer als Observable
   currentUser$ = this.currentUserSubject.asObservable();  // Observable, auf das andere Komponenten zugreifen können
   userData: User[] = [];
+
   constructor(private firestore: Firestore) { }
+
+  async loadUsers(): Promise<void> {
+    try {
+      const usersRef = collection(this.firestore, 'users');
+      const snapshot = await getDocs(usersRef);
+      this.userData = snapshot.docs.map(doc => new User(doc.data()));
+    } catch (error) {
+      console.error('Fehler beim Laden der Benutzer:', error);
+    }
+  }
+
+  getAvatar(user: User): any {
+    if (this.isNumber(user.avatar)) {
+      return './assets/avatars/avatar_' + user.avatar + '.png';  // Local asset avatar
+    } else if (user.avatar) {
+      return user.avatar;  // External URL avatar
+    }
+    return './assets/avatars/avatar_0.png';  // Default avatar when user not found
+  }
 
   setUser(user: User) {
     this.currentUserSubject.next(user);

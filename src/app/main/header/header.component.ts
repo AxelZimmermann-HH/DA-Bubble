@@ -33,13 +33,6 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Benutzer abonnieren und in currentUser speichern
-    // this.userService.currentUser$.subscribe(user => {
-    //   this.currentUser = user;
-    //   if (user) {
-    //     console.log('Angemeldeter Benutzer:', user);
-    //   }
-    // });
 
     this.isMobile = window.innerWidth <= 500;
 

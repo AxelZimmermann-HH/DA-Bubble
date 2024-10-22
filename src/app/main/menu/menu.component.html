@@ -79,7 +79,11 @@
                     <img class="user-avatar" [src]="getAvatarForUser(user.name)" alt="">
                     <div [ngClass]="{'offline-point': !user.online}" class="online-point"></div>
                 </div>
-                <span class="header3">{{user.name}}</span>
+                <span class="header3">{{user.name}}
+                    @if (user.name === currentUser?.name) {
+                        (Du)
+                    }
+                </span>
             </div>
         </div>
 

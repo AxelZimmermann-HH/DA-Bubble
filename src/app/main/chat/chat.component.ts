@@ -1,4 +1,4 @@
-import { AfterViewChecked, AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
 import { CommonModule } from '@angular/common';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -30,6 +30,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
   currentUserId: string = '';
   user = new User();
   chat: any;
+  userList: User[] = [];
 
   @ViewChild('chatContainer') chatContainer!: ElementRef;
 
@@ -77,7 +78,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
       }
     });
 
-
     // Abonniere aktuellen Benutzer
     // this.userService.currentUser$.subscribe(user => {
     //   this.currentUser = user;
@@ -110,6 +110,8 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     });
   }
 
+
+  
 
   //sendet neue DM an den Chat Service
   async sendDirectMessage() {
@@ -286,6 +288,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     this.showEmojis = !this.showEmojis;
   }
 
+
   onEmojiSelect(event: any) {
     console.log('gewähltes emojii:', event)
     const emoji = event.emoji.native; // Das ausgewählte Emoji
@@ -294,6 +297,32 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     this.showEmojis = false;
   }
 
+  //@ Users
+  showUsers: boolean = false;
+  
+  toggleUserList() {
+    if (this.userList.length === 0) {
+      this.userService.loadUsers().then(() => {
+        this.userList = this.userService.userData;
+        this.showUsers = !this.showUsers;
+      }).catch(error => {
+        console.error('Fehler beim Laden der Benutzer:', error);
+      });
+    } else {
+      this.showUsers = !this.showUsers;
+    }
+  }
+
+  // Klick-Event auf das gesamte Dokument
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    const isInsideUsersDialog = target.closest('.users-dialog');
+    const isToggleButton = target.classList.contains('add-mail');
+    if (!isInsideUsersDialog && !isToggleButton && this.showUsers) {
+      this.toggleUserList();
+    }
+  }
 
   //Reactions
   //if: wenn der aktuelle Nutzer noch nicht die angeklickte Reaktion gewählt hat, wird er dieser Reaktion hinzugefügt
