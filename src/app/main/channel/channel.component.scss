@@ -415,21 +415,25 @@ td:hover .b-radius {
             cursor: pointer;
             border: unset;
         }
+
         .saveBtn {
             background: rgba(68, 77, 242, 1);
             color: rgba(255, 255, 255, 1);
-            &:hover{
-                background:rgba(68, 77, 242, 0.61);
+
+            &:hover {
+                background: rgba(68, 77, 242, 0.61);
             }
         }
+
         .cancelBtn {
             border: 1px solid rgba(121, 126, 243, 1);
             color: rgba(68, 77, 242, 1);
             background-color: rgba(255, 255, 255, 1);
-            &:hover{
-                background:rgba(68, 77, 242, 0.61);
+
+            &:hover {
+                background: rgba(68, 77, 242, 0.61);
                 color: #FFFFFF;
-                border:unset;
+                border: unset;
             }
         }
     }
@@ -453,13 +457,15 @@ td:hover .b-radius {
     border-radius: 20px;
     resize: none;
     box-sizing: border-box;
+
     &:focus {
         outline: none;
-        border:1px solid #797EF3 ;;
+        border: 1px solid #797EF3;
+        ;
     }
 }
 
-emoji-mart{
+emoji-mart {
     position: absolute;
     bottom: 0;
 }
@@ -487,20 +493,21 @@ emoji-mart{
     }
 }
 
-.searchListe{
+.searchListe {
     list-style: none;
     display: flex;
     flex-direction: column;
     gap: 16px;
     width: auto;
-    height: 150px;
-    background: #ffff;
-    border: 1px solid;
-    border-radius: 15px;
-    padding-inline-start: 0;
     padding: 10px;
     overflow-y: scroll;
     scrollbar-width: none;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 1);
+    border: 1px solid rgba(173, 176, 217, 1);
+    font-size: 18px;
+    font-weight: 400;
+    height: auto;
 }
 
 .close-icon {
@@ -510,8 +517,9 @@ emoji-mart{
     background-color: #ECEEFE;
     border-radius: 50%;
     box-sizing: content-box;
+
     &:hover {
         cursor: pointer;
         content: url('./../../../assets/icons/close-1.png');
     }
-  }
+}

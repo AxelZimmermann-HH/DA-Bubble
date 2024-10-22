@@ -12,36 +12,46 @@ export class SearchService {
     private filteredUsersSubject = new BehaviorSubject<User[]>([]);
     filteredUsers$ = this.filteredUsersSubject.asObservable();
 
-    filteredChannels: Channel[] = [];
-    filteredUsers: User[] = [];
-    showAutocomplete: boolean = false;
+    private filteredChannelsSubject = new BehaviorSubject<Channel[]>([]);
+    filteredChannels$ = this.filteredChannelsSubject.asObservable();
+
+    private showAutocompleteSubject = new BehaviorSubject<boolean>(false);
+    showAutocomplete$ = this.showAutocompleteSubject.asObservable();
 
     constructor() { }
 
     showAutocompleteList() {
-        this.showAutocomplete = true;
+        this.showAutocompleteSubject.next(true);
     }
 
     hideAutocompleteList() {
-        this.showAutocomplete = false;
+        this.showAutocompleteSubject.next(false);
     }
 
-
-    filterChannels(channels: any[], searchTerm: string) {
-        this.filteredChannels = channels.filter(channel =>
+    filterChannels(channels: Channel[], searchTerm: string) {
+        const filteredChannels = channels.filter(channel =>
             channel.channelName.toLowerCase().includes(searchTerm.toLowerCase())
         );
+        this.filteredChannelsSubject.next(filteredChannels);
     }
 
-    filterUsers(users: any[], searchTerm: string) {
-        this.filteredUsers = users.filter(user =>
-            user.name.toLowerCase().includes(searchTerm.toLowerCase())
+    filterUsers(users: User[], searchTerm: string) {
+        const filteredUsers = users.filter(user =>
+            user.name.toLowerCase().includes(searchTerm.toLowerCase()) // Filtere nach Benutzernamen
         );
+        this.filteredUsersSubject.next(filteredUsers);
     }
 
-    filterEmails(users: any[], searchTerm: string) {
-        this.filteredUsers = users.filter(user =>
-            user.mail.includes(searchTerm)
+    filterEmails(users: User[], searchTerm: string) {
+        const filteredUsers = users.filter(user =>
+            user.mail.toLowerCase().includes(searchTerm.toLowerCase()) // Filtere E-Mails
         );
+        this.filteredUsersSubject.next(filteredUsers); // Gefilterte Benutzer aktualisieren
+    }
+
+    clearFilters() {
+        this.filteredUsersSubject.next([]);
+        this.filteredChannelsSubject.next([]);
+        this.hideAutocompleteList();
     }
 }

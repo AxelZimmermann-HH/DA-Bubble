@@ -62,12 +62,13 @@ export class ChannelComponent {
 
   filteredUsers: User[] = [];
   showAutocomplete: boolean = false;
+  filteredChannels: Channel[] = [];
   selectedUser: User | null = null;
 
   fileUrl: SafeResourceUrl | null = null;
   selectedFile: File | null = null;
 
-  emailPattern: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   showEmojiPicker: boolean = false;
 
   @Input() selectedChannelId: string | null = null;
@@ -95,13 +96,25 @@ export class ChannelComponent {
       this.findUserNameById(this.userId);
     });
     this.getAllChannels();
-    this.searchInput();
-
   }
 
   findUserNameById(userId: string) {
     const user = this.userData.find((user: User) => user.userId === userId);
     return user ? user.name : undefined;
+  }
+
+  ngOnInit() {
+    this.searchService.filteredUsers$.subscribe(users => {
+      this.filteredUsers = users;
+    });
+
+    this.searchService.filteredChannels$.subscribe(channels => {
+      this.filteredChannels = channels;
+    });
+
+    this.searchService.showAutocomplete$.subscribe(show => {
+      this.showAutocomplete = show;
+    });
   }
 
   ngOnChanges(): void {
@@ -142,51 +155,41 @@ export class ChannelComponent {
       }
     });
   }
-  searchInput() {
-    this.searchService.filteredUsers$.subscribe(users => {
-      this.filteredUsers = users;
-    });
 
-    this.searchService.filteredUsers$.subscribe(users => {
-      this.searchService.showAutocomplete = users.length > 0;
-    });
-  }
+onInput(event: any): void {
+  const searchTerm = event.target.value;
+  this.inputValue = searchTerm;
 
-  onInput(event: any) {
-    const searchTerm = event.target.value;
-    this.searchService.showAutocomplete = true;
-
-    if (searchTerm.startsWith('#')) {
-      const query = searchTerm.slice(1).toLowerCase();
-      this.searchService.filterChannels(this.channelData, query);
-    } else if (searchTerm.startsWith('@')) {
+  if (searchTerm.startsWith('@')) {
       const query = searchTerm.slice(1).toLowerCase();
       this.searchService.filterUsers(this.userData, query);
-    } else if (this.emailPattern.test(searchTerm)) {
-      this.searchService.filterEmails(this.userData, searchTerm);
+  } else if (searchTerm.startsWith('#')) {
+      const query = searchTerm.slice(1).toLowerCase();
+      this.searchService.filterChannels(this.channelData, query);
+  } else {
+      const query = searchTerm.toLowerCase();
+      this.searchService.filterEmails(this.userData, query);
+  }
+
+  this.searchService.showAutocompleteList();
+}
+  
+
+  selectValue(value: any): void {
+    if (this.inputValue.startsWith('@')) {
+        console.log('Benutzername ausgewählt:', value);
+        this.inputValue = '@' + value; 
+    } else if (this.inputValue.startsWith('#')) {
+        // Kanal ausgewählt
+        console.log('Kanalname ausgewählt:', value);
+        this.inputValue = '#' + value;
     } else {
-      this.searchService.filteredChannels = [];
-      this.searchService.filteredUsers = [];
+        // E-Mail-Adresse ausgewählt
+        console.log('E-Mail-Adresse ausgewählt:', value);
+        this.inputValue = value; 
     }
-  }
-
-  selectValue(value: any) {
-    console.log('value ausgewählt:', value);
-
-    if (typeof value === 'string' && value.startsWith('#')) {
-      this.inputValue = value;
-    } else if (typeof value === 'string') {
-
-      this.inputValue = `#${value}`;
-    } else if (value instanceof User) {
-      this.inputValue = `@${value.name}`;
-      this.selectedUser = value;
-    } else if (typeof value === 'string') {
-      this.inputValue = value;
-      this.selectedUser = null;
-    }
-    this.searchService.showAutocomplete = false;
-  }
+    this.searchService.hideAutocompleteList();
+}
 
 
   subscribeToSearch() {
@@ -309,82 +312,105 @@ export class ChannelComponent {
     return user ? user.name === currentUser : false;
   }
 
-  async sendNeuMessage() {
+  async sendNewMessage() {
     if (this.newMessageText.trim() === '') {
       return; // Leere Nachrichten nicht senden
     }
+
     const inputValue = this.inputValue.trim(); // Eingabewert
-    let messageData: any;
-    const userName = this.findUserNameById(this.userId); // Benutzername ermitteln
-    if (!userName) {
-      this.newMessageText = '';
-      return;
-    }
+    console.log('Neue Nachricht gesendet:', this.newMessageText);
 
-    const currentDate = new Date();
-    const timestamp = Timestamp.now();
-    if (inputValue.startsWith('#')) {
-
-      const channelName = inputValue.slice(1); // Kanalnamen ohne #
-      const channelRef = collection(this.firestore, 'channels');
-      const q = query(channelRef, where('channelName', '==', channelName));
-
-      getDocs(q).then(querySnapshot => {
-        if (!querySnapshot.empty) {
-          const channelDoc = querySnapshot.docs[0];
-          const channelId = channelDoc.id;
-          messageData = {
-            text: this.newMessageText,
-            user: userName,
-            timestamp,
-            fullDate: currentDate.toDateString(),
-            answers: []
-          };
-
-          const messagesCollection = collection(this.firestore, `channels/${channelId}/messages`);
-          addDoc(messagesCollection, messageData)
-            .then(() => {
-              this.newMessageText = '';
-            })
-            .catch((error) => {
-              console.error('Fehler beim Senden der Nachricht:', error);
-            });
-        } else {
-          console.error('Der angegebene Kanal existiert nicht:', channelName);
-          this.newMessageText = '';
-        }
-      }).catch((error) => {
-        console.error('Fehler beim Überprüfen des Kanals:', error);
-      });
+    if (this.emailPattern.test(inputValue)) { // Hier verwenden wir das Muster für E-Mails
+      console.log('Gesendet an Benutzer E-Mail:', inputValue);
     }
     else if (inputValue.startsWith('@')) {
-      const recipientUserName = inputValue.slice(1);
-      console.log('recipient user', recipientUserName);
-      const chatId = await this.chatService.createChatID(this.userId, recipientUserName);
-      if (!chatId) {
-        await this.chatService.createChatID(this.userId, recipientUserName);
-      }
-
-      const messageData = {
-        text: this.newMessageText,
-        user: userName,
-        timestamp: Timestamp.now(),
-        fullDate: new Date().toDateString(),
-        answers: []
-      };
-
-      // Speichere die Nachricht in der Firestore-Collection
-      addDoc(collection(this.firestore, 'chats', chatId, 'messages'), messageData)
-        .then(() => {
-          console.log('Nachricht erfolgreich gespeichert:', messageData);
-        })
-        .catch((error) => {
-          console.error('Fehler beim Speichern der Nachricht:', error);
-        });
-
-      // Nachricht zurücksetzen
-      this.newMessageText = '';
+      const userName = inputValue.slice(1).trim(); // Benutzername ohne '@'
+      console.log('Gesendet an Benutzer:', userName);
     }
+    else if (inputValue.startsWith('#')) {
+      const channelName = inputValue.slice(1).trim(); // Kanalname ohne '#'
+      console.log('Gesendet an Kanal:', channelName);
+
+    }
+    else {
+      console.log('Ungültiger Empfänger:', inputValue);
+    }
+ 
+    this.inputValue = '';
+    this.newMessageText = '';
+
+
+    // let messageData: any;
+    // const userName = this.findUserNameById(this.userId); // Benutzername ermitteln
+    // if (!userName) {
+    //   this.newMessageText = '';
+    //   return;
+    // }
+
+    // const currentDate = new Date();
+    // const timestamp = Timestamp.now();
+    // if (inputValue.startsWith('#')) {
+
+    //   const channelName = inputValue.slice(1); // Kanalnamen ohne #
+    //   const channelRef = collection(this.firestore, 'channels');
+    //   const q = query(channelRef, where('channelName', '==', channelName));
+
+    //   getDocs(q).then(querySnapshot => {
+    //     if (!querySnapshot.empty) {
+    //       const channelDoc = querySnapshot.docs[0];
+    //       const channelId = channelDoc.id;
+    //       messageData = {
+    //         text: this.newMessageText,
+    //         user: userName,
+    //         timestamp,
+    //         fullDate: currentDate.toDateString(),
+    //         answers: []
+    //       };
+
+    //       const messagesCollection = collection(this.firestore, `channels/${channelId}/messages`);
+    //       addDoc(messagesCollection, messageData)
+    //         .then(() => {
+    //           this.newMessageText = '';
+    //         })
+    //         .catch((error) => {
+    //           console.error('Fehler beim Senden der Nachricht:', error);
+    //         });
+    //     } else {
+    //       console.error('Der angegebene Kanal existiert nicht:', channelName);
+    //       this.newMessageText = '';
+    //     }
+    //   }).catch((error) => {
+    //     console.error('Fehler beim Überprüfen des Kanals:', error);
+    //   });
+    // }
+    // else if (inputValue.startsWith('@')) {
+    //   const recipientUserName = inputValue.slice(1);
+    //   console.log('recipient user', recipientUserName);
+    //   const chatId = await this.chatService.createChatID(this.userId, recipientUserName);
+    //   if (!chatId) {
+    //     await this.chatService.createChatID(this.userId, recipientUserName);
+    //   }
+
+    //   const messageData = {
+    //     text: this.newMessageText,
+    //     user: userName,
+    //     timestamp: Timestamp.now(),
+    //     fullDate: new Date().toDateString(),
+    //     answers: []
+    //   };
+
+    //   // Speichere die Nachricht in der Firestore-Collection
+    //   addDoc(collection(this.firestore, 'chats', chatId, 'messages'), messageData)
+    //     .then(() => {
+    //       console.log('Nachricht erfolgreich gespeichert:', messageData);
+    //     })
+    //     .catch((error) => {
+    //       console.error('Fehler beim Speichern der Nachricht:', error);
+    //     });
+
+    //   // Nachricht zurücksetzen
+    //   this.newMessageText = '';
+    // }
   }
 
 
@@ -472,7 +498,7 @@ export class ChannelComponent {
     addDoc(messagesCollection, messageData)
       .then(() => {
         this.newMessageText = '';
-        this.fileUrl = null; 
+        this.fileUrl = null;
       })
       .catch((error) => {
         console.error('Fehler beim Senden der Nachricht:', error);

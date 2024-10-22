@@ -40,14 +40,16 @@
                                         {{ message.user }}
                                         <p class="time">{{ message.formatTimestamp() }}</p>
                                     </div>
-                                    <div class="speech-bubble"  [ngClass]="{'b-radius': isCurrentUser(message.user)}">
-                                       
-                                        <div> {{ message.text }} 
+                                    <div class="speech-bubble" [ngClass]="{'b-radius': isCurrentUser(message.user)}">
+
+                                        <div> {{ message.text }}
                                             <div *ngIf="message.fileUrl">
-                                                <a *ngIf="message.fileUrl" [href]="getSafeUrl(message.fileUrl)" target="_blank">
-                                                Anhang öffnen</a></div>
+                                                <a *ngIf="message.fileUrl" [href]="getSafeUrl(message.fileUrl)"
+                                                    target="_blank">
+                                                    Anhang öffnen</a>
+                                            </div>
                                         </div>
-                                       
+
                                     </div>
                                     <div class="label-answers" (click)="openThread(message)"
                                         *ngIf="message.answers.length > 0">
@@ -140,26 +142,27 @@
     <ng-template #loadingTemplate>
         <div class="channel-container">
             <div class="channel-template-header">
-                <p style=" font-size: 24px; font-weight: 700;">Neue Nachricht</p>
+                <p style="font-size: 24px; font-weight: 700;">Neue Nachricht</p>
                 <input class="inputChannel" type="text" placeholder="An #channel, oder @jemand oder E-Mail Adresse"
-                    (input)="onInput($event)" [(ngModel)]="inputValue">
-                <div *ngIf="searchService.showAutocomplete">
-                    <ul class="searchListe">
-                        <li *ngFor="let channel of searchService.filteredChannels" (click)="selectValue(channel)">
-                            <div style="cursor: pointer;">{{ channel.channelName }}</div>
-                        </li>
-                        <li *ngFor="let user of searchService.filteredUsers" (click)="selectValue(user)">
-                            <div style="display: flex;align-items: center;gap: 8px;cursor: pointer;"
-                                *ngIf="inputValue.startsWith('@')">
-                                <img [src]="getAvatarForUser(user.name)" alt=""
-                                    style="width: 30px;height: 30px;border-radius:30px;"> {{ user.name }}
-                            </div>
-                        </li>
-                        <li *ngFor="let user of searchService.filteredUsers" (click)="selectValue(user.mail)">
-                            <div style="cursor: pointer;" *ngIf="!inputValue.startsWith('@')">{{ user.mail }}</div>
-                        </li>
-                    </ul>
-                </div>
+                    (input)="onInput($event)" [(ngModel)]="inputValue" />
+                    <div *ngIf="showAutocomplete" class="autocomplete-list">
+                        <ul class="searchListe"   >
+                            <li *ngFor="let channel of filteredChannels" (click)="selectValue(channel.channelName)">
+                                <div style="cursor: pointer;"*ngIf="inputValue.startsWith('#')" >{{ channel.channelName }}</div>
+                            </li>
+                            <li *ngFor="let user of filteredUsers" (click)="selectValue(user.name)" >
+                                <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" *ngIf="inputValue.startsWith('@')">
+                                    <img [src]="getAvatarForUser(user.name)" alt="" style="width: 30px; height: 30px; border-radius: 30px;" />
+                                    {{ user.name }}
+                                </div>
+                            </li>
+                            <li *ngFor="let user of filteredUsers" (click)="selectValue(user.mail)" >
+                              <div *ngIf="!inputValue.startsWith('@') && !inputValue.startsWith('#')"> {{user.mail}}</div>
+                            </li>
+                        </ul>
+                    </div>
+                    
+
             </div>
             <div class="custom-input">
                 <textarea placeholder="Starte eine neue Nachricht" class="text-area"
@@ -172,7 +175,7 @@
                             (click)="toggleEmojiPicker()">
                         <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail">
                     </div>
-                    <img src="./assets/icons/Send icon.png" (click)="sendNeuMessage()" class="send-icon">
+                    <img src="./assets/icons/Send icon.png" (click)="sendNewMessage()" class="send-icon">
                 </div>
                 <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"></emoji-mart>
             </div>
