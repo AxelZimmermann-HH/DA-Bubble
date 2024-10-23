@@ -520,7 +520,10 @@
     <!-- Nachrichteneingabe -->
     <div class="custom-input">
 
-        <textarea placeholder="Nachricht an {{ user.name }}" class="text-area" [formControl]="directMessage"></textarea>
+        
+        <textarea contenteditable="true" placeholder="Nachricht an {{ user.name }}" class="text-area" [formControl]="directMessage"></textarea>
+        <div class="name-container" #nameContainerRef *ngIf="hasNames">CC:</div>
+
 
         @if (selectedFile) { <!-- Datei-Anzeige -->
         <div class="file-upload-container">
@@ -581,7 +584,7 @@
             @if (showUsers) {
                 <div class="users-dialog">
                     @for (user of userList; track user.name) {
-                        <div class="user-item">
+                        <div class="user-item" (click)="insertName(user.name)">
                             <img class="further-user-avatar" [src]="this.userService.getAvatar(user)" alt="{{ user.name }}">
                             <span class="user-name">{{ user.name }}</span>
                         </div>

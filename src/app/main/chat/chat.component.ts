@@ -11,6 +11,8 @@ import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject, StorageRefe
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { doc, Firestore, updateDoc } from '@angular/fire/firestore';
+import { ChangeDetectorRef } from '@angular/core';
+
 
 @Component({
   selector: 'app-chat',
@@ -33,6 +35,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
   userList: User[] = [];
 
   @ViewChild('chatContainer') chatContainer!: ElementRef;
+  @ViewChild('nameContainerRef', { static: false }) nameContainerRef!: ElementRef;
 
 
   constructor(
@@ -42,6 +45,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     public route: ActivatedRoute,
     private sanitizer: DomSanitizer,
     public firestore: Firestore,
+    private cdr: ChangeDetectorRef
   ) { }
 
 
@@ -297,8 +301,12 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     this.showEmojis = false;
   }
 
-  //@ Users
+  // @ Users 
+
   showUsers: boolean = false;
+  hasNames: boolean = false;
+  selectedNames: string[] = [];
+
   
   toggleUserList() {
     if (this.userList.length === 0) {
@@ -323,6 +331,46 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
       this.toggleUserList();
     }
   }
+
+  insertName(userName: string) {
+    // Prüfe, ob der Name bereits im Array ist, um doppelte Einträge zu vermeiden
+    if (this.selectedNames.includes(userName)) {
+      return;
+    }
+  
+    this.selectedNames.push(userName);
+    this.hasNames = true;
+  
+    this.cdr.detectChanges();
+    this.updateNameContainer();
+  }
+  
+  updateNameContainer() {
+    if (!this.nameContainerRef?.nativeElement) {
+      console.error('nameContainerRef ist nicht definiert.');
+      return;
+    }
+  
+    const nameContainer = this.nameContainerRef.nativeElement as HTMLDivElement;
+    nameContainer.innerHTML = 'CC:';
+  
+    this.selectedNames.forEach(name => {
+      const nameDiv = document.createElement('div');
+      nameDiv.textContent = `@${name}`;
+      nameDiv.style.backgroundColor = '#535AF1'; 
+      nameDiv.style.color = 'white'; 
+      nameDiv.style.display = 'inline-block'; 
+      nameDiv.style.padding = '4px 8px'; 
+      nameDiv.style.borderRadius = '4px'; 
+      nameDiv.style.marginLeft = '8px'; 
+  
+    
+      nameContainer.appendChild(nameDiv);
+    });
+  }
+
+
+
 
   //Reactions
   //if: wenn der aktuelle Nutzer noch nicht die angeklickte Reaktion gewählt hat, wird er dieser Reaktion hinzugefügt
