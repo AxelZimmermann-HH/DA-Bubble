@@ -276,7 +276,9 @@ onInput(event: any): void {
           timestamp: data['timestamp'],
           answers: data['answers'] || [],
           emojis: data['emojis'] || [],
-          fileUrl: data['fileUrl'] || null // Hier wird fileUrl hinzugefügt
+          fileUrl: data['fileUrl'] || null ,
+          fileType: data['fileType'] || null,
+          fileName: data['fileName'] || null 
         }, doc.id);
       });
       const groupedMessages: { [date: string]: Message[] } = {};
@@ -339,79 +341,6 @@ onInput(event: any): void {
  
     this.inputValue = '';
     this.newMessageText = '';
-
-
-    // let messageData: any;
-    // const userName = this.findUserNameById(this.userId); // Benutzername ermitteln
-    // if (!userName) {
-    //   this.newMessageText = '';
-    //   return;
-    // }
-
-    // const currentDate = new Date();
-    // const timestamp = Timestamp.now();
-    // if (inputValue.startsWith('#')) {
-
-    //   const channelName = inputValue.slice(1); // Kanalnamen ohne #
-    //   const channelRef = collection(this.firestore, 'channels');
-    //   const q = query(channelRef, where('channelName', '==', channelName));
-
-    //   getDocs(q).then(querySnapshot => {
-    //     if (!querySnapshot.empty) {
-    //       const channelDoc = querySnapshot.docs[0];
-    //       const channelId = channelDoc.id;
-    //       messageData = {
-    //         text: this.newMessageText,
-    //         user: userName,
-    //         timestamp,
-    //         fullDate: currentDate.toDateString(),
-    //         answers: []
-    //       };
-
-    //       const messagesCollection = collection(this.firestore, `channels/${channelId}/messages`);
-    //       addDoc(messagesCollection, messageData)
-    //         .then(() => {
-    //           this.newMessageText = '';
-    //         })
-    //         .catch((error) => {
-    //           console.error('Fehler beim Senden der Nachricht:', error);
-    //         });
-    //     } else {
-    //       console.error('Der angegebene Kanal existiert nicht:', channelName);
-    //       this.newMessageText = '';
-    //     }
-    //   }).catch((error) => {
-    //     console.error('Fehler beim Überprüfen des Kanals:', error);
-    //   });
-    // }
-    // else if (inputValue.startsWith('@')) {
-    //   const recipientUserName = inputValue.slice(1);
-    //   console.log('recipient user', recipientUserName);
-    //   const chatId = await this.chatService.createChatID(this.userId, recipientUserName);
-    //   if (!chatId) {
-    //     await this.chatService.createChatID(this.userId, recipientUserName);
-    //   }
-
-    //   const messageData = {
-    //     text: this.newMessageText,
-    //     user: userName,
-    //     timestamp: Timestamp.now(),
-    //     fullDate: new Date().toDateString(),
-    //     answers: []
-    //   };
-
-    //   // Speichere die Nachricht in der Firestore-Collection
-    //   addDoc(collection(this.firestore, 'chats', chatId, 'messages'), messageData)
-    //     .then(() => {
-    //       console.log('Nachricht erfolgreich gespeichert:', messageData);
-    //     })
-    //     .catch((error) => {
-    //       console.error('Fehler beim Speichern der Nachricht:', error);
-    //     });
-
-    //   // Nachricht zurücksetzen
-    //   this.newMessageText = '';
-    // }
   }
 
 
@@ -419,58 +348,6 @@ onInput(event: any): void {
     // Implementiere hier deine Logik, um die E-Mail zu senden
     console.log(`E-Mail an ${email}: ${message}`);
   }
-
-  // async sendMessage() {
-  //   if (this.newMessageText.trim() === '' && !this.selectedFile) {
-  //     return; // Don't send empty messages
-  //   }
-  //   const userName = this.findUserNameById(this.userId);
-  //   if (!userName) {
-  //     this.newMessageText = '';
-  //     return;
-  //   }
-
-  //   let fileUrl = '';
-
-  //   if (this.selectedFile) {
-  //     try {
-  //       // Datei hochladen
-  //       const storage = getStorage();
-  //       const storageRef = ref(storage, `files/${this.selectedFile.name}`);
-  //       const snapshot = await uploadBytes(storageRef, this.selectedFile);
-
-  //       // URL der hochgeladenen Datei abrufen
-  //       fileUrl = await getDownloadURL(snapshot.ref);
-  //       console.log('File URL:', fileUrl);
-  //     } catch (error) {
-  //       console.error('Fehler beim Hochladen der Datei:', error);
-  //       return; // Datei konnte nicht hochgeladen werden, Nachricht nicht senden
-  //     }
-  //   }
-
-
-  //   const currentDate = new Date();
-  //   const messageData = {
-  //     text: this.newMessageText,
-  //     user: userName, // Use the found username
-  //     timestamp: Timestamp.now(),
-  //     fullDate: currentDate.toDateString(),
-  //     answers: [],
-  //     fileUrl: fileUrl
-  //   };
-
-  //   const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
-  //   addDoc(messagesCollection, messageData)
-  //     .then(() => {
-  //       this.newMessageText = '';
-  //       this.selectedFile = null;
-  //       this.fileUrl = null;
-  //     })
-  //     .catch((error) => {
-  //       console.error('Fehler beim Senden der Nachricht:', error);
-  //     });
-  // }
-
 
   async sendMessage() {
     // Überprüfen, ob weder eine Nachricht noch eine Datei vorhanden ist
@@ -511,7 +388,11 @@ onInput(event: any): void {
       timestamp: Timestamp.now(),
       fullDate: currentDate.toDateString(),
       answers: [],
-      ...(fileUrl && { fileUrl, fileType: this.selectedFile?.type }) // Datei-URL und Dateityp speichern, wenn vorhanden
+      ...(this.selectedFile && { 
+        fileUrl: fileUrl, // Korrekt: Verwende die fileUrl-Variable, die die tatsächliche URL als String enthält
+        fileType: this.selectedFile.type,
+        fileName: this.selectedFile.name 
+      })
     };
   
     const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);

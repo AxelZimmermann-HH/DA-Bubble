@@ -41,28 +41,31 @@
                                         <p class="time">{{ message.formatTimestamp() }}</p>
                                     </div>
                                     <div class="speech-bubble" [ngClass]="{'b-radius': isCurrentUser(message.user)}">
-                                       
-                                            <div>
-                                                {{ message.text }}
-                                               <div *ngIf="message.fileUrl">
-                                                <img src="{{message.fileUrl}}" alt="" style="width: 50px;height: auto;">
+                                        <div>
+                                            {{ message.text }}
+                                            <div *ngIf="message.fileUrl && message.fileType"
+                                                style="display: flex;flex-direction: column;gap :16px">
+                                                <!-- Image Preview -->
+                                                <div *ngIf="message.fileType.startsWith('image/')">
+                                                    <img [src]="getSafeUrl(message.fileUrl)" alt="Image Preview"
+                                                        style="width: 70px; height: auto; object-fit: contain;">
+                                                </div>
+                                                <!-- PDF Preview -->
+                                                <div *ngIf="message.fileType === 'application/pdf'">
+                                                    <iframe [src]="getSafeUrl(message.fileUrl)" width="200"
+                                                        height="70px" style="border: none;"></iframe>
+                                                </div>
+                                                <!-- Other File Types -->
+                                                <div
+                                                    *ngIf="!message.fileType.startsWith('image/') && message.fileType != 'application/pdf'">
+                                                    {{message.fileName}}</div>
+                                                <!-- Download Link -->
+                                                <a [href]="getSafeUrl(message.fileUrl)" class="open-file-button"
+                                                    target="_blank">Anhang öffnen</a>
                                             </div>
-
-                                                    <div *ngIf="message.fileType === 'application/pdf'">
-                                                        <iframe src="{{message.fileUrl}}" style="width: 50px; height: auto;" frameborder="0">
-                                                            PDF kann nicht angezeigt werden.
-                                                        </iframe>
-                                                    </div>
-                                                    <a *ngIf="!message.fileType.startsWith('image/') && message.fileType !== 'application/pdf'" 
-                                                       [href]="getSafeUrl(message.fileUrl)" target="_blank">
-                                                        Anhang öffnen
-                                                    </a>
-                                                
-                                           
                                         </div>
                                     </div>
-                                    
-                                    
+
                                     <div class="label-answers" (click)="openThread(message)"
                                         *ngIf="message.answers.length > 0">
                                         {{ message.answers.length }} Antworten
@@ -107,50 +110,56 @@
 
         <div class="custom-input">
             <textarea placeholder="Nachricht an #{{selectedChannel.channelName}}" class="text-area"
-                      [(ngModel)]="newMessageText"></textarea>
-          
+                [(ngModel)]="newMessageText"></textarea>
+
             <!-- Vorschau der ausgewählten Datei -->
-            <div *ngIf="selectedFile" style="position: relative; background-color: #797EF3; color: #FFFFFF; display: flex; width: fit-content; gap: 16px; border-radius: 30px; padding: 12px 25px; margin: 0 20px">
-              <!-- Datei-Vorschau für Bilder -->
-              <div *ngIf="selectedFile.type.startsWith('image/') && fileUrl" class="file-preview" style="display: flex; align-items: center; flex-direction: column;">
-                <img [src]="fileUrl" alt="Image Preview" class="image-preview" style="max-width: 100px; max-height: 100px;">
-              </div>
-          
-              <!-- Datei-Vorschau für PDFs -->
-              <div *ngIf="selectedFile.type === 'application/pdf' && fileUrl" class="file-preview" style="display: flex; align-items: center; flex-direction: column;">
-                <iframe [src]="fileUrl" width="200" height="200" style="border: none;"></iframe>
-              </div>
-          
-              <!-- Anzeige für andere Dateitypen -->
-              <div *ngIf="!fileUrl || (!selectedFile.type.startsWith('image/') && selectedFile.type !== 'application/pdf')" class="file-preview" style="display: flex; align-items: center; flex-direction: column;">
-                <p>{{ selectedFile.name }}</p>
-              </div>
-          
-              <!-- Schließen-Button für Datei-Vorschau -->
-              <img src="./../../../assets/icons/close.png" alt="Close" class="close-icon" (click)="closePreview()" style="cursor: pointer;">
+            <div *ngIf="selectedFile"
+                style="position: relative; background-color: #797EF3; color: #FFFFFF; display: flex; width: fit-content; gap: 16px; border-radius: 30px; padding: 12px 25px; margin: 0 20px">
+                <!-- Datei-Vorschau für Bilder -->
+                <div *ngIf="selectedFile.type.startsWith('image/') && fileUrl" class="file-preview"
+                    style="display: flex; align-items: center; flex-direction: column;">
+                    <img [src]="fileUrl" alt="Image Preview" class="image-preview"
+                        style="max-width: 100px; max-height: 100px;">
+                </div>
+
+                <!-- Datei-Vorschau für PDFs -->
+                <div *ngIf="selectedFile.type === 'application/pdf' && fileUrl" class="file-preview"
+                    style="display: flex; align-items: center; flex-direction: column;">
+                    <iframe [src]="fileUrl" width="200" height="200" style="border: none;"></iframe>
+                </div>
+
+                <!-- Anzeige für andere Dateitypen -->
+                <div *ngIf="!fileUrl || (!selectedFile.type.startsWith('image/') && selectedFile.type !== 'application/pdf')"
+                    class="file-preview" style="display: flex; align-items: center; flex-direction: column;">
+                    <p>{{ selectedFile.name }}</p>
+                </div>
+
+                <!-- Schließen-Button für Datei-Vorschau -->
+                <img src="./../../../assets/icons/close.png" alt="Close" class="close-icon" (click)="closePreview()"
+                    style="cursor: pointer;">
             </div>
-          
+
             <!-- Datei hochladen und Emoji hinzufügen -->
             <div class="add-reaction">
-              <div class="reactions">
-                <img src="./assets/icons/add-1.png" alt="Datei hinzufügen" class="add-icon" (click)="fileInput.click()">
-                <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)">
-                
-                <!-- Trennlinie -->
-                <div style="height: 35px;width: 1px;background-color: rgba(104, 104, 104, 1);"></div>
-                
-                <!-- Emoji hinzufügen -->
-                <img src="./assets/icons/sentiment_satisfied-1.png" alt="Emoji hinzufügen" class="add-emoji" (click)="toggleEmojiPicker()">
-                <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"></emoji-mart>
-                
+                <div class="reactions">
+                    <img src="./assets/icons/add-1.png" alt="Datei hinzufügen" class="add-icon"
+                        (click)="fileInput.click()">
+                    <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)">
+
+                    <!-- Trennlinie -->
+                    <div style="height: 35px;width: 1px;background-color: rgba(104, 104, 104, 1);"></div>
+                    <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail">
+                    <!-- Emoji hinzufügen -->
+                    <img src="./assets/icons/sentiment_satisfied-1.png" alt="Emoji hinzufügen" class="add-emoji"
+                        (click)="toggleEmojiPicker()">
+                    <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"></emoji-mart>
+                </div>
+
                 <!-- Nachricht senden -->
                 <img src="./assets/icons/Send icon.png" (click)="sendMessage()" class="send-icon">
-              </div>
+
             </div>
-          </div>
-          
-
-
+        </div>
     </div>
 
 
@@ -160,23 +169,26 @@
                 <p style="font-size: 24px; font-weight: 700;">Neue Nachricht</p>
                 <input class="inputChannel" type="text" placeholder="An #channel, oder @jemand oder E-Mail Adresse"
                     (input)="onInput($event)" [(ngModel)]="inputValue" />
-                    <div *ngIf="showAutocomplete" class="autocomplete-list">
-                        <ul class="searchListe"   >
-                            <li *ngFor="let channel of filteredChannels" (click)="selectValue(channel.channelName)">
-                                <div style="cursor: pointer;"*ngIf="inputValue.startsWith('#')" >{{ channel.channelName }}</div>
-                            </li>
-                            <li *ngFor="let user of filteredUsers" (click)="selectValue(user.name)" >
-                                <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" *ngIf="inputValue.startsWith('@')">
-                                    <img [src]="getAvatarForUser(user.name)" alt="" style="width: 30px; height: 30px; border-radius: 30px;" />
-                                    {{ user.name }}
-                                </div>
-                            </li>
-                            <li *ngFor="let user of filteredUsers" (click)="selectValue(user.mail)" >
-                              <div *ngIf="!inputValue.startsWith('@') && !inputValue.startsWith('#')"> {{user.mail}}</div>
-                            </li>
-                        </ul>
-                    </div>
-                    
+                <div *ngIf="showAutocomplete" class="autocomplete-list">
+                    <ul class="searchListe">
+                        <li *ngFor="let channel of filteredChannels" (click)="selectValue(channel.channelName)">
+                            <div style="cursor: pointer;" *ngIf="inputValue.startsWith('#')">{{ channel.channelName }}
+                            </div>
+                        </li>
+                        <li *ngFor="let user of filteredUsers" (click)="selectValue(user.name)">
+                            <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;"
+                                *ngIf="inputValue.startsWith('@')">
+                                <img [src]="getAvatarForUser(user.name)" alt=""
+                                    style="width: 30px; height: 30px; border-radius: 30px;" />
+                                {{ user.name }}
+                            </div>
+                        </li>
+                        <li *ngFor="let user of filteredUsers" (click)="selectValue(user.mail)">
+                            <div *ngIf="!inputValue.startsWith('@') && !inputValue.startsWith('#')"> {{user.mail}}</div>
+                        </li>
+                    </ul>
+                </div>
+
 
             </div>
             <div class="custom-input">
