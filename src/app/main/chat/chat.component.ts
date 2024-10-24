@@ -115,20 +115,40 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
   }
 
 
-  
-
-  //sendet neue DM an den Chat Service
   async sendDirectMessage() {
     const newDm = this.directMessage.value!;
     const fileDownloadUrl = this.fileDownloadUrl;
     const fileName = this.selectedFileName;
     const fileType = this.selectedFileType;
+  
+    // Nachricht an den aktuellen Chat-Partner senden
     await this.chatService.setChatData(newDm, fileDownloadUrl, fileName, fileType, this.currentUserId);
+    console.log('Nachricht gesendet an den ursprünglichen Chat-Partner');
+  
     this.directMessage.setValue('');
     this.selectedFile = null;
     this.selectedFileName = '';
-    this.selectedFileType = '';
-  };
+    this.fileDownloadUrl = '';
+  
+    // Nachricht an mehrere Benutzer senden
+    await this.sendMessagesToMultipleUsers(newDm, fileDownloadUrl, fileName, fileType);    
+  }
+  
+
+  async sendMessagesToMultipleUsers(newDm: string, fileDownloadUrl: string, fileName: string, fileType: string) {
+    for (const user of this.selectedNames) {
+      const chatId = await this.chatService.createChatID(this.currentUserId, user.userId);
+      const chatExists = await this.chatService.doesChatExist(chatId);
+  
+      if (!chatExists) {
+        await this.chatService.createNewChat(chatId, this.currentUserId, user.userId);
+      }
+  
+      await this.chatService.sendMessageToChat(chatId, newDm, fileDownloadUrl, fileName, fileType, this.currentUserId);
+      console.log('Nachricht gesendet an:', user.name);
+    }
+  }
+  
 
 
   //scrollt das Chatfenster nach unten
@@ -305,7 +325,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
 
   showUsers: boolean = false;
   hasNames: boolean = false;
-  selectedNames: string[] = [];
+  selectedNames: { name: string; userId: string }[] = [];
 
   
   toggleUserList() {
@@ -334,40 +354,25 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
 
   insertName(userName: string) {
     // Prüfe, ob der Name bereits im Array ist, um doppelte Einträge zu vermeiden
-    if (this.selectedNames.includes(userName)) {
+    if (this.selectedNames.some(user => user.name === userName)) {
       return;
     }
   
-    this.selectedNames.push(userName);
-    this.hasNames = true;
+    // Finde den Benutzer in userData anhand des Namens und füge die ID hinzu
+    const user = this.userService.userData.find(u => u.name === userName);
+    if (user) {
+      this.selectedNames.push({ name: user.name, userId: user.userId });
+      this.hasNames = true;
   
-    this.cdr.detectChanges();
-    this.updateNameContainer();
-  }
+      // Ausgabe des aktuellen Standes von selectedNames zur Überprüfung
+      console.log('Aktueller Stand von selectedNames:', this.selectedNames);
   
-  updateNameContainer() {
-    if (!this.nameContainerRef?.nativeElement) {
-      console.error('nameContainerRef ist nicht definiert.');
-      return;
+      // Aktualisiere die Ansicht
+      this.cdr.detectChanges();
     }
-  
-    const nameContainer = this.nameContainerRef.nativeElement as HTMLDivElement;
-    nameContainer.innerHTML = 'CC:';
-  
-    this.selectedNames.forEach(name => {
-      const nameDiv = document.createElement('div');
-      nameDiv.textContent = `@${name}`;
-      nameDiv.style.backgroundColor = '#535AF1'; 
-      nameDiv.style.color = 'white'; 
-      nameDiv.style.display = 'inline-block'; 
-      nameDiv.style.padding = '4px 8px'; 
-      nameDiv.style.borderRadius = '4px'; 
-      nameDiv.style.marginLeft = '8px'; 
-  
-    
-      nameContainer.appendChild(nameDiv);
-    });
   }
+  
+  
 
 
 

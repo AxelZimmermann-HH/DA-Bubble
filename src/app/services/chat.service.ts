@@ -30,6 +30,8 @@ export class ChatService {
     this.showChat = false;
   }
 
+  
+  
 
   onChannelSelected(channel: any) {
     this.selectedChannelId = channel.id;
@@ -286,4 +288,35 @@ export class ChatService {
 
     return `${dayOfWeek}, ${day}. ${month}`;
   }
+  async doesChatExist(chatId: string): Promise<boolean> {
+    const checkIfChatExists = query(collection(this.firestore, "chats"), where(documentId(), "==", chatId));
+    const querySnapshot = await getDocs(checkIfChatExists);
+    return !querySnapshot.empty;
+  }
+
+
+  // Senden der Nachricht an mehrere User
+  async sendMessageToChat(chatId: string, newDm: string, fileDownloadUrl: string, fileName: string, fileType: string, currentUserId: string) {
+    const newDirectMessage = new directMessage();
+    newDirectMessage.chatId = chatId;
+    newDirectMessage.senderId = currentUserId;
+    newDirectMessage.receiverId = this.userId;
+    newDirectMessage.text = newDm;
+    newDirectMessage.timestamp = await this.getTimeStamp();
+    newDirectMessage.time = newDirectMessage.timestamp.split('T')[1].slice(0, 5);
+    newDirectMessage.dayDateMonth = await this.getFormattedDate();
+    newDirectMessage.fileName = fileName;
+    newDirectMessage.fileDownloadUrl = fileDownloadUrl;
+    newDirectMessage.fileType = fileType;
+    const dmData = newDirectMessage.toJson();
+  
+    try {
+      await addDoc(collection(this.firestore, 'chats', chatId, 'messages'), dmData);
+      console.log(`Nachricht erfolgreich im Chat ${chatId} gespeichert`);
+    } catch (error: any) {
+      console.error('Fehler beim Erstellen der Nachricht:', error);
+    }
+  }
 }
+
+

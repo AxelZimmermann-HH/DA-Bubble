@@ -14,7 +14,7 @@ export class UserService {
 
   constructor(private firestore: Firestore) { }
 
-  async loadUsers(): Promise<void> {
+  async loadUsers2(): Promise<void> {
     try {
       const usersRef = collection(this.firestore, 'users');
       const snapshot = await getDocs(usersRef);
@@ -23,6 +23,28 @@ export class UserService {
       console.error('Fehler beim Laden der Benutzer:', error);
     }
   }
+
+  async loadUsers(): Promise<void> {
+    try {
+      const usersRef = collection(this.firestore, 'users');
+      const snapshot = await getDocs(usersRef);
+      // Erstelle User-Objekte und fülle die benötigten Felder aus
+      this.userData = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return new User({
+          name: data["name"],
+          userId: doc.id,
+          avatar: data["avatar"] || '', // Standardwert verwenden, falls nicht vorhanden
+          mail: data["mail"] || '',
+          online: data["online"] || false,
+          password: data["password"] || ''
+        });
+      });
+    } catch (error) {
+      console.error('Fehler beim Laden der Benutzer:', error);
+    }
+  }
+  
 
   getAvatar(user: User): any {
     if (this.isNumber(user.avatar)) {
