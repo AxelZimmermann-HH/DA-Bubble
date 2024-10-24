@@ -25,7 +25,7 @@
             <div *ngIf="!chatService.chatIsEmpty">
                 <div *ngFor="let message of group.value; let j = index">
                     <!-- Nachricht des anderen Benutzers -->
-                    <div *ngIf="message.senderId == user.userId">
+                    <div *ngIf="message.senderId == user.userId && user.userId !== currentUser.userId">
                         <table class="chat-table">
                             <tr>
                                 <td>
@@ -524,7 +524,10 @@
         <textarea contenteditable="true" placeholder="Nachricht an {{ user.name }}" class="text-area" [formControl]="directMessage"></textarea>
         <div *ngIf="hasNames" class="name-container" #nameContainerRef>
             CC:
-            <div *ngFor="let name of selectedNames" class="name-tag">
+            <div *ngFor="let name of selectedNames, let i = index" class="name-tag">
+                <div class="close-name-tag" (click)="removeName(i)">
+                    <img src="../../../assets/icons/close-white.svg" alt="">
+                </div>
                 &#64;{{ name.name }}
             </div>
           </div>

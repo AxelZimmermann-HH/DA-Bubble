@@ -200,6 +200,23 @@ html {
     width: 50px;
 }
 
+.message-count {
+    position: absolute;
+    top: 0;
+    left: 56px;
+    z-index: 11;
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    color: white;
+    background-color: red;
+    border: 2px solid #FFFFFF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10px;
+}
+
 .online-point{
     border-radius: 50%;
     width: 14px;

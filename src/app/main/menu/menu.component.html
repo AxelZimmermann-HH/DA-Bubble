@@ -78,6 +78,7 @@
                 <div class="avatar-container">
                     <img class="user-avatar" [src]="getAvatarForUser(user.name)" alt="">
                     <div [ngClass]="{'offline-point': !user.online}" class="online-point"></div>
+                    <div class="message-count">1</div>
                 </div>
                 <span class="header3">{{user.name}}
                     @if (user.name === currentUser?.name) {
