@@ -97,13 +97,15 @@ export class ChannelComponent {
       this.findUserNameById(this.userId);
     });
     this.getAllChannels();
+    
+
   }
 
   findUserNameById(userId: string) {
     const user = this.userData.find((user: User) => user.userId === userId);
     return user ? user.name : undefined;
   }
-
+ 
   ngOnInit() {
     this.searchService.filteredUsers$.subscribe(users => {
       this.filteredUsers = users;
@@ -350,64 +352,51 @@ onInput(event: any): void {
   }
 
   async sendMessage() {
-    // Überprüfen, ob weder eine Nachricht noch eine Datei vorhanden ist
-    if (this.newMessageText.trim() === '' && !this.selectedFile) {
-      return; // Wenn keine Nachricht und keine Datei ausgewählt wurde, abbrechen
-    }
+  
+    if (this.newMessageText.trim() === '' && !this.selectedFile) return;
   
     const userName = this.findUserNameById(this.userId);
-    if (!userName) {
-      this.newMessageText = '';
-      return;
-    }
-  
-    const currentDate = new Date();
-    let fileUrl = null; // Variable für die Datei-URL
+    if (!userName) return;
+ 
+    let fileUrl = null;
   
     if (this.selectedFile) {
-      // Wenn eine Datei ausgewählt ist, lade sie zu Firebase Storage hoch
-      const storage = getStorage(); // Initialisiere Firebase Storage
       const filePath = `channels/${this.selectedChannelId}/files/${this.selectedFile.name}`;
-      const storageRef = ref(storage, filePath); // Erstelle eine Referenz zu dem Speicherort
-  
+      const storageRef = ref(getStorage(), filePath);
       try {
-        // Datei hochladen
         await uploadBytes(storageRef, this.selectedFile);
-        // URL der hochgeladenen Datei abrufen
         fileUrl = await getDownloadURL(storageRef);
       } catch (error) {
         console.error('Fehler beim Hochladen der Datei:', error);
-        return; // Wenn das Hochladen fehlschlägt, brich den Vorgang ab
+        return; 
       }
     }
   
-    // Nachrichtendaten erstellen
-    const messageData: any = {
+    const messageData = {
       text: this.newMessageText,
       user: userName,
       timestamp: Timestamp.now(),
-      fullDate: currentDate.toDateString(),
+      fullDate: new Date().toDateString(),
       answers: [],
-      ...(this.selectedFile && { 
-        fileUrl: fileUrl, // Korrekt: Verwende die fileUrl-Variable, die die tatsächliche URL als String enthält
-        fileType: this.selectedFile.type,
-        fileName: this.selectedFile.name 
-      })
+      ...(fileUrl && { fileUrl, fileType: this.selectedFile?.type, fileName: this.selectedFile?.name })
     };
-  
-    const messagesCollection = collection(this.firestore, `channels/${this.selectedChannelId}/messages`);
-    addDoc(messagesCollection, messageData)
-      .then(() => {
-        this.newMessageText = '';
-        this.fileUrl = null;
-        this.selectedFile = null;
-      })
-      .catch((error) => {
-        console.error('Fehler beim Senden der Nachricht:', error);
-      });
+    
+    try {
+      await addDoc(collection(this.firestore, `channels/${this.selectedChannelId}/messages`), messageData);
+      this.newMessageText = '';
+      this.selectedFile = null;
+    } catch (error) {
+      console.error('Fehler beim Senden der Nachricht:', error);
+    }
   }
-  
-  
+  findChannelIdByName(channelName: string): string | null {
+    // Hier wird angenommen, dass du ein Array von Kanälen hast, z. B. this.channels
+    const channel = this.channelData.find(ch => ch.channelName.toLowerCase() === channelName.toLowerCase());
+
+    return channel ? channel.id : null; // Gibt die ID zurück oder null, wenn kein Kanal gefunden wurde
+}
+
+
 
   openUsersList(channelId: string) {
     this.dialog.open(AddChannelUserComponent, {

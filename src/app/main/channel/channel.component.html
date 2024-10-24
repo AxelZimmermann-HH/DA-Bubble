@@ -43,7 +43,7 @@
                                     <div class="speech-bubble" [ngClass]="{'b-radius': isCurrentUser(message.user)}">
                                         <div>
                                             {{ message.text }}
-                                            <div *ngIf="message.fileUrl && message.fileType"
+                                            <div *ngIf="message.fileUrl"
                                                 style="display: flex;flex-direction: column;gap :16px">
                                                 <!-- Image Preview -->
                                                 <div *ngIf="message.fileType.startsWith('image/')">
