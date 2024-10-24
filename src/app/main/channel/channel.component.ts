@@ -319,38 +319,7 @@ export class ChannelComponent {
     return user ? user.name === currentUser : false;
   }
 
-  async sendNewMessage() {
-    if (this.newMessageText.trim() === '') {
-      return; // Leere Nachrichten nicht senden
-    }
 
-    const inputValue = this.inputValue.trim(); // Eingabewert
-    console.log('Neue Nachricht gesendet:', this.newMessageText);
-
-    if (this.emailPattern.test(inputValue)) { // Hier verwenden wir das Muster für E-Mails
-      console.log('Gesendet an Benutzer E-Mail:', inputValue);
-    }
-    else if (inputValue.startsWith('@')) {
-      const userName = inputValue.slice(1).trim(); // Benutzername ohne '@'
-      console.log('Gesendet an Benutzer:', userName);
-
-    }
-    else if (inputValue.startsWith('#')) {
-      const channelName = inputValue.slice(1).trim(); // Kanalname ohne '#'
-      const channelId = this.getChannelIdByName(channelName);
-      console.log('Gesendet an Kanal:', channelName, channelId);
-      if (channelId) {
-        console.log('Gesendet an Kanal:', channelName, channelId);
-      }
-    }
-    else {
-      console.log('Ungültiger Empfänger:', inputValue);
-    }
-
-    this.inputValue = '';
-    this.newMessageText = '';
-    this.selectedFile = null;
-  }
 
   selectUser(user: User) {
     this.newMessageText += `@${user.name}`;
@@ -358,54 +327,15 @@ export class ChannelComponent {
   }
 
   async sendEmail(email: string, message: string, fileUrl: string | null) {
-    // Implementieren Sie die Logik zum Senden einer E-Mail
+   
     console.log(`E-Mail an ${email} gesendet mit Nachricht: ${message}`);
-    // Hier können Sie den Code hinzufügen, um die E-Mail zu senden
+  
   }
 
   getChannelIdByName(channelName: string): string | null {
     const channel = this.filteredChannels.find(channel => channel.channelName === channelName);
     return channel ? channel.id : null;
   }
-  // async sendMessage() {
-
-  //   if (this.newMessageText.trim() === '' && !this.selectedFile) return;
-
-  //   const userName = this.findUserNameById(this.userId);
-  //   if (!userName) return;
-
-  //   let fileUrl = null;
-
-  //   if (this.selectedFile) {
-  //     const filePath = `channels/${this.selectedChannelId}/files/${this.selectedFile.name}`;
-  //     const storageRef = ref(getStorage(), filePath);
-  //     try {
-  //       await uploadBytes(storageRef, this.selectedFile);
-  //       fileUrl = await getDownloadURL(storageRef);
-  //     } catch (error) {
-  //       console.error('Fehler beim Hochladen der Datei:', error);
-  //       return;
-  //     }
-  //   }
-
-  //   const messageData = {
-  //     text: this.newMessageText,
-  //     user: userName,
-  //     timestamp: Timestamp.now(),
-  //     fullDate: new Date().toDateString(),
-  //     answers: [],
-  //     ...(fileUrl && { fileUrl, fileType: this.selectedFile?.type, fileName: this.selectedFile?.name })
-  //   };
-
-  //   try {
-  //     await addDoc(collection(this.firestore, `channels/${this.selectedChannelId}/messages`), messageData);
-  //     this.newMessageText = '';
-  //     this.selectedFile = null;
-  //   } catch (error) {
-  //     console.error('Fehler beim Senden der Nachricht:', error);
-  //   }
-  // }
-
 
   async sendMessage() {
     if (this.newMessageText.trim() === '' && !this.selectedFile) return;
@@ -430,10 +360,7 @@ export class ChannelComponent {
           console.error('Fehler beim Hochladen der Datei:', error);
           return;
         }
-      } else {
-        console.log('Keine gültige Channel-ID zum Hochladen der Datei.');
-        return;
-      }
+      } 
     }
 
     if (this.selectedChannel) {

@@ -10,6 +10,7 @@ import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../services/user.service';
 import { ThreadService } from '../../services/thread.service';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-thread',
@@ -45,6 +46,7 @@ export class ThreadComponent {
     private route: ActivatedRoute,
     public userService: UserService,
     public threadService: ThreadService,
+    private sanitizer: DomSanitizer
   ) { }
 
   ngOnInit(): void {
@@ -205,4 +207,9 @@ export class ThreadComponent {
     answer.isEditing = false;
     answer.editedText = answer.text;
   }
+
+  getSafeUrl(url: string) {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
 }
