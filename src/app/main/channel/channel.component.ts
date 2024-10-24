@@ -19,7 +19,7 @@ import { ChatService } from '../../services/chat.service';
 import { FormsModule } from '@angular/forms';
 import { SearchService } from '../../services/search.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { getDownloadURL, getStorage, ref, uploadBytes } from '@angular/fire/storage';
+import { deleteObject, getDownloadURL, getStorage, ref, uploadBytes } from '@angular/fire/storage';
 
 
 @Component({
@@ -71,6 +71,7 @@ export class ChannelComponent {
 
   emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   showEmojiPicker: boolean = false;
+  showEditEmojiPicker:boolean=false;
 
   @Input() selectedChannelId: string | null = null;
   @Output() chatSelected = new EventEmitter<void>();
@@ -443,11 +444,19 @@ onInput(event: any): void {
       console.error('Fehler beim Abrufen der Antworten: ', error);
     });
   }
-
   editDirectMessage(message: Message) {
     message.isEditing = true;
     message.editedText = message.text;
+  
+    if (message.fileUrl) {
+      const filename = message.fileName || this.extractFileName(message.fileUrl);
+      // Füge den Dateinamen unter dem Text hinzu
+      message.editedText += `\nDatei: ${filename}`;
+    }
   }
+  
+  
+  
 
   saveMessageEdit(message: Message) {
     const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${message.messageId}`);
@@ -469,7 +478,7 @@ onInput(event: any): void {
   toggleEmojiPicker() {
     this.showEmojiPicker = !this.showEmojiPicker
   }
-
+  toggleEditEmojiPicker(){ this.showEditEmojiPicker = !this.showEditEmojiPicker}
   addEmojiToNewMessage(event: any) {
     console.log('gewähltes emojii:', event)
     const emoji = event.emoji.native; // Das ausgewählte Emoji
@@ -480,11 +489,42 @@ onInput(event: any): void {
   addEmojiToEditMessage(event: any, message: Message) {
     const emoji = event.emoji.native;
     if (message.isEditing) {
-      message.editedText = `${message.editedText}${emoji}`;
-      this.showEmojiPicker = false;
+      message.editedText = `${message.editedText} ${emoji}`;
+      this.showEditEmojiPicker = false;
     }
   }
 
+  removeFile(message: Message) {
+    if (message.fileUrl) {
+      const storage = getStorage();
+      const fileRef = ref(storage, message.fileUrl);  // Referenz zur Datei
+  
+      deleteObject(fileRef)
+        .then(() => {
+          console.log('Datei erfolgreich gelöscht');
+          // Entferne auch den Dateinamen aus der Nachricht
+          message.fileUrl = '';
+          message.fileName = '';
+          message.fileType = '';
+        })
+        .catch((error) => {
+          console.error('Fehler beim Löschen der Datei:', error);
+        });
+    }
+  }
+
+extractFileName(fileUrl: string): string {
+  if (!fileUrl) return '';  
+    const decodedUrl = decodeURIComponent(fileUrl);
+  
+  const parts = decodedUrl.split('/');
+  const lastPart = parts[parts.length - 1];
+  
+  const fileName = lastPart.split('?')[0];
+  return fileName;
+}
+
+  
   // addEmojiToMessageReaction(event: any) {
   // }
 

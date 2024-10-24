@@ -75,10 +75,10 @@
                                 </div>
                                 <div *ngIf="message.isEditing" class="textAreaContainer">
                                     <textarea [(ngModel)]="message.editedText" class="textEditingArea">
-                                    </textarea>
+                                    </textarea>  
                                     <div class="button-icons-group">
                                         <img src="./assets/icons/sentiment_satisfied-1.png" alt=""
-                                            (click)="toggleEmojiPicker()">
+                                            (click)="toggleEditEmojiPicker()">
                                         <div class="button-group">
                                             <button (click)="cancelMessageEdit(message)"
                                                 class="cancelBtn">Abbrechen</button>
@@ -87,7 +87,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <emoji-mart *ngIf="showEmojiPicker && message.isEditing"
+                                <emoji-mart *ngIf="showEditEmojiPicker && message.isEditing"
                                     (emojiSelect)="addEmojiToEditMessage($event, message)">
                                 </emoji-mart>
 
