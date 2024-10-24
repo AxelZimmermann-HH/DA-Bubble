@@ -75,7 +75,7 @@
                                 </div>
                                 <div *ngIf="message.isEditing" class="textAreaContainer">
                                     <textarea [(ngModel)]="message.editedText" class="textEditingArea">
-                                    </textarea>  
+                                    </textarea>
                                     <div class="button-icons-group">
                                         <img src="./assets/icons/sentiment_satisfied-1.png" alt=""
                                             (click)="toggleEditEmojiPicker()">
@@ -191,18 +191,60 @@
 
 
             </div>
+
+
             <div class="custom-input">
                 <textarea placeholder="Starte eine neue Nachricht" class="text-area"
                     [(ngModel)]="newMessageText"></textarea>
+
+                <div *ngIf="selectedFile"
+                    style="position: relative; background-color: #797EF3; color: #FFFFFF; display: flex; width: fit-content; gap: 16px; border-radius: 30px; padding: 12px 25px; margin: 0 20px">
+                    <!-- Datei-Vorschau für Bilder -->
+                    <div *ngIf="selectedFile.type.startsWith('image/') && fileUrl" class="file-preview"
+                        style="display: flex; align-items: center; flex-direction: column;">
+                        <img [src]="fileUrl" alt="Image Preview" class="image-preview"
+                            style="max-width: 100px; max-height: 100px;">
+                    </div>
+
+                    <!-- Datei-Vorschau für PDFs -->
+                    <div *ngIf="selectedFile.type === 'application/pdf' && fileUrl" class="file-preview"
+                        style="display: flex; align-items: center; flex-direction: column;">
+                        <iframe [src]="fileUrl" width="200" height="200" style="border: none;"></iframe>
+                    </div>
+
+                    <!-- Anzeige für andere Dateitypen -->
+                    <div *ngIf="!fileUrl || (!selectedFile.type.startsWith('image/') && selectedFile.type !== 'application/pdf')"
+                        class="file-preview" style="display: flex; align-items: center; flex-direction: column;">
+                        <p>{{ selectedFile.name }}</p>
+                    </div>
+
+                    <!-- Schließen-Button für Datei-Vorschau -->
+                    <img src="./../../../assets/icons/close.png" alt="Close" class="close-icon" (click)="closePreview()"
+                        style="cursor: pointer;">
+                </div>
+                <div *ngIf="tagUser"
+                    style="width: 300px;height: auto; border-radius: 30px;position: absolute; z-index: 111; bottom: 40px;left: 50px;">
+                    <ul class="searchListe">
+                        <li *ngFor="let user of userData">
+                            <div style="display: flex;align-items: center;gap:8px" (click)="selectUser(user)"><img
+                                    [src]="getAvatarForUser(user.name)" alt=""
+                                    style="width: 30px; height: 30px; border-radius: 30px;cursor:pointer"> {{user.name}}
+                            </div>
+                        </li>
+                    </ul>
+                </div>
                 <div class="add-reaction">
                     <div class="reactions">
-                        <img src="./assets/icons/add-1.png" alt="" class="add-icon">
+                        <img src="./assets/icons/add-1.png" alt="Datei hinzufügen" class="add-icon"
+                            (click)="fileInput.click()">
+                        <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)">
                         <div style="height: 35px;width: 1px;background-color:  rgba(104, 104, 104, 1);"></div>
                         <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji"
                             (click)="toggleEmojiPicker()">
-                        <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail">
+                        <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail"
+                            (click)="toggleAutoListe()">
                     </div>
-                    <img src="./assets/icons/Send icon.png" (click)="sendNewMessage()" class="send-icon">
+                    <img src="./assets/icons/Send icon.png" (click)="sendMessage()" class="send-icon">
                 </div>
                 <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"></emoji-mart>
             </div>
