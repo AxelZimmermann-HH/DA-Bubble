@@ -20,6 +20,26 @@
                 </div>
                 <div class="speech-bubble" [ngClass]="{'border-radius': isCurrentUser(message!.user)}">
                     {{ message.text }}
+                    <div *ngIf="message.fileUrl"
+                                                style="display: flex;flex-direction: column;gap :16px">
+                                                <!-- Image Preview -->
+                                                <div *ngIf="message.fileType?.startsWith('image/')">
+                                                    <img src="{{message.fileUrl}}" alt="Image Preview"
+                                                        style="width: 70px; height: auto; object-fit: contain;">
+                                                </div>
+                                                <!-- PDF Preview -->
+                                                <div *ngIf="message.fileType === 'application/pdf'">
+                                                    <iframe src="{{message.fileUrl}}" width="200"
+                                                        height="70px" style="border: none;"></iframe>
+                                                </div>
+                                                <!-- Other File Types -->
+                                                <div
+                                                    *ngIf="!message.fileType?.startsWith('image/') && message.fileType != 'application/pdf'">
+                                                    {{message.fileName}}</div>
+                                                <!-- Download Link -->
+                                                <a href="{{message.fileUrl}}" class="open-file-button"
+                                                    target="_blank">Anhang öffnen</a>
+                                            </div>
                 </div>
             </div>
             <div class="reaction-hover" [ngClass]="{'reaction-left': isCurrentUser(message.user)}"

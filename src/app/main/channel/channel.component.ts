@@ -68,10 +68,11 @@ export class ChannelComponent {
 
   fileUrl: SafeResourceUrl | null = null;
   selectedFile: File | null = null;
+  fileDownloadUrl!: string;
 
   emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   showEmojiPicker: boolean = false;
-  showEditEmojiPicker:boolean=false;
+  showEditEmojiPicker: boolean = false;
 
   @Input() selectedChannelId: string | null = null;
   @Output() chatSelected = new EventEmitter<void>();
@@ -98,7 +99,7 @@ export class ChannelComponent {
       this.findUserNameById(this.userId);
     });
     this.getAllChannels();
-    
+
 
   }
 
@@ -106,7 +107,7 @@ export class ChannelComponent {
     const user = this.userData.find((user: User) => user.userId === userId);
     return user ? user.name : undefined;
   }
- 
+
   ngOnInit() {
     this.searchService.filteredUsers$.subscribe(users => {
       this.filteredUsers = users;
@@ -160,40 +161,40 @@ export class ChannelComponent {
     });
   }
 
-onInput(event: any): void {
-  const searchTerm = event.target.value;
-  this.inputValue = searchTerm;
+  onInput(event: any): void {
+    const searchTerm = event.target.value;
+    this.inputValue = searchTerm;
 
-  if (searchTerm.startsWith('@')) {
+    if (searchTerm.startsWith('@')) {
       const query = searchTerm.slice(1).toLowerCase();
       this.searchService.filterUsers(this.userData, query);
-  } else if (searchTerm.startsWith('#')) {
+    } else if (searchTerm.startsWith('#')) {
       const query = searchTerm.slice(1).toLowerCase();
       this.searchService.filterChannels(this.channelData, query);
-  } else {
+    } else {
       const query = searchTerm.toLowerCase();
       this.searchService.filterEmails(this.userData, query);
+    }
+
+    this.searchService.showAutocompleteList();
   }
 
-  this.searchService.showAutocompleteList();
-}
-  
 
   selectValue(value: any): void {
     if (this.inputValue.startsWith('@')) {
-        console.log('Benutzername ausgewählt:', value);
-        this.inputValue = '@' + value; 
+      console.log('Benutzername ausgewählt:', value);
+      this.inputValue = '@' + value;
     } else if (this.inputValue.startsWith('#')) {
-        // Kanal ausgewählt
-        console.log('Kanalname ausgewählt:', value);
-        this.inputValue = '#' + value;
+      // Kanal ausgewählt
+      console.log('Kanalname ausgewählt:', value);
+      this.inputValue = '#' + value;
     } else {
-        // E-Mail-Adresse ausgewählt
-        console.log('E-Mail-Adresse ausgewählt:', value);
-        this.inputValue = value; 
+      // E-Mail-Adresse ausgewählt
+      console.log('E-Mail-Adresse ausgewählt:', value);
+      this.inputValue = value;
     }
     this.searchService.hideAutocompleteList();
-}
+  }
 
 
   subscribeToSearch() {
@@ -279,9 +280,9 @@ onInput(event: any): void {
           timestamp: data['timestamp'],
           answers: data['answers'] || [],
           emojis: data['emojis'] || [],
-          fileUrl: data['fileUrl'] || null ,
+          fileUrl: data['fileUrl'] || null,
           fileType: data['fileType'] || null,
-          fileName: data['fileName'] || null 
+          fileName: data['fileName'] || null
         }, doc.id);
       });
       const groupedMessages: { [date: string]: Message[] } = {};
@@ -332,72 +333,226 @@ onInput(event: any): void {
     else if (inputValue.startsWith('@')) {
       const userName = inputValue.slice(1).trim(); // Benutzername ohne '@'
       console.log('Gesendet an Benutzer:', userName);
+
     }
     else if (inputValue.startsWith('#')) {
       const channelName = inputValue.slice(1).trim(); // Kanalname ohne '#'
-      console.log('Gesendet an Kanal:', channelName);
-
+      const channelId = this.getChannelIdByName(channelName);
+      console.log('Gesendet an Kanal:', channelName, channelId);
+      if (channelId) {
+        console.log('Gesendet an Kanal:', channelName, channelId);
+      }
     }
     else {
       console.log('Ungültiger Empfänger:', inputValue);
     }
- 
+
     this.inputValue = '';
     this.newMessageText = '';
+    this.selectedFile = null;
   }
 
-
-  sendEmail(email: string, message: string) {
-    // Implementiere hier deine Logik, um die E-Mail zu senden
-    console.log(`E-Mail an ${email}: ${message}`);
+  selectUser(user: User) {
+    this.newMessageText += `@${user.name}`;
+    this.tagUser = false;
   }
+
+  async sendEmail(email: string, message: string, fileUrl: string | null) {
+    // Implementieren Sie die Logik zum Senden einer E-Mail
+    console.log(`E-Mail an ${email} gesendet mit Nachricht: ${message}`);
+    // Hier können Sie den Code hinzufügen, um die E-Mail zu senden
+  }
+
+  getChannelIdByName(channelName: string): string | null {
+    const channel = this.filteredChannels.find(channel => channel.channelName === channelName);
+    return channel ? channel.id : null;
+  }
+  // async sendMessage() {
+
+  //   if (this.newMessageText.trim() === '' && !this.selectedFile) return;
+
+  //   const userName = this.findUserNameById(this.userId);
+  //   if (!userName) return;
+
+  //   let fileUrl = null;
+
+  //   if (this.selectedFile) {
+  //     const filePath = `channels/${this.selectedChannelId}/files/${this.selectedFile.name}`;
+  //     const storageRef = ref(getStorage(), filePath);
+  //     try {
+  //       await uploadBytes(storageRef, this.selectedFile);
+  //       fileUrl = await getDownloadURL(storageRef);
+  //     } catch (error) {
+  //       console.error('Fehler beim Hochladen der Datei:', error);
+  //       return;
+  //     }
+  //   }
+
+  //   const messageData = {
+  //     text: this.newMessageText,
+  //     user: userName,
+  //     timestamp: Timestamp.now(),
+  //     fullDate: new Date().toDateString(),
+  //     answers: [],
+  //     ...(fileUrl && { fileUrl, fileType: this.selectedFile?.type, fileName: this.selectedFile?.name })
+  //   };
+
+  //   try {
+  //     await addDoc(collection(this.firestore, `channels/${this.selectedChannelId}/messages`), messageData);
+  //     this.newMessageText = '';
+  //     this.selectedFile = null;
+  //   } catch (error) {
+  //     console.error('Fehler beim Senden der Nachricht:', error);
+  //   }
+  // }
+
 
   async sendMessage() {
-  
     if (this.newMessageText.trim() === '' && !this.selectedFile) return;
-  
+
     const userName = this.findUserNameById(this.userId);
     if (!userName) return;
- 
+
     let fileUrl = null;
-  
+
     if (this.selectedFile) {
-      const filePath = `channels/${this.selectedChannelId}/files/${this.selectedFile.name}`;
-      const storageRef = ref(getStorage(), filePath);
-      try {
-        await uploadBytes(storageRef, this.selectedFile);
-        fileUrl = await getDownloadURL(storageRef);
-      } catch (error) {
-        console.error('Fehler beim Hochladen der Datei:', error);
-        return; 
+    
+      const filePath =  `files/${this.selectedFile.name}`;
+
+      if (filePath) {
+        const storageRef = ref(getStorage(), filePath);
+        try {
+          const snapshot = await uploadBytes(storageRef, this.selectedFile);
+          fileUrl = await getDownloadURL(storageRef);
+          const url = await getDownloadURL(snapshot.ref);
+          this.fileDownloadUrl = url;
+        } catch (error) {
+          console.error('Fehler beim Hochladen der Datei:', error);
+          return;
+        }
+      } else {
+        console.log('Keine gültige Channel-ID zum Hochladen der Datei.');
+        return;
       }
     }
-  
+
+    if (this.selectedChannel) {
+      await this.sendChannelMessage(this.selectedChannelId, this.newMessageText, fileUrl);
+    } else {
+      // Hier für den Fall, dass kein Channel ausgewählt ist
+      const inputValue = this.inputValue.trim();
+
+      if (this.emailPattern.test(inputValue)) {
+        await this.sendEmail(inputValue, this.newMessageText, fileUrl);
+      }
+
+      else if (inputValue.startsWith('@')) {
+        const userName = inputValue.slice(1).trim();
+        console.log('Gesendet an Benutzer:', userName);
+        await this.sendDirectMessage(userName);
+      }
+
+      else if (inputValue.startsWith('#')) {
+        const channelName = inputValue.slice(1).trim(); // Kanalname ohne '#'
+        const channelId = this.getChannelIdByName(channelName);
+        if (channelId) {
+          await this.sendChannelMessage(channelId, this.newMessageText, fileUrl);
+        }
+      }
+
+      else {
+        console.log('Ungültiger Empfänger:', inputValue);
+      }
+
+      this.inputValue = '';
+      this.newMessageText = '';
+      this.selectedFile = null;
+    }
+  }
+
+  async sendChannelMessage(channelId: string | null, message: string, fileUrl: string | null) {
+    // Überprüfen, ob die Nachricht oder die Datei leer ist
+    if (message.trim() === '' && !fileUrl) return;
+
     const messageData = {
-      text: this.newMessageText,
-      user: userName,
+      text: message,
+      user: this.findUserNameById(this.userId), // Benutzernamen finden
       timestamp: Timestamp.now(),
       fullDate: new Date().toDateString(),
       answers: [],
       ...(fileUrl && { fileUrl, fileType: this.selectedFile?.type, fileName: this.selectedFile?.name })
     };
-    
+
     try {
-      await addDoc(collection(this.firestore, `channels/${this.selectedChannelId}/messages`), messageData);
+      await addDoc(collection(this.firestore, `channels/${channelId}/messages`), messageData);
       this.newMessageText = '';
       this.selectedFile = null;
     } catch (error) {
-      console.error('Fehler beim Senden der Nachricht:', error);
+      console.error('Fehler beim Senden der Nachricht an den Channel:', error);
     }
   }
-  findChannelIdByName(channelName: string): string | null {
-    // Hier wird angenommen, dass du ein Array von Kanälen hast, z. B. this.channels
-    const channel = this.channelData.find(ch => ch.channelName.toLowerCase() === channelName.toLowerCase());
 
-    return channel ? channel.id : null; // Gibt die ID zurück oder null, wenn kein Kanal gefunden wurde
-}
+  async sendDirectMessage(recipientName: string) {
+    const fileName = this.selectedFile ? this.selectedFile.name : ''; 
+    const fileType = this.selectedFile ? this.selectedFile.type : ''; 
+  
+    if (this.selectedFile) {
+      const filePath = `files/${this.selectedFile.name}`;
+      const storageRef = ref(getStorage(), filePath);
+      
+      try {
+        const snapshot = await uploadBytes(storageRef, this.selectedFile);
+        this.fileDownloadUrl = await getDownloadURL(snapshot.ref);  // Datei-URL speichern
+        console.log('Datei erfolgreich hochgeladen, URL:', this.fileDownloadUrl);  // Debugging-Log
+      } catch (error) {
+        console.error('Fehler beim Hochladen der Datei:', error);
+        return; // Wenn der Upload fehlschlägt, abbrechen
+      }
+    } else {
+      // Wenn keine Datei hochgeladen wurde, setze fileDownloadUrl auf einen leeren String
+      this.fileDownloadUrl = '';
+    }
+  
+    // Fortfahren mit dem Senden der Nachricht
+    const receiverID = this.getUserIdByname(recipientName);
+    if (!receiverID) {
+      console.error('Empfänger-ID konnte nicht gefunden werden.');
+      return;
+    }
+  
+    const chatId = await this.chatService.createChatID(this.userId, receiverID);
+    const chatExists = await this.chatService.doesChatExist(chatId);
+  
+    if (!chatExists) {
+      await this.chatService.createNewChat(chatId, this.userId, receiverID);
+    }
+  
+    try {
+      await this.chatService.sendMessageToChat(
+        chatId, 
+        this.newMessageText, 
+        this.fileDownloadUrl, 
+        fileName, 
+        fileType, 
+        this.userId
+      );
+      console.log('Nachricht erfolgreich gesendet an:', receiverID);
+    } catch (error) {
+      console.error('Fehler beim Senden der Nachricht:', error);
+    }
+  
+    // Eingabefelder zurücksetzen
+    this.newMessageText = '';
+    this.selectedFile = null;
+    this.fileDownloadUrl = ''; 
+  }
+  
+  
 
-
+  getUserIdByname(userName: string) {
+    const user = this.userData.find((user: User) => user.name === userName);
+    return user ? user.userId : undefined;
+  }
 
   openUsersList(channelId: string) {
     this.dialog.open(AddChannelUserComponent, {
@@ -444,19 +599,7 @@ onInput(event: any): void {
       console.error('Fehler beim Abrufen der Antworten: ', error);
     });
   }
-  editDirectMessage(message: Message) {
-    message.isEditing = true;
-    message.editedText = message.text;
-  
-    if (message.fileUrl) {
-      const filename = message.fileName || this.extractFileName(message.fileUrl);
-      // Füge den Dateinamen unter dem Text hinzu
-      message.editedText += `\nDatei: ${filename}`;
-    }
-  }
-  
-  
-  
+
 
   saveMessageEdit(message: Message) {
     const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${message.messageId}`);
@@ -478,7 +621,7 @@ onInput(event: any): void {
   toggleEmojiPicker() {
     this.showEmojiPicker = !this.showEmojiPicker
   }
-  toggleEditEmojiPicker(){ this.showEditEmojiPicker = !this.showEditEmojiPicker}
+  toggleEditEmojiPicker() { this.showEditEmojiPicker = !this.showEditEmojiPicker }
   addEmojiToNewMessage(event: any) {
     console.log('gewähltes emojii:', event)
     const emoji = event.emoji.native; // Das ausgewählte Emoji
@@ -494,11 +637,21 @@ onInput(event: any): void {
     }
   }
 
+  editDirectMessage(message: Message) {
+    message.isEditing = true;
+    message.editedText = message.text;
+
+    if (message.fileUrl) {
+      const filename = message.fileName || this.extractFileName(message.fileUrl);
+      // Füge den Dateinamen unter dem Text hinzu
+      message.editedText += `\nDatei: ${filename}`;
+    }
+  }
   removeFile(message: Message) {
     if (message.fileUrl) {
       const storage = getStorage();
       const fileRef = ref(storage, message.fileUrl);  // Referenz zur Datei
-  
+
       deleteObject(fileRef)
         .then(() => {
           console.log('Datei erfolgreich gelöscht');
@@ -513,18 +666,20 @@ onInput(event: any): void {
     }
   }
 
-extractFileName(fileUrl: string): string {
-  if (!fileUrl) return '';  
+  extractFileName(fileUrl: string): string {
+    if (!fileUrl) return '';
     const decodedUrl = decodeURIComponent(fileUrl);
-  
-  const parts = decodedUrl.split('/');
-  const lastPart = parts[parts.length - 1];
-  
-  const fileName = lastPart.split('?')[0];
-  return fileName;
-}
 
-  
+    const parts = decodedUrl.split('/');
+    const lastPart = parts[parts.length - 1];
+
+    const fileName = lastPart.split('?')[0];
+    return fileName;
+  }
+  tagUser: boolean = false;
+  toggleAutoListe() {
+    this.tagUser = !this.tagUser
+  }
   // addEmojiToMessageReaction(event: any) {
   // }
 
@@ -533,7 +688,7 @@ extractFileName(fileUrl: string): string {
     if (file) {
       this.selectedFile = file;  // Speichere die Datei
       const objectUrl = URL.createObjectURL(file);  // Erstelle eine Objekt-URL
-      
+
       // Erstelle eine sichere URL für die Vorschau von Bildern und PDFs
       if (file.type.startsWith('image/') || file.type === 'application/pdf') {
         this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
@@ -543,7 +698,7 @@ extractFileName(fileUrl: string): string {
       }
     }
   }
-  
+
 
   setFileUrl(file: File) {
     this.selectedFile = file; // Setzt die ausgewählte Datei

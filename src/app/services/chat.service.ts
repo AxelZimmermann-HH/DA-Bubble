@@ -225,6 +225,7 @@ export class ChatService {
   // Neue Nachricht speichern
   async saveNewDirectMessage(dmData: any) {
     try {
+      console.log('Speichere neue Direktnachricht mit Daten:', dmData);
       await addDoc(collection(this.firestore, 'chats', this.chatId, 'messages'), dmData);
     } catch (error: any) {
       console.error('Fehler beim Erstellen der Nachricht:', error);
@@ -309,7 +310,7 @@ export class ChatService {
     newDirectMessage.fileDownloadUrl = fileDownloadUrl;
     newDirectMessage.fileType = fileType;
     const dmData = newDirectMessage.toJson();
-  
+
     try {
       await addDoc(collection(this.firestore, 'chats', chatId, 'messages'), dmData);
       console.log(`Nachricht erfolgreich im Chat ${chatId} gespeichert`);
