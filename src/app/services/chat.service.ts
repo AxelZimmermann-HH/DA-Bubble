@@ -318,6 +318,42 @@ export class ChatService {
       console.error('Fehler beim Erstellen der Nachricht:', error);
     }
   }
+
+  // Im ChatService
+private newMessageCountSubject = new BehaviorSubject<{ [userId: string]: number }>({});
+newMessageCount$ = this.newMessageCountSubject.asObservable();
+
+// Beispiel für eine modifizierte Methode im ChatService
+async startListeningForNewMessages(currentUserId: string, lastLoginTimestamp: Date) {
+  const usersRef = collection(this.firestore, 'users');
+  const usersSnapshot = await getDocs(usersRef);
+
+  usersSnapshot.forEach(async (userDoc) => {
+    const userData = userDoc.data();
+    const userId = userDoc.id;
+
+    // Erstelle die Chat-ID basierend auf dem aktuellen Nutzer und dem Datenbank-Nutzer
+    const chatId = await this.createChatID(currentUserId, userId);
+    const messagesCollection = collection(this.firestore, `chats/${chatId}/messages`);
+
+    // Überwache die Nachrichten im Chat
+    onSnapshot(messagesCollection, (messagesSnapshot) => {
+      const newMessages = messagesSnapshot.docs.filter(doc => {
+        const messageData = doc.data();
+        const messageTimestamp = new Date(messageData["timestamp"]);
+        return messageData["senderID"] !== currentUserId && messageTimestamp > lastLoginTimestamp;
+      });
+
+      // Aktualisiere den Zähler der neuen Nachrichten für diesen Nutzer
+      const newMessageCount = newMessages.length;
+      const currentCounts = this.newMessageCountSubject.value;
+      this.newMessageCountSubject.next({ ...currentCounts, [userId]: newMessageCount });
+    });
+  });
+}
+
+
+
 }
 
 

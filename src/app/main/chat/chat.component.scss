@@ -708,4 +708,30 @@ display: flex;
     padding: 4px 8px; 
     border-radius: 4px; 
     margin-left: 8px; 
+    position: relative;
+}
+
+.close-name-tag {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #3439a0;
+    border-radius: 4px; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    > img {
+        width: 15px;
+    }
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.name-tag:hover .close-name-tag {
+    opacity: 1;
+    pointer-events: auto;
+    cursor: pointer;
 }

@@ -6,6 +6,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DialogUserProfilComponent } from '../dialog-user-profil/dialog-user-profil.component';
 import { User } from '../../models/user.class';
 import { UserService } from '../../services/user.service';
+import { SharedService } from '../../services/shared.service';
 import { ActivatedRoute, Route } from '@angular/router';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject, StorageReference, getMetadata } from '@angular/fire/storage';  // Firebase Storage imports
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -34,6 +35,11 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
   chat: any;
   userList: User[] = [];
 
+  showUsers: boolean = false;
+  hasNames: boolean = false;
+  selectedNames: { name: string; userId: string }[] = [];
+
+
   @ViewChild('chatContainer') chatContainer!: ElementRef;
   @ViewChild('nameContainerRef', { static: false }) nameContainerRef!: ElementRef;
 
@@ -42,25 +48,49 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     public chatService: ChatService,
     public dialog: MatDialog,
     public userService: UserService,
+    public sharedService: SharedService, 
     public route: ActivatedRoute,
     private sanitizer: DomSanitizer,
     public firestore: Firestore,
     private cdr: ChangeDetectorRef
   ) { }
 
+  
+
 
   getAvatarForUser(userName: string): any {
-
-    if (userName === this.user.name) {
-      if (this.userService.isNumber(this.user.avatar)) {
-        return './assets/avatars/avatar_' + this.user.avatar + '.png';  // Local asset avatar
-      } else {
-        return this.user.avatar;  // External URL avatar
-      }
+    if (!this.user || !this.user.name) {
+      return './assets/avatars/avatar_0.png'; 
     }
-    return './assets/avatars/avatar_0.png';  // Default avatar when user not found
+  
+    // Eigener User im Chat
+    if (userName.trim().toLowerCase() === this.currentUser.name.trim().toLowerCase()) {
+      return this.getCurrentUserAvatar();
+    }
+  
+    // Anderer User
+    if (userName.trim().toLowerCase() === this.user.name.trim().toLowerCase()) {
+      return this.getChatPartnerAvatar();
+    }
+
+    return './assets/avatars/avatar_0.png'; 
   }
 
+  private getCurrentUserAvatar(): string {
+    if (this.userService.isNumber(this.currentUser.avatar)) {
+      return './assets/avatars/avatar_' + String(this.currentUser.avatar) + '.png';  // Typkonvertierung zu string
+    } else {
+      return String(this.currentUser.avatar);  // Typkonvertierung zu string
+    }
+  }
+
+  private getChatPartnerAvatar(): string {
+    if (this.userService.isNumber(this.user.avatar)) {
+      return './assets/avatars/avatar_' + String(this.user.avatar) + '.png';  // Typkonvertierung zu string
+    } else {
+      return String(this.user.avatar);  // Typkonvertierung zu string
+    }
+  }
 
   // Scrollen direkt nach dem Initialisieren der View
   ngAfterViewInit() {
@@ -99,7 +129,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
       }
     });
 
-
+  
     this.route.params.subscribe(params => {
       const userId = params['userId'];
       if (userId) {
@@ -114,6 +144,9 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     });
   }
 
+  
+  
+
 
   async sendDirectMessage() {
     const newDm = this.directMessage.value!;
@@ -123,7 +156,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
   
     // Nachricht an den aktuellen Chat-Partner senden
     await this.chatService.setChatData(newDm, fileDownloadUrl, fileName, fileType, this.currentUserId);
-    console.log('Nachricht gesendet an den ursprünglichen Chat-Partner');
   
     this.directMessage.setValue('');
     this.selectedFile = null;
@@ -131,7 +163,10 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     this.fileDownloadUrl = '';
   
     // Nachricht an mehrere Benutzer senden
-    await this.sendMessagesToMultipleUsers(newDm, fileDownloadUrl, fileName, fileType);    
+    await this.sendMessagesToMultipleUsers(newDm, fileDownloadUrl, fileName, fileType);  
+    
+    this.selectedNames = [];
+    this.hasNames = false;
   }
   
 
@@ -322,11 +357,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
   }
 
   // @ Users 
-
-  showUsers: boolean = false;
-  hasNames: boolean = false;
-  selectedNames: { name: string; userId: string }[] = [];
-
   
   toggleUserList() {
     if (this.userList.length === 0) {
@@ -353,23 +383,26 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
   }
 
   insertName(userName: string) {
-    // Prüfe, ob der Name bereits im Array ist, um doppelte Einträge zu vermeiden
     if (this.selectedNames.some(user => user.name === userName)) {
       return;
     }
   
-    // Finde den Benutzer in userData anhand des Namens und füge die ID hinzu
     const user = this.userService.userData.find(u => u.name === userName);
+
     if (user) {
       this.selectedNames.push({ name: user.name, userId: user.userId });
       this.hasNames = true;
   
-      // Ausgabe des aktuellen Standes von selectedNames zur Überprüfung
-      console.log('Aktueller Stand von selectedNames:', this.selectedNames);
-  
-      // Aktualisiere die Ansicht
       this.cdr.detectChanges();
     }
+
+    this.toggleUserList();
+  }
+
+  removeName(index: number) {
+    this.selectedNames.splice(index, 1); 
+    this.hasNames = this.selectedNames.length > 0; 
+    this.cdr.detectChanges();
   }
   
   
