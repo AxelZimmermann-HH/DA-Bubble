@@ -522,7 +522,12 @@
 
         
         <textarea contenteditable="true" placeholder="Nachricht an {{ user.name }}" class="text-area" [formControl]="directMessage"></textarea>
-        <div class="name-container" #nameContainerRef *ngIf="hasNames">CC:</div>
+        <div *ngIf="hasNames" class="name-container" #nameContainerRef>
+            CC:
+            <div *ngFor="let name of selectedNames" class="name-tag">
+                &#64;{{ name }}
+            </div>
+          </div>
 
 
         @if (selectedFile) { <!-- Datei-Anzeige -->
