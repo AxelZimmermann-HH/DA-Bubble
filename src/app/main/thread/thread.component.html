@@ -11,6 +11,7 @@
     <div class="thread-content">
 
         <!-- Main message section -->
+         <div style="height: 100px;"></div>
         <div class="message-main" [ngClass]="{'current-user': isCurrentUser(message!.user)}">
             <img [src]="getAvatarForUser(message.user)" alt="Avatar" class="avatar">
             <div class="message-content" *ngIf="!message.isEditing" [ngClass]="{'a-flex': isCurrentUser(message.user)}">
