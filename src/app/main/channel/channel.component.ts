@@ -602,7 +602,7 @@ export class ChannelComponent {
   getEmojiSrc(emoji: string): string {
     const emojiMap: { [key: string]: string } = {
       'nerd face': './assets/icons/emoji _nerd face_.png',
-      'raising both hands': './assets/icons/emoji _person raising both hands in celebration_.png',
+      'raising both hands': './assets/icons/🦆 emoji _person raising both hands in celebration_.png',
       'heavy check mark': './assets/icons/emoji _white heavy check mark_.png',
       'rocket': './assets/icons/emoji _rocket_.png'
     };

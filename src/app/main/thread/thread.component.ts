@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
-import { Message } from '../../models/message.class';
+import { Message ,EmojiData} from '../../models/message.class';
 import { arrayUnion, collection, doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -11,15 +11,17 @@ import { FormsModule } from '@angular/forms';
 import { UserService } from '../../services/user.service';
 import { ThreadService } from '../../services/thread.service';
 import { DomSanitizer } from '@angular/platform-browser';
+import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 
 @Component({
   selector: 'app-thread',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, FormsModule],
+  imports: [CommonModule, MatDialogModule, FormsModule, PickerComponent],
   templateUrl: './thread.component.html',
   styleUrls: ['./thread.component.scss']
 })
 export class ThreadComponent {
+[x: string]: any;
 
   user = new User();
   userId!: string;
@@ -31,6 +33,9 @@ export class ThreadComponent {
   channelData: Channel[] = [];
 
   allMessages: Message[] = [];
+
+  showEmoji:boolean =false;
+  showAnswerEmoji:boolean=false;
 
   @Output() threadClosed = new EventEmitter<void>();
 
@@ -212,4 +217,76 @@ export class ThreadComponent {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
+  
+  toggleEmojiReaction(message: Message, emojiData: EmojiData) {
+    const currentUserId = this.userId; // Aktuelle Benutzer-ID
+    const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
+  
+    if (currentUserIndex > -1) {
+      
+        emojiData.userIds.splice(currentUserIndex, 1);
+    } else {
+        emojiData.userIds.push(currentUserId); 
+    }
+  
+    this.updateEmojisInFirebase(message);
+  }
+  updateEmojisInFirebase(message: Message) {
+    const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${message.messageId}`);
+    updateDoc(messageRef, {
+      emojis: message.emojis  // Aktualisiert die Emoji-Daten in Firebase
+    });
+  }
+
+  getEmojiSrc(emoji: string): string {
+    const emojiMap: { [key: string]: string } = {
+      'nerd face': './assets/icons/emoji _nerd face_.png',
+      'raising both hands': './assets/icons/emoji _person raising both hands in celebration_.png',
+      'heavy check mark': './assets/icons/emoji _white heavy check mark_.png',
+      'rocket': './assets/icons/emoji _rocket_.png'
+    };
+    return emojiMap[emoji] || '';
+  }
+  getEmojiReactionText(emojiData: EmojiData): string {
+    const currentUserId = this.userId;
+    const userNames = emojiData.userIds.map(userId => this.findUserNameById(userId));
+    
+    const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
+    if (currentUserIndex > -1) {
+        const currentUserName = this.findUserNameById(currentUserId);
+        const filteredUserNames = userNames.filter(name => name !== currentUserName);
+        
+        let nameList = filteredUserNames.join(", ");
+        if (nameList.length > 0) {
+            return `Du und ${nameList}` + (filteredUserNames.length > 1 ? "..." : "");
+        } else {
+            return "Du";
+        }
+    }
+    return userNames.length > 0 ? userNames.join(", ") : "Keine Reaktionen";
+}
+toggleShowEmoji(){this.showEmoji = !this.showEmoji}
+addSelectedEmoji(event:any){
+  this.showEmoji=false;
+}
+
+toggleUserEmoji(message: Message, emoji: string, userId: string) {
+  const emojiData = message.emojis.find((e: EmojiData) => e.emoji === emoji);
+
+  if (!emojiData) {
+      message.emojis.push({ emoji, userIds: [userId] });
+  } else {
+      const userIdIndex = emojiData.userIds.indexOf(userId);
+      if (userIdIndex === -1) {
+          emojiData.userIds.push(userId); // Benutzer fügt Emoji hinzu
+      } else {
+          emojiData.userIds.splice(userIdIndex, 1); // Benutzer entfernt Emoji
+      }
+  }
+  this.updateEmojisInFirebase(message);
+}
+
+toggleEmojitoAnswer(){
+this.showAnswerEmoji = !this.showAnswerEmoji;
+}
 }
