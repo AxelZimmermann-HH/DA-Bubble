@@ -3,14 +3,14 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
-import { Message } from '../../models/message.class';
+import { EmojiData, Message } from '../../models/message.class';
 import { SharedService } from '../../services/shared.service';
 import { ThreadComponent } from "../thread/thread.component";
 import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-channel.component';
 import { AddChannelUserComponent } from './add-channel-user/add-channel-user.component';
 import { Answer } from '../../models/answer.class';
 import { ActivatedRoute } from '@angular/router';
-import { addDoc, collection, doc, Firestore, getDocs, onSnapshot, orderBy, query, Timestamp, updateDoc, where } from '@angular/fire/firestore';
+import { addDoc, collection, doc, Firestore, onSnapshot, orderBy, query, Timestamp, updateDoc } from '@angular/fire/firestore';
 import { UserService } from '../../services/user.service';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { ChatComponent } from "../chat/chat.component";
@@ -20,7 +20,7 @@ import { FormsModule } from '@angular/forms';
 import { SearchService } from '../../services/search.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { deleteObject, getDownloadURL, getStorage, ref, uploadBytes } from '@angular/fire/storage';
-
+import { user } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-channel',
@@ -44,7 +44,7 @@ export class ChannelComponent {
 
   message = new Message();
   allMessages: any = [];
-  filteredMessages: any = [];
+  filteredMessages: Message[] = [];
   newMessageText: string = '';
 
   answer = new Answer();
@@ -90,36 +90,22 @@ export class ChannelComponent {
     public chatService: ChatService,
     public searchService: SearchService,
     private sanitizer: DomSanitizer,
-  ) {
-    this.subscribeToSearch();
+
+  ) { }
+
+  ngOnInit() {
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
     });
+
     this.getAllUsers().then(() => {
       this.findUserNameById(this.userId);
     });
+    this.subscribeToSearch();
+    this.subscribeToFilteredData();
+    this.subscribeToSearchTerm();
     this.getAllChannels();
 
-
-  }
-
-  findUserNameById(userId: string) {
-    const user = this.userData.find((user: User) => user.userId === userId);
-    return user ? user.name : undefined;
-  }
-
-  ngOnInit() {
-    this.searchService.filteredUsers$.subscribe(users => {
-      this.filteredUsers = users;
-    });
-
-    this.searchService.filteredChannels$.subscribe(channels => {
-      this.filteredChannels = channels;
-    });
-
-    this.searchService.showAutocomplete$.subscribe(show => {
-      this.showAutocomplete = show;
-    });
   }
 
   ngOnChanges(): void {
@@ -146,56 +132,76 @@ export class ChannelComponent {
     this.isLoading = false;
   }
 
+  subscribeToFilteredData() {
+    this.searchService.filteredUsers$.subscribe(users => {
+      console.log('Received Filtered Users:', users); // Debugging-Ausgabe
+      this.filteredUsers = users;
+    });
+
+    this.searchService.filteredChannels$.subscribe(channels => {
+      console.log('Received Filtered Channels:', channels); // Debugging-Ausgabe
+      this.filteredChannels = channels;
+    });
+
+    this.searchService.filteredMessages$.subscribe(messages => {
+      console.log('Received Filtered Messages:', messages); // Debugging-Ausgabe
+      this.filteredMessages = messages;
+    });
+
+    this.searchService.showAutocomplete$.subscribe(show => {
+      this.showAutocomplete = show;
+    });
+  }
+
+  subscribeToSearchTerm() {
+    this.searchService.searchTerm$.subscribe(term => {
+      if (term.length >= 3) {
+        this.showAutocomplete = true;
+      } else {
+        this.showAutocomplete = false;
+      }
+    });
+  }
+
+  findUserNameById(userId: string): string {
+    const user = this.userData.find((user: User) => user.userId === userId);
+    return user ? user.name : 'Unbekannt'; // Rückgabe eines Standardwerts
+}
+
   async loadChannel(id: string) {
     const channelDocRef = doc(this.firestore, `channels/${id}`);
     onSnapshot(channelDocRef, (doc) => {
       if (doc.exists()) {
         const data = doc.data();
         this.selectedChannel = new Channel({ ...data, id });
-        console.log('Channel-Daten aktualisiert:', this.selectedChannel);
         this.updateChannelMembers();
       } else {
-        console.error('Channel not found');
         this.selectedChannel = null;
       }
     });
   }
 
-  onInput(event: any): void {
-    const searchTerm = event.target.value;
+  onInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const searchTerm = target.value;
     this.inputValue = searchTerm;
-
-    if (searchTerm.startsWith('@')) {
-      const query = searchTerm.slice(1).toLowerCase();
-      this.searchService.filterUsers(this.userData, query);
-    } else if (searchTerm.startsWith('#')) {
-      const query = searchTerm.slice(1).toLowerCase();
-      this.searchService.filterChannels(this.channelData, query);
-    } else {
-      const query = searchTerm.toLowerCase();
-      this.searchService.filterEmails(this.userData, query);
+    if (!searchTerm) {
+      this.searchService.clearFilters();
+      return;
     }
-
-    this.searchService.showAutocompleteList();
+    this.searchService.filterByType(searchTerm, this.userData, this.channelData, this.allMessages);
   }
-
 
   selectValue(value: any): void {
     if (this.inputValue.startsWith('@')) {
-      console.log('Benutzername ausgewählt:', value);
       this.inputValue = '@' + value;
     } else if (this.inputValue.startsWith('#')) {
-      // Kanal ausgewählt
-      console.log('Kanalname ausgewählt:', value);
       this.inputValue = '#' + value;
     } else {
-      // E-Mail-Adresse ausgewählt
-      console.log('E-Mail-Adresse ausgewählt:', value);
       this.inputValue = value;
     }
     this.searchService.hideAutocompleteList();
   }
-
 
   subscribeToSearch() {
     this.sharedService.searchTerm$.subscribe((term) => {
@@ -207,16 +213,25 @@ export class ChannelComponent {
     });
   }
 
+
   filterData(term: string) {
-    this.filteredMessages = this.allMessages.filter((message: any) =>
-      message.text.toLowerCase().includes(term.toLowerCase()) ||
-      message.user.toLowerCase().includes(term.toLowerCase())
+    // this.filteredMessages = this.allMessages.filter((message: any) =>
+    //   message.text.toLowerCase().includes(term.toLowerCase())
+    // );
+    this.filteredUsers = this.userData.filter((user: any) => {
+      user.name.toLowerCase().includes(term.toLowerCase());
+      debugger;
+      return user;
+    }
+
     );
+
 
   }
 
   resetFilteredData() {
     this.filteredMessages = this.allMessages;
+    this.filteredUsers = this.userData;
   }
 
   getAllUsers(): Promise<void> {
@@ -319,17 +334,15 @@ export class ChannelComponent {
     return user ? user.name === currentUser : false;
   }
 
-
-
   selectUser(user: User) {
     this.newMessageText += `@${user.name}`;
     this.tagUser = false;
   }
 
   async sendEmail(email: string, message: string, fileUrl: string | null) {
-   
+
     console.log(`E-Mail an ${email} gesendet mit Nachricht: ${message}`);
-  
+
   }
 
   getChannelIdByName(channelName: string): string | null {
@@ -346,8 +359,8 @@ export class ChannelComponent {
     let fileUrl = null;
 
     if (this.selectedFile) {
-    
-      const filePath =  `files/${this.selectedFile.name}`;
+
+      const filePath = `files/${this.selectedFile.name}`;
 
       if (filePath) {
         const storageRef = ref(getStorage(), filePath);
@@ -360,7 +373,7 @@ export class ChannelComponent {
           console.error('Fehler beim Hochladen der Datei:', error);
           return;
         }
-      } 
+      }
     }
 
     if (this.selectedChannel) {
@@ -420,13 +433,13 @@ export class ChannelComponent {
   }
 
   async sendDirectMessage(recipientName: string) {
-    const fileName = this.selectedFile ? this.selectedFile.name : ''; 
-    const fileType = this.selectedFile ? this.selectedFile.type : ''; 
-  
+    const fileName = this.selectedFile ? this.selectedFile.name : '';
+    const fileType = this.selectedFile ? this.selectedFile.type : '';
+
     if (this.selectedFile) {
       const filePath = `files/${this.selectedFile.name}`;
       const storageRef = ref(getStorage(), filePath);
-      
+
       try {
         const snapshot = await uploadBytes(storageRef, this.selectedFile);
         this.fileDownloadUrl = await getDownloadURL(snapshot.ref);  // Datei-URL speichern
@@ -439,42 +452,42 @@ export class ChannelComponent {
       // Wenn keine Datei hochgeladen wurde, setze fileDownloadUrl auf einen leeren String
       this.fileDownloadUrl = '';
     }
-  
+
     // Fortfahren mit dem Senden der Nachricht
     const receiverID = this.getUserIdByname(recipientName);
     if (!receiverID) {
       console.error('Empfänger-ID konnte nicht gefunden werden.');
       return;
     }
-  
+
     const chatId = await this.chatService.createChatID(this.userId, receiverID);
     const chatExists = await this.chatService.doesChatExist(chatId);
-  
+
     if (!chatExists) {
       await this.chatService.createNewChat(chatId, this.userId, receiverID);
     }
-  
+
     try {
       await this.chatService.sendMessageToChat(
-        chatId, 
-        this.newMessageText, 
-        this.fileDownloadUrl, 
-        fileName, 
-        fileType, 
+        chatId,
+        this.newMessageText,
+        this.fileDownloadUrl,
+        fileName,
+        fileType,
         this.userId
       );
       console.log('Nachricht erfolgreich gesendet an:', receiverID);
     } catch (error) {
       console.error('Fehler beim Senden der Nachricht:', error);
     }
-  
+
     // Eingabefelder zurücksetzen
     this.newMessageText = '';
     this.selectedFile = null;
-    this.fileDownloadUrl = ''; 
+    this.fileDownloadUrl = '';
   }
-  
-  
+
+
 
   getUserIdByname(userName: string) {
     const user = this.userData.find((user: User) => user.name === userName);
@@ -564,16 +577,108 @@ export class ChannelComponent {
     }
   }
 
+  toggleUserEmoji(message: Message, emoji: string, userId: string) {
+    const emojiData = message.emojis.find((e: EmojiData) => e.emoji === emoji);
+
+    if (!emojiData) {
+        message.emojis.push({ emoji, userIds: [userId] });
+    } else {
+        const userIdIndex = emojiData.userIds.indexOf(userId);
+        if (userIdIndex === -1) {
+            emojiData.userIds.push(userId); // Benutzer fügt Emoji hinzu
+        } else {
+            emojiData.userIds.splice(userIdIndex, 1); // Benutzer entfernt Emoji
+        }
+    }
+    this.updateEmojisInFirebase(message);
+}
+
+
+
+  updateEmojisInFirebase(message: Message) {
+    const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${message.messageId}`);
+    updateDoc(messageRef, {
+      emojis: message.emojis  // Aktualisiert die Emoji-Daten in Firebase
+    });
+  }
+  getEmojiSrc(emoji: string): string {
+    const emojiMap: { [key: string]: string } = {
+      'nerd face': './assets/icons/emoji _nerd face_.png',
+      'raising both hands': './assets/icons/emoji _person raising both hands in celebration_.png',
+      'heavy check mark': './assets/icons/emoji _white heavy check mark_.png',
+      'rocket': './assets/icons/emoji _rocket_.png'
+    };
+    return emojiMap[emoji] || '';
+  }
+
+  getEmojiCount(message: Message, emoji: string): number {
+    return message.emojis.filter(e => e.emoji === emoji).length;
+  }
+
+  getEmojiReactionText(emojiData: EmojiData): string {
+    const currentUserId = this.userId; // Aktuelle Benutzer-ID
+    const userNames = emojiData.userIds.map(userId => this.findUserNameById(userId));
+    
+    // Überprüfen, ob die aktuelle Benutzer-ID in der Liste der Benutzer-IDs ist
+    const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
+
+    // Wenn der aktuelle Benutzer reagiert hat, füge "Du" hinzu
+    if (currentUserIndex > -1) {
+        // Entferne den Namen des aktuellen Benutzers aus der Liste
+        const currentUserName = this.findUserNameById(currentUserId);
+        const filteredUserNames = userNames.filter(name => name !== currentUserName);
+        
+        // Kombiniere die Benutzernamen
+        let nameList = filteredUserNames.join(", ");
+        if (nameList.length > 0) {
+            return `Du und ${nameList}` + (filteredUserNames.length > 1 ? "..." : "");
+        } else {
+            return "Du";
+        }
+    }
+
+    // Falls der aktuelle Benutzer nicht reagiert hat, zeige nur die anderen Benutzernamen
+    return userNames.length > 0 ? userNames.join(", ") : "Keine Reaktionen";
+}
+
+
+toggleEmojiReaction(message: Message, emojiData: EmojiData) {
+  const currentUserId = this.userId; // Aktuelle Benutzer-ID
+  const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
+
+  if (currentUserIndex > -1) {
+      // Der Benutzer hat bereits reagiert, also reagiere zurück
+      emojiData.userIds.splice(currentUserIndex, 1); // Entferne die Reaktion
+  } else {
+      // Der Benutzer hat noch nicht reagiert, also füge die Reaktion hinzu
+      emojiData.userIds.push(currentUserId); // Füge die Benutzer-ID hinzu
+  }
+
+  // Aktualisiere die Emojis in Firebase
+  this.updateEmojisInFirebase(message);
+}
+
+
+  extractFileName(fileUrl: string): string {
+    if (!fileUrl) return '';
+    const decodedUrl = decodeURIComponent(fileUrl);
+
+    const parts = decodedUrl.split('/');
+    const lastPart = parts[parts.length - 1];
+
+    const fileName = lastPart.split('?')[0];
+    return fileName;
+  }
   editDirectMessage(message: Message) {
     message.isEditing = true;
     message.editedText = message.text;
 
     if (message.fileUrl) {
       const filename = message.fileName || this.extractFileName(message.fileUrl);
-      // Füge den Dateinamen unter dem Text hinzu
       message.editedText += `\nDatei: ${filename}`;
     }
   }
+
   removeFile(message: Message) {
     if (message.fileUrl) {
       const storage = getStorage();
@@ -593,16 +698,7 @@ export class ChannelComponent {
     }
   }
 
-  extractFileName(fileUrl: string): string {
-    if (!fileUrl) return '';
-    const decodedUrl = decodeURIComponent(fileUrl);
 
-    const parts = decodedUrl.split('/');
-    const lastPart = parts[parts.length - 1];
-
-    const fileName = lastPart.split('?')[0];
-    return fileName;
-  }
   tagUser: boolean = false;
   toggleAutoListe() {
     this.tagUser = !this.tagUser

@@ -6,50 +6,55 @@ export interface MessageData {
   user?: string;
   timestamp?: any; // Use a more specific type if applicable
   answers?: Answer[];
-  emojis?: string[];
+  emojis?: EmojiData[];
   fileUrl?: string;
   fileType?: string;
   fileName?: string;
 }
-
+export interface EmojiData {
+  emoji: string; 
+  userIds: string[];
+}
 export class Message {
   messageId!: string;
   text!: string;
   user!: string;
   timestamp!: Date;
   fullDate!: string;
-  answers: Answer[] = []; 
-  emojis: string[] = [];
+  answers: Answer[] = [];
+  emojis: EmojiData[] = [];
   fileUrl?: string;
   fileType?: string;
   fileName?: string;
   isEditing: boolean = false;
   editedText: string = '';
 
-  
+
   constructor(obj: MessageData = {}, messageId: string = '') {
-    this.messageId = messageId; // should be set from Firestore
+    this.messageId = messageId; 
     this.text = obj.text || '';
     this.user = obj.user || '';
     const date = obj.timestamp ? this.getDateFromTimestamp(obj.timestamp) : new Date();
     this.timestamp = date;
     this.fullDate = this.formatFullDate(date);
     this.answers = Array.isArray(obj.answers) ? obj.answers.map(a => new Answer(a)) : []; // Initialize answers
-    this.emojis = obj.emojis || []
+    this.emojis = (obj.emojis || []).map(e => 
+      typeof e === 'string' ? { emoji: e, userIds: [] } : e // Setze userId auf ein leeres Array
+    );
     this.fileUrl = obj.fileUrl || '';
     this.fileType = obj.fileType || '';
     this.fileName = obj.fileName || '';
-    this.editedText = this.text; 
-}
-
-public getLastAnswerTimestamp():string|any {
-  if (this.answers.length === 0) {
-    return null; // Keine Antworten vorhanden
+    this.editedText = this.text;
   }
 
-  const lastAnswer = this.answers[this.answers.length - 1];
-  return lastAnswer.formatTimestamp(); // Formatierter Zeitstempel der letzten Antwort
-}
+  public getLastAnswerTimestamp(): string | any {
+    if (this.answers.length === 0) {
+      return null; // Keine Antworten vorhanden
+    }
+
+    const lastAnswer = this.answers[this.answers.length - 1];
+    return lastAnswer.formatTimestamp(); // Formatierter Zeitstempel der letzten Antwort
+  }
   private getDateFromTimestamp(timestamp: any): Date {
     return timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp);
   }
@@ -84,7 +89,7 @@ public getLastAnswerTimestamp():string|any {
       timestamp: this.timestamp,
       fullDate: this.fullDate,
       answers: this.answers,
-      emojis:this.emojis,
+      emojis: this.emojis,
       fileUrl: this.fileUrl,
       fileType: this.fileType,
       fileName: this.fileName

@@ -71,6 +71,27 @@
                                         {{ message.answers.length }} Antworten
                                         <p class="time">Letzte Antwort {{message.getLastAnswerTimestamp()}} </p>
                                     </div>
+                                    <div style="display: flex;align-items: center;gap: 8px;">
+                                        <div *ngFor="let emojiData of message.emojis">
+                                            <span class="emoji-container" *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0" 
+                                                (click)="toggleEmojiReaction(message, emojiData)">
+                                                <img [src]="getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" />
+                                                <span>{{ emojiData.userIds.length }}</span> <!-- Anzeige der Anzahl der Benutzer -->
+                                                <div class="emoji-tooltip"  *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0">
+                                                    <span 
+                                                          style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                                                        <img [src]="getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" width="30px" />
+                                                        <span style="font-size: 16px; font-weight: 700;">
+                                                            {{ getEmojiReactionText(emojiData) }}
+                                                        </span>
+                                                        <span style="font-size: 16px; font-weight: 400;"> {{ emojiData.userIds.length > 1 ? 'haben reagiert' : 'hat reagiert' }}</span>
+                                                    </span>
+                                                </div>
+                                            </span>
+                                            
+                                            
+                                        </div>
+                                    </div>
                                 </div>
                                 <div *ngIf="message.isEditing" class="textAreaContainer">
                                     <textarea [(ngModel)]="message.editedText" class="textEditingArea">
@@ -93,10 +114,16 @@
                             </div>
                             <div class="reaction-hover" [ngClass]="{'reaction-left': isCurrentUser(message.user)}"
                                 *ngIf="!message.isEditing">
-                                <img src="./assets/icons/🦆 emoji _white heavy check mark_.png" alt="">
-                                <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png"
-                                    alt="">
-                                <img src="./assets/icons/add_reaction.png" alt="">
+                                <img src="./assets/icons/emoji _nerd face_.png" alt="nerd face"
+                                    (click)="toggleUserEmoji(message, 'nerd face', userId)" />
+                                <img src="./assets/icons/emoji _person raising both hands in celebration_.png"
+                                    alt="raising both hands"
+                                    (click)="toggleUserEmoji(message, 'raising both hands', userId)" />
+                                <img src="./assets/icons/emoji _white heavy check mark_.png" alt="heavy check mark"
+                                    (click)="toggleUserEmoji(message, 'heavy check mark', userId)" />
+                                <img src="./assets/icons/emoji _rocket_.png" alt="rocket"
+                                    (click)="toggleUserEmoji(message, 'rocket', userId)" />
+
                                 <img src="./assets/icons/comment.png" alt="" (click)="openThread(message)">
                                 <img src="./assets/icons/more_vert.png" alt="" *ngIf="isCurrentUser(message.user)"
                                     (click)="editDirectMessage(message)">
@@ -171,19 +198,21 @@
                 <div *ngIf="showAutocomplete" class="autocomplete-list">
                     <ul class="searchListe">
                         <li *ngFor="let channel of filteredChannels" (click)="selectValue(channel.channelName)">
-                            <div style="cursor: pointer;" *ngIf="inputValue.startsWith('#')">{{ channel.channelName }}
+                            <div style="cursor: pointer;" *ngIf="inputValue.startsWith('#')" class="channel_liste">{{
+                                channel.channelName }}
                             </div>
                         </li>
                         <li *ngFor="let user of filteredUsers" (click)="selectValue(user.name)">
                             <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;"
-                                *ngIf="inputValue.startsWith('@')">
+                                *ngIf="inputValue.startsWith('@')" class="channel_liste">
                                 <img [src]="getAvatarForUser(user.name)" alt=""
                                     style="width: 30px; height: 30px; border-radius: 30px;" />
                                 {{ user.name }}
                             </div>
                         </li>
                         <li *ngFor="let user of filteredUsers" (click)="selectValue(user.mail)">
-                            <div *ngIf="!inputValue.startsWith('@') && !inputValue.startsWith('#')"> {{user.mail}}</div>
+                            <div *ngIf="!inputValue.startsWith('@') && !inputValue.startsWith('#')"
+                                class="channel_liste"> {{user.mail}}</div>
                         </li>
                     </ul>
                 </div>

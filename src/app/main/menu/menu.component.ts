@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output } from '@angular/core';
-import { collection, doc, documentId, Firestore, getDocs, onSnapshot, query, setDoc, where } from '@angular/fire/firestore';
+import { collection,Firestore, onSnapshot } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogAddChannelComponent } from '../../dialog-add-channel/dialog-add-channel.component';
 import { SharedService } from '../../services/shared.service';
 import { ChatService } from '../../services/chat.service';
 import { UserService } from '../../services/user.service';  
 import { ActivatedRoute } from '@angular/router';
+
 
 
 @Component({
