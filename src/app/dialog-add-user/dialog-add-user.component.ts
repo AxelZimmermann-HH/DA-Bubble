@@ -92,10 +92,9 @@ export class DialogAddUserComponent {
           this.dialogRef.close(false);
           return;
         }
-
-        await updateDoc(channelRef, {
-          members: [...currentMembers, user.toJson()]
-        });
+        const updatedMembers = [...currentMembers, user.toJson()];
+        
+        await updateDoc(channelRef, { members: updatedMembers });
 
         this.dialogRef.close(true);
 

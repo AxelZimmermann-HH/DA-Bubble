@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
 import { EmojiData, Message } from '../../models/message.class';
@@ -90,7 +90,6 @@ export class ChannelComponent {
     public chatService: ChatService,
     public searchService: SearchService,
     private sanitizer: DomSanitizer,
-
   ) { }
 
   ngOnInit() {
@@ -393,7 +392,7 @@ export class ChannelComponent {
       }
 
       else if (inputValue.startsWith('#')) {
-        const channelName = inputValue.slice(1).trim(); // Kanalname ohne '#'
+        const channelName = inputValue.slice(1).trim();
         const channelId = this.getChannelIdByName(channelName);
         if (channelId) {
           await this.sendChannelMessage(channelId, this.newMessageText, fileUrl);
@@ -411,12 +410,12 @@ export class ChannelComponent {
   }
 
   async sendChannelMessage(channelId: string | null, message: string, fileUrl: string | null) {
-    // Überprüfen, ob die Nachricht oder die Datei leer ist
+ 
     if (message.trim() === '' && !fileUrl) return;
 
     const messageData = {
       text: message,
-      user: this.findUserNameById(this.userId), // Benutzernamen finden
+      user: this.findUserNameById(this.userId), 
       timestamp: Timestamp.now(),
       fullDate: new Date().toDateString(),
       answers: [],
@@ -487,8 +486,6 @@ export class ChannelComponent {
     this.fileDownloadUrl = '';
   }
 
-
-
   getUserIdByname(userName: string) {
     const user = this.userData.find((user: User) => user.name === userName);
     return user ? user.userId : undefined;
@@ -504,9 +501,10 @@ export class ChannelComponent {
   }
 
   openDialogAddUser() {
-    this.dialog.open(DialogAddUserComponent, {
+  this.dialog.open(DialogAddUserComponent, {
       data: { channel: this.selectedChannel, source: 'channelComponent' }
-    });
+  });
+   
   }
 
   openDialogEditChannel(channel: any) {
@@ -616,19 +614,14 @@ export class ChannelComponent {
   }
 
   getEmojiReactionText(emojiData: EmojiData): string {
-    const currentUserId = this.userId; // Aktuelle Benutzer-ID
+    const currentUserId = this.userId;
     const userNames = emojiData.userIds.map(userId => this.findUserNameById(userId));
     
-    // Überprüfen, ob die aktuelle Benutzer-ID in der Liste der Benutzer-IDs ist
     const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
-
-    // Wenn der aktuelle Benutzer reagiert hat, füge "Du" hinzu
     if (currentUserIndex > -1) {
-        // Entferne den Namen des aktuellen Benutzers aus der Liste
         const currentUserName = this.findUserNameById(currentUserId);
         const filteredUserNames = userNames.filter(name => name !== currentUserName);
         
-        // Kombiniere die Benutzernamen
         let nameList = filteredUserNames.join(", ");
         if (nameList.length > 0) {
             return `Du und ${nameList}` + (filteredUserNames.length > 1 ? "..." : "");
@@ -636,8 +629,6 @@ export class ChannelComponent {
             return "Du";
         }
     }
-
-    // Falls der aktuelle Benutzer nicht reagiert hat, zeige nur die anderen Benutzernamen
     return userNames.length > 0 ? userNames.join(", ") : "Keine Reaktionen";
 }
 
@@ -647,14 +638,12 @@ toggleEmojiReaction(message: Message, emojiData: EmojiData) {
   const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
 
   if (currentUserIndex > -1) {
-      // Der Benutzer hat bereits reagiert, also reagiere zurück
-      emojiData.userIds.splice(currentUserIndex, 1); // Entferne die Reaktion
+    
+      emojiData.userIds.splice(currentUserIndex, 1);
   } else {
-      // Der Benutzer hat noch nicht reagiert, also füge die Reaktion hinzu
-      emojiData.userIds.push(currentUserId); // Füge die Benutzer-ID hinzu
+      emojiData.userIds.push(currentUserId); 
   }
 
-  // Aktualisiere die Emojis in Firebase
   this.updateEmojisInFirebase(message);
 }
 
@@ -669,6 +658,7 @@ toggleEmojiReaction(message: Message, emojiData: EmojiData) {
     const fileName = lastPart.split('?')[0];
     return fileName;
   }
+
   editDirectMessage(message: Message) {
     message.isEditing = true;
     message.editedText = message.text;
