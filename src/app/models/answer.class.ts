@@ -1,4 +1,5 @@
 import { Timestamp } from "@angular/fire/firestore";
+import { EmojiData } from './emoji-data.models';
 
 export class Answer {
     text!: string;
@@ -6,14 +7,18 @@ export class Answer {
     timestamp!: Date;
     isEditing: boolean = false;
     editedText: string = '';
-  static isEditing: boolean;
+    static isEditing: boolean;
+    emojis: EmojiData[] = [];
 
     constructor(obj?: any) {
         this.text = obj ? obj.text : '';
         this.user = obj ? obj.user : '';
         const date = obj && obj.timestamp ? this.getDateFromTimestamp(obj.timestamp) : new Date();
         this.timestamp = date;
-        this.editedText = this.text; 
+        this.editedText = this.text;
+        this.emojis = (obj?.emojis || []).map((e: any) =>
+            typeof e === 'string' ? { emoji: e, userIds: [] } : e
+          );
     }
 
     private getDateFromTimestamp(timestamp: any): Date {
@@ -34,6 +39,7 @@ export class Answer {
             text: this.text,
             user: this.user,
             timestamp: this.timestamp,
+            emojis: this.emojis
         };
     }
 }

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
-import { Message ,EmojiData} from '../../models/message.class';
+import { Message } from '../../models/message.class';
 import { arrayUnion, collection, doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -12,6 +12,7 @@ import { UserService } from '../../services/user.service';
 import { ThreadService } from '../../services/thread.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
+import { EmojiData } from './../../models/emoji-data.models';
 
 @Component({
   selector: 'app-thread',
@@ -21,7 +22,6 @@ import { PickerComponent } from '@ctrl/ngx-emoji-mart';
   styleUrls: ['./thread.component.scss']
 })
 export class ThreadComponent {
-[x: string]: any;
 
   user = new User();
   userId!: string;
@@ -34,8 +34,8 @@ export class ThreadComponent {
 
   allMessages: Message[] = [];
 
-  showEmoji:boolean =false;
-  showAnswerEmoji:boolean=false;
+  showEmoji: boolean = false;
+  showAnswerEmoji: boolean = false;
 
   @Output() threadClosed = new EventEmitter<void>();
 
@@ -68,17 +68,16 @@ export class ThreadComponent {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['message'] && this.message && this.message.messageId ) {
+    if (changes['message'] && this.message && this.message.messageId) {
       this.getAnswers(this.message.messageId);
     }
 
-    if (changes['selectedChannelId'] && !changes['selectedChannelId'].isFirstChange() ) {
-      console.log('selected channel changed');
-    this.selectedAnswers=[]
+    if (changes['selectedChannelId'] && !changes['selectedChannelId'].isFirstChange()) {
+      this.selectedAnswers = []
     }
   }
 
- 
+
   getAllUsers() {
     const userCollection = collection(this.firestore, 'users');
     onSnapshot(userCollection, (snapshot) => {
@@ -91,15 +90,13 @@ export class ThreadComponent {
     onSnapshot(messageCollection, (snapshot) => {
       this.allMessages = snapshot.docs.map((doc) => {
         const data = doc.data();
-        console.log('Message ID:', doc.id); // Log the document ID
-        console.log('Message Data:', data); // Log the data
         return new Message({
           ...data,
           timestamp: data['timestamp'],
           answers: data['answers'] ? data['answers'].map((a: any) => new Answer(a)) : []
-        }, doc.id); // Create a new Message instance with the data and message ID
+        }, doc.id);
       });
-      console.log('All Messages:', this.allMessages); // Log all messages after mapping
+      console.log('All Messages:', this.allMessages);
     });
   }
 
@@ -114,8 +111,7 @@ export class ThreadComponent {
           : [];
 
       } else {
-        this.selectedAnswers = []; // Setze auf leer, wenn keine Antworten vorhanden
-        console.log('Keine Antworten gefunden');
+        this.selectedAnswers = [];
       }
     }, (error) => {
       console.error('Fehler beim Abrufen der Antworten: ', error);
@@ -217,26 +213,111 @@ export class ThreadComponent {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
-  
+
+
+
+
+
+
+  //messages
   toggleEmojiReaction(message: Message, emojiData: EmojiData) {
     const currentUserId = this.userId; // Aktuelle Benutzer-ID
     const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
-  
+
     if (currentUserIndex > -1) {
-      
-        emojiData.userIds.splice(currentUserIndex, 1);
+
+      emojiData.userIds.splice(currentUserIndex, 1);
     } else {
-        emojiData.userIds.push(currentUserId); 
+      emojiData.userIds.push(currentUserId);
     }
-  
-    this.updateEmojisInFirebase(message);
+    this.updateEmojisInMessage(message);
   }
-  updateEmojisInFirebase(message: Message) {
+
+  updateEmojisInMessage(message: Message) {
     const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${message.messageId}`);
     updateDoc(messageRef, {
-      emojis: message.emojis  // Aktualisiert die Emoji-Daten in Firebase
+      emojis: message.emojis
     });
   }
+  toggleUserEmoji(message: Message, emoji: string, userId: string) {
+    const emojiData = message.emojis.find((e: EmojiData) => e.emoji === emoji);
+
+    if (!emojiData) {
+      message.emojis.push({ emoji, userIds: [userId] });
+    } else {
+      const userIdIndex = emojiData.userIds.indexOf(userId);
+      if (userIdIndex === -1) {
+        emojiData.userIds.push(userId);
+      } else {
+        emojiData.userIds.splice(userIdIndex, 1);
+      }
+    }
+    this.updateEmojisInMessage(message);
+  }
+
+  //answers
+  toggleEmojiReactionForAnswer(answer: Answer, emojiData: EmojiData) {
+    const currentUserId = this.userId;
+
+    const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
+    if (currentUserIndex > -1) {
+
+      emojiData.userIds.splice(currentUserIndex, 1);
+    } else {
+      emojiData.userIds.push(currentUserId);
+    }
+  
+
+    this.updateEmojisInAnswer(answer);
+  }
+
+  updateEmojisInAnswer(answer: Answer) {
+    const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${this.message.messageId}`);
+
+    // Abrufen der aktuellen Nachricht
+    getDoc(messageRef).then((docSnap) => {
+        if (docSnap.exists()) {
+            const messageData = docSnap.data();
+            const updatedAnswers = messageData['answers'].map((a: any) => {
+                if (a.text === answer.text && a.user === answer.user ) {
+                    a.emojis = answer.emojis;
+                }
+                return a;
+            });
+            updateDoc(messageRef, { answers: updatedAnswers })
+                .then(() => {
+                    console.log("Emoji-Reaktionen für die Antwort erfolgreich gespeichert");
+                })
+                .catch((error) => {
+                    console.error("Fehler beim Speichern der Emoji-Reaktionen für die Antwort: ", error);
+                });
+        }
+    }).catch((error) => {
+        console.error('Fehler beim Abrufen der Nachricht: ', error);
+    });
+}
+
+
+  toggleUserEmojiAnswer(answer: Answer, emoji: string, userId: string) {
+
+    const emojiData = answer.emojis.find((e: EmojiData) => e.emoji === emoji);
+    if (!emojiData) {
+      answer.emojis.push({ emoji, userIds: [userId] });
+    } else {
+      const userIdIndex = emojiData.userIds.indexOf(userId);
+      if (userIdIndex === -1) {
+        emojiData.userIds.push(userId);
+      } else {
+        emojiData.userIds.splice(userIdIndex, 1);
+      }
+    }
+    this.updateEmojisInAnswer(answer)
+  }
+
+
+
+
+
 
   getEmojiSrc(emoji: string): string {
     const emojiMap: { [key: string]: string } = {
@@ -250,43 +331,31 @@ export class ThreadComponent {
   getEmojiReactionText(emojiData: EmojiData): string {
     const currentUserId = this.userId;
     const userNames = emojiData.userIds.map(userId => this.findUserNameById(userId));
-    
+
     const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
     if (currentUserIndex > -1) {
-        const currentUserName = this.findUserNameById(currentUserId);
-        const filteredUserNames = userNames.filter(name => name !== currentUserName);
-        
-        let nameList = filteredUserNames.join(", ");
-        if (nameList.length > 0) {
-            return `Du und ${nameList}` + (filteredUserNames.length > 1 ? "..." : "");
-        } else {
-            return "Du";
-        }
+      const currentUserName = this.findUserNameById(currentUserId);
+      const filteredUserNames = userNames.filter(name => name !== currentUserName);
+
+      let nameList = filteredUserNames.join(", ");
+      if (nameList.length > 0) {
+        return `Du und ${nameList}` + (filteredUserNames.length > 1 ? "..." : "");
+      } else {
+        return "Du";
+      }
     }
     return userNames.length > 0 ? userNames.join(", ") : "Keine Reaktionen";
-}
-toggleShowEmoji(){this.showEmoji = !this.showEmoji}
-addSelectedEmoji(event:any){
-  this.showEmoji=false;
-}
-
-toggleUserEmoji(message: Message, emoji: string, userId: string) {
-  const emojiData = message.emojis.find((e: EmojiData) => e.emoji === emoji);
-
-  if (!emojiData) {
-      message.emojis.push({ emoji, userIds: [userId] });
-  } else {
-      const userIdIndex = emojiData.userIds.indexOf(userId);
-      if (userIdIndex === -1) {
-          emojiData.userIds.push(userId); // Benutzer fügt Emoji hinzu
-      } else {
-          emojiData.userIds.splice(userIdIndex, 1); // Benutzer entfernt Emoji
-      }
   }
-  this.updateEmojisInFirebase(message);
-}
 
-toggleEmojitoAnswer(){
-this.showAnswerEmoji = !this.showAnswerEmoji;
-}
+  toggleShowEmoji() { this.showEmoji = !this.showEmoji }
+
+  addSelectedEmoji(event: any) {
+    this.showEmoji = false;
+  }
+
+
+
+  toggleEmojitoAnswer() {
+    this.showAnswerEmoji = !this.showAnswerEmoji;
+  }
 }

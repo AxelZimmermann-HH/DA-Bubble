@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
-import { EmojiData, Message } from '../../models/message.class';
+import { Message } from '../../models/message.class';
 import { SharedService } from '../../services/shared.service';
 import { ThreadComponent } from "../thread/thread.component";
 import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-channel.component';
@@ -20,7 +20,7 @@ import { FormsModule } from '@angular/forms';
 import { SearchService } from '../../services/search.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { deleteObject, getDownloadURL, getStorage, ref, uploadBytes } from '@angular/fire/storage';
-import { user } from '@angular/fire/auth';
+import { EmojiData } from './../../models/emoji-data.models';
 
 @Component({
   selector: 'app-channel',
@@ -133,17 +133,14 @@ export class ChannelComponent {
 
   subscribeToFilteredData() {
     this.searchService.filteredUsers$.subscribe(users => {
-      console.log('Received Filtered Users:', users); // Debugging-Ausgabe
       this.filteredUsers = users;
     });
 
     this.searchService.filteredChannels$.subscribe(channels => {
-      console.log('Received Filtered Channels:', channels); // Debugging-Ausgabe
       this.filteredChannels = channels;
     });
 
     this.searchService.filteredMessages$.subscribe(messages => {
-      console.log('Received Filtered Messages:', messages); // Debugging-Ausgabe
       this.filteredMessages = messages;
     });
 
@@ -164,7 +161,7 @@ export class ChannelComponent {
 
   findUserNameById(userId: string): string {
     const user = this.userData.find((user: User) => user.userId === userId);
-    return user ? user.name : 'Unbekannt'; // Rückgabe eines Standardwerts
+    return user ? user.name : 'Unbekannt';
 }
 
   async loadChannel(id: string) {
@@ -270,7 +267,7 @@ export class ChannelComponent {
         updateDoc(channelRef, { members: updatedMembers })
           .then(() => {
             this.selectedChannel.members = updatedMembers;
-            console.log('Channel members updated:', this.selectedChannel.members);
+        
           })
           .catch((error) => {
             console.error('Error updating channel members:', error);
@@ -387,7 +384,6 @@ export class ChannelComponent {
 
       else if (inputValue.startsWith('@')) {
         const userName = inputValue.slice(1).trim();
-        console.log('Gesendet an Benutzer:', userName);
         await this.sendDirectMessage(userName);
       }
 
@@ -398,11 +394,6 @@ export class ChannelComponent {
           await this.sendChannelMessage(channelId, this.newMessageText, fileUrl);
         }
       }
-
-      else {
-        console.log('Ungültiger Empfänger:', inputValue);
-      }
-
       this.inputValue = '';
       this.newMessageText = '';
       this.selectedFile = null;
@@ -442,7 +433,6 @@ export class ChannelComponent {
       try {
         const snapshot = await uploadBytes(storageRef, this.selectedFile);
         this.fileDownloadUrl = await getDownloadURL(snapshot.ref);  // Datei-URL speichern
-        console.log('Datei erfolgreich hochgeladen, URL:', this.fileDownloadUrl);  // Debugging-Log
       } catch (error) {
         console.error('Fehler beim Hochladen der Datei:', error);
         return; // Wenn der Upload fehlschlägt, abbrechen
@@ -475,7 +465,6 @@ export class ChannelComponent {
         fileType,
         this.userId
       );
-      console.log('Nachricht erfolgreich gesendet an:', receiverID);
     } catch (error) {
       console.error('Fehler beim Senden der Nachricht:', error);
     }
@@ -559,9 +548,12 @@ export class ChannelComponent {
   toggleEmojiPicker() {
     this.showEmojiPicker = !this.showEmojiPicker
   }
-  toggleEditEmojiPicker() { this.showEditEmojiPicker = !this.showEditEmojiPicker }
+
+  toggleEditEmojiPicker() { 
+    this.showEditEmojiPicker = !this.showEditEmojiPicker 
+  }
+
   addEmojiToNewMessage(event: any) {
-    console.log('gewähltes emojii:', event)
     const emoji = event.emoji.native; // Das ausgewählte Emoji
     this.newMessageText += emoji
     this.showEmojiPicker = false;
@@ -676,8 +668,6 @@ toggleEmojiReaction(message: Message, emojiData: EmojiData) {
 
       deleteObject(fileRef)
         .then(() => {
-          console.log('Datei erfolgreich gelöscht');
-          // Entferne auch den Dateinamen aus der Nachricht
           message.fileUrl = '';
           message.fileName = '';
           message.fileType = '';
@@ -717,8 +707,8 @@ toggleEmojiReaction(message: Message, emojiData: EmojiData) {
     this.selectedFile = file; // Setzt die ausgewählte Datei
     const objectUrl = URL.createObjectURL(file);
     this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
-    console.log('Selected file:', this.selectedFile); // Debugging: Protokolliere die ausgewählte Datei
   }
+
   getSafeUrl(url: string) {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }

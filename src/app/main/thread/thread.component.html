@@ -60,12 +60,10 @@
                                     text-align: center;">
                                         {{ getEmojiReactionText(emojiData) }}
                                     </span>
-                                    <span style="font-size: 16px; font-weight: 400;"> {{ emojiData.userIds.length > 1 ? 'haben reagiert' : 'hat reagiert' }}</span>
+                                    <span style="font-size: 16px; font-weight: 400;text-align: center;"> {{ emojiData.userIds.length > 1 ? 'haben reagiert' : 'hat reagiert' }}</span>
                                 </span>
                             </div>
                         </span>
-                        
-                        
                     </div>
                 </div>
             </div>
@@ -107,21 +105,45 @@
                 <div class="speech-bubble" [ngClass]="{'border-radius': isCurrentUser(answer.user)}">
                     {{ answer.text }}
                 </div>
+                <div style="display: flex;align-items: center;gap: 8px;">
+                    <div *ngFor="let emojiData of answer.emojis">
+                        <span class="emoji-container" *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0" 
+                            (click)="toggleEmojiReactionForAnswer(answer, emojiData)">
+                            <img [src]="getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" />
+                            <span>{{ emojiData.userIds.length }}</span> 
+                            <div class="emoji-tooltip"  *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0">
+                                <span 
+                                      style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                                    <img [src]="getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" width="30px" />
+                                    <span style="font-size: 16px;
+                                    font-weight: 700;
+                                    overflow: scroll;
+                                    height: 54px;
+                                    scrollbar-width: none;
+                                    text-align: center;">
+                                        {{ getEmojiReactionText(emojiData) }}
+                                    </span>
+                                    <span style="font-size: 16px; font-weight: 400;text-align: center;"> {{ emojiData.userIds.length > 1 ? 'haben reagiert' : 'hat reagiert' }}</span>
+                                </span>
+                            </div>
+                        </span>
+                    </div>
+                </div>
             </div>
+      
             <div class="reaction-hover"  *ngIf="!answer.isEditing" [ngClass]="{'reaction-left': isCurrentUser(answer.user)}">
                 <img src="./assets/icons/add_reaction.png" alt="" (click)="toggleEmojitoAnswer()">
                 <img src="./assets/icons/more_vert.png" alt="" *ngIf="isCurrentUser(answer.user)"
                 (click)="editDirectMessage(answer)">
                 <div *ngIf="showAnswerEmoji" style="display: flex;">
                     <img src="./assets/icons/emoji _nerd face_.png" alt="nerd face"
-                                         />
-                    <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png"
-                                        alt="raising both hands"
-                                      />
+                    (click)="toggleUserEmojiAnswer(answer, 'nerd face', userId)"   />
+                    <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png" alt="raising both hands"
+                    (click)="toggleUserEmojiAnswer(answer, 'raising both hands', userId)"   />
                     <img src="./assets/icons/emoji _white heavy check mark_.png" alt="heavy check mark"
-                                        />
+                    (click)="toggleUserEmojiAnswer(answer, 'heavy check mark', userId)"   />
                     <img src="./assets/icons/emoji _rocket_.png" alt="rocket"
-                                        />
+                    (click)="toggleUserEmojiAnswer(answer, 'rocket', userId)"     />
                 </div>
             </div>
             <div *ngIf="answer.isEditing" class="textAreaContainer" >
