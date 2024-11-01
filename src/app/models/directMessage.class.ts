@@ -20,6 +20,8 @@ export class directMessage {
     reactionCheck!: User[];
     reactionNerd!: User[];
     reactionRocket!: User[];
+    //gelesen vom Empfänger
+    isRead:boolean = false;
 
 
     constructor(obj?: any) {
@@ -40,7 +42,7 @@ export class directMessage {
         this.reactionCheck = Array.isArray(obj?.reactionCheck) ? obj.reactionCheck : []; 
         this.reactionNerd = Array.isArray(obj?.reactionNerd) ? obj.reactionNerd : []; 
         this.reactionRocket = Array.isArray(obj?.reactionRocket) ? obj.reactionRocket : []; 
-        
+        this.isRead = false;
     }
 
     public toJson(){
@@ -60,9 +62,7 @@ export class directMessage {
             reactionCheck: this.reactionCheck,
             reactionNerd: this.reactionNerd,
             reactionRocket: this.reactionRocket,
-
-
+            isRead: this.isRead
         }
-       
     }
 }

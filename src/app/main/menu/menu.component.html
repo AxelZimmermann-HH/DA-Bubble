@@ -73,12 +73,12 @@
         <div class="user-container" *ngIf="showUser">
 
         
-            <div class="user" (click)="this.chatService.openDirectMessage(currentUserId, user.userId); selectChat()"
+            <div class="user" (click)="this.chatService.openDirectMessage(currentUserId, user.userId); selectChat();"
                 *ngFor="let user of filteredUsers">
                 <div class="avatar-container">
                     <img class="user-avatar" [src]="getAvatarForUser(user.name)" alt="">
                     <div [ngClass]="{'offline-point': !user.online}" class="online-point"></div>
-                    <div class="message-count">1</div>
+                    <div *ngIf="unreadCounts.get(user.chatId) ?? 0"  class="message-count">{{ unreadCounts.get(user.chatId)}}</div>
                 </div>
                 <span class="header3">{{user.name}}
                     @if (user.name === currentUser?.name) {

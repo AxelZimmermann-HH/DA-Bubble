@@ -66,12 +66,22 @@ export class ChatService {
       //öffnet den vorhanden Chat
       querySnapshot.forEach((doc) => {
         this.getChatData(chatId);
+        
         console.log('chat gefunden:', doc.id, '=>', doc.data());
       });
-
+      await this.markMessagesAsRead(chatId);
+              // Aktualisiere den Zähler für ungelesene Nachrichten
+              this.updateUnreadCounts(chatId);
     }
     this.getUserData(userId);
   };
+
+  // Methode zum Aktualisieren der ungelesenen Nachrichten-Zähler
+updateUnreadCounts(chatId: string) {
+  // Hier kannst du den Zähler für ungelesene Nachrichten zurücksetzen, da der Chat geöffnet wurde
+  this.unreadCountMap.set(chatId, 0);
+  this.unreadCount$.next(new Map(this.unreadCountMap)); // Benachrichtige die UI
+}
 
 
   //erstellt eine Chat-ID aus den Nutzer ID's
@@ -146,7 +156,8 @@ export class ChatService {
               reactionCelebrate: messageData['reactionCelebrate'],
               reactionCheck: messageData['reactionCheck'],
               reactionNerd: messageData['reactionNerd'],
-              reactionRocket: messageData['reactionRocket']
+              reactionRocket: messageData['reactionRocket'],
+              isRead: messageData['isRead']
             };
 
             this.chatMessages.push(chatData);
@@ -226,7 +237,8 @@ export class ChatService {
   async saveNewDirectMessage(dmData: any) {
     try {
       console.log('Speichere neue Direktnachricht mit Daten:', dmData);
-      await addDoc(collection(this.firestore, 'chats', this.chatId, 'messages'), dmData);
+      const docRef = await addDoc(collection(this.firestore, 'chats', this.chatId, 'messages'), dmData);
+      await updateDoc(docRef, { messageId: docRef.id });
     } catch (error: any) {
       console.error('Fehler beim Erstellen der Nachricht:', error);
     }
@@ -235,28 +247,19 @@ export class ChatService {
 
   // Setze Daten für den editierten Chat
   async setEditedChatData(editedDM: string, message: any) {
-    const newDirectMessage = new directMessage();
-    newDirectMessage.chatId = message.chatId;
-    newDirectMessage.messageId = message.messageId;
-    newDirectMessage.senderId = message.senderId;
-    newDirectMessage.receiverId = message.receiverId;
-    newDirectMessage.text = editedDM;
-    newDirectMessage.timestamp = message.timestamp;
-    newDirectMessage.time = message.time;
-    newDirectMessage.dayDateMonth = message.dayDateMonth;
-    newDirectMessage.fileName = message.fileName;
-    newDirectMessage.fileDownloadUrl = message.fileDownloadUrl;
-    newDirectMessage.fileType = message.fileType;
-    const dmData = newDirectMessage.toJson();
-
-    this.saveEditedMessage(dmData);
+    debugger
+    const chatId = message.chatId;
+    const messageId = message.messageId;
+    const text = editedDM;
+    this.saveEditedMessage(chatId, messageId, text);
   };
 
 
   // Bearbeitete Nachricht speichern
-  async saveEditedMessage(dmData: any) {
+  async saveEditedMessage(chatId: string, messageId: string, text: any) {
     try {
-      await setDoc(doc(this.firestore, 'chats', dmData.chatId, 'messages', dmData.messageId), dmData
+      await updateDoc(doc(this.firestore, 'chats', chatId, 'messages', messageId), {
+        'text': text}
       );
     } catch (error: any) {
       console.error('Fehler beim Erstellen der Nachricht:', error);
@@ -289,11 +292,15 @@ export class ChatService {
 
     return `${dayOfWeek}, ${day}. ${month}`;
   }
+
   async doesChatExist(chatId: string): Promise<boolean> {
     const checkIfChatExists = query(collection(this.firestore, "chats"), where(documentId(), "==", chatId));
     const querySnapshot = await getDocs(checkIfChatExists);
     return !querySnapshot.empty;
   }
+
+  currentUserId: string = ''; // ID des aktuell eingeloggten Benutzers
+  currentOpenChatId: string | null = null; // Aktuell geöffneter Chat
 
 
   // Senden der Nachricht an mehrere User
@@ -319,7 +326,116 @@ export class ChatService {
     }
   }
 
-  // Im ChatService
+  //VERSION: OLIVER >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  private unreadCountMap = new Map<string, number>(); // Map für ungelesene Nachrichten pro Chat
+  unreadCount$ = new BehaviorSubject<Map<string, number>>(this.unreadCountMap); // Observable für die UI
+
+  // Initialisiere die Abfrage, um alle ungelesenen Nachrichten zu überwachen
+  initializeUnreadCounts(currentUserId: string) {
+  const chatsCollection = collection(this.firestore, 'chats');
+
+  // Abfrage aller Chats für den aktuellen Benutzer
+  const userChatsQuery = query(
+   chatsCollection,
+   where('users', 'array-contains', currentUserId) // Angenommen, `participants` ist ein Array mit den Benutzer-IDs
+  );
+
+  // Hole alle Chats des Benutzers
+  onSnapshot(userChatsQuery, (snapshot) => {
+   this.unreadCountMap.clear(); // Map zurücksetzen
+
+   snapshot.forEach(async (chatDoc) => {
+     const chatId = chatDoc.id;
+     const messagesCollection = collection(this.firestore, `chats/${chatId}/messages`);
+
+     const unreadMessagesQuery = query(
+       messagesCollection,
+       where('receiverID', '==', currentUserId),
+       where('isRead', '==', false)
+     );
+
+     // Abonniere die ungelesenen Nachrichten in diesem Chat
+     onSnapshot(unreadMessagesQuery, (messageSnapshot) => {
+       const unreadCount = messageSnapshot.size; // Anzahl der ungelesenen Nachrichten
+       console.log(unreadCount)
+       if (unreadCount > 0) {
+         this.unreadCountMap.set(chatId, unreadCount);
+       } else {
+         this.unreadCountMap.delete(chatId); // Entferne den Zähler, wenn keine ungelesenen Nachrichten vorhanden sind
+       }
+       console.log(this.unreadCountMap)
+       // Aktualisiere die Map, damit alle Abonnenten benachrichtigt werden
+       this.unreadCount$.next(new Map(this.unreadCountMap));
+       console.log('ungelesen:', this.unreadCountMap)
+       
+      });
+   });
+  });
+}
+
+  // Ungelesene Nachrichten zählen, die an den aktuellen Benutzer gesendet wurden
+  getUnreadCount(chatId: string) {
+    const messagesCollection = collection(this.firestore, `chats/${chatId}/messages`);
+    
+    const unreadMessagesQuery = query(
+      messagesCollection, 
+      where('isRead', '==', false), 
+      where('receiverID', '==', this.currentUserId)
+    );
+
+    // Echtzeit-Listener für ungelesene Nachrichten
+    onSnapshot(unreadMessagesQuery, (snapshot) => {
+      const unreadCount = snapshot.size;
+      this.unreadCountMap.set(chatId, unreadCount);
+      this.unreadCount$.next(this.unreadCountMap);
+    });
+  }
+
+  // Setze alle Nachrichten als gelesen für den aktuellen Benutzer im geöffneten Chat
+  markMessagesAsRead(chatId: string) {
+    const messagesCollection = collection(this.firestore, `chats/${chatId}/messages`);
+    const unreadMessagesQuery = query(
+      messagesCollection, 
+      where('isRead', '==', false), 
+      where('receiverID', '==', this.currentUserId)
+    );
+
+    onSnapshot(unreadMessagesQuery, (snapshot) => {
+      // Prüfen, ob Nachrichten gefunden wurden
+      if (snapshot.empty) {
+        console.log(`Keine ungelesenen Nachrichten gefunden für chatId: ${chatId}`);
+      } else {
+        console.log(`Gefundene Nachrichten: ${snapshot.size}`);
+      }
+
+      snapshot.forEach((messageDoc) => {
+        const messageRef = doc(this.firestore, `chats/${chatId}/messages/${messageDoc.id}`);
+        
+        console.log(`Aktualisiere Nachricht mit ID: ${messageDoc.id}`);
+        
+        updateDoc(messageRef, { isRead: true })
+          .then(() => {
+            console.log(`Nachricht ${messageDoc.id} erfolgreich als gelesen markiert.`);
+          })
+          .catch((error) => {
+            console.error(`Fehler beim Aktualisieren von Nachricht ${messageDoc.id}:`, error);
+          });
+      });
+
+      // Zähler zurücksetzen, nachdem alle Nachrichten als gelesen markiert wurden
+      this.unreadCountMap.set(chatId, 0);
+      this.unreadCount$.next(this.unreadCountMap);
+    });
+    
+  }
+
+
+
+
+
+  // VERSION: AXEL>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  //Im ChatService
 private newMessageCountSubject = new BehaviorSubject<{ [userId: string]: number }>({});
 newMessageCount$ = this.newMessageCountSubject.asObservable();
 
@@ -351,8 +467,6 @@ async startListeningForNewMessages(currentUserId: string, lastLoginTimestamp: Da
     });
   });
 }
-
-
 
 }
 

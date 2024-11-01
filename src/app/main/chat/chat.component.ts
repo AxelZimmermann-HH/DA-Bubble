@@ -55,8 +55,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     private cdr: ChangeDetectorRef
   ) { }
 
-  
-
 
   getAvatarForUser(userName: string): any {
     if (!this.user || !this.user.name) {
@@ -112,14 +110,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
       }
     });
 
-    // Abonniere aktuellen Benutzer
-    // this.userService.currentUser$.subscribe(user => {
-    //   this.currentUser = user;
-    //   if (user) {
-    //     this.currentUserId = user.userId;
-    //   }
-    // });
-
 
     // Abonniere und lade den Chat
     this.chatService.chat$.subscribe((chatSubject) => {
@@ -145,9 +135,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
   }
 
   
-  
-
-
   async sendDirectMessage() {
     const newDm = this.directMessage.value!;
     const fileDownloadUrl = this.fileDownloadUrl;
@@ -357,7 +344,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
   }
 
   // @ Users 
-  
   toggleUserList() {
     if (this.userList.length === 0) {
       this.userService.loadUsers().then(() => {
@@ -392,12 +378,12 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     if (user) {
       this.selectedNames.push({ name: user.name, userId: user.userId });
       this.hasNames = true;
-  
       this.cdr.detectChanges();
     }
 
     this.toggleUserList();
   }
+
 
   removeName(index: number) {
     this.selectedNames.splice(index, 1); 
@@ -405,11 +391,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     this.cdr.detectChanges();
   }
   
-  
-
-
-
-
   //Reactions
   //if: wenn der aktuelle Nutzer noch nicht die angeklickte Reaktion gewählt hat, wird er dieser Reaktion hinzugefügt
   //else: wenn schon gewählt, dann wird er wieder entfernt
@@ -437,6 +418,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
   }
 
   async addReaction(currentUser: User, message: any, reaction: string) {
+    debugger
     console.log(message); // Nachricht prüfen
     const currentUsers = message[reaction] || [];
     
@@ -454,5 +436,4 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
       });
     }
   }
-  
 }

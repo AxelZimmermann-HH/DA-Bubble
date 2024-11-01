@@ -54,6 +54,7 @@ export class MenuComponent {
 
   userId!:string;
   selectedChannel: any = null; 
+  public unreadCounts = new Map<string, number>();
 
   @Output() channelSelected = new EventEmitter<any>();
   @Output() chatSelected = new EventEmitter<void>();
@@ -63,21 +64,35 @@ export class MenuComponent {
     await this.getAllChannels('channels');
     await this.getAllUsers('users');
     this.subscribeToSearch();
-
+    
     // Benutzer abonnieren und in currentUser speichern
     this.userService.currentUser$.subscribe(user => {
       this.currentUser = user;
       if (user) {
-        //console.log('Angemeldeter Benutzer:', user);
         this.currentUserId = user.userId;
-      }
+        this.chatService.currentUserId = this.currentUserId;
+        this.chatService.initializeUnreadCounts(this.currentUserId); // Verschiebe hierher
+    }
     });
 
+    
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
+      this.currentUserId = this.userId;
+    });
+
+
+    // Abonniere die ungelesenen Zähler für alle Chats
+    this.chatService.unreadCount$.subscribe((counts) => {
+      this.unreadCounts = counts;
+      console.log(this.unreadCounts)
     });
   
   }
+
+  createChatID(myUserId: string, userId: string) {
+    return [myUserId, userId].sort().join('_');
+  };
 
   subscribeToSearch() {
     this.sharedService.searchTerm$.subscribe((term) => {
@@ -173,6 +188,10 @@ export class MenuComponent {
         });
 
         this.filteredUsers = this.userData;
+        this.filteredUsers.forEach(user => {
+          user.chatId = this.createChatID(this.currentUserId, user.userId);
+        });
+        console.log(this.filteredUsers)
       },
       (error) => {
         console.error('Fehler beim laden der User-Daten:', error);
@@ -258,6 +277,8 @@ export class MenuComponent {
   selectChat() {
     this.chatSelected.emit();
   }
+
+
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
     if (user) {
@@ -269,6 +290,13 @@ export class MenuComponent {
     }
     return './assets/avatars/avatar_0.png';  // Default avatar when user not found
   }
+
+
+
+
+
+
+
   
   //öffnet den PvP Chat
   //async openDirectMessage(currentUserId:string, userId:string){
