@@ -10,7 +10,7 @@ import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../services/user.service';
 import { ThreadService } from '../../services/thread.service';
-import { DomSanitizer } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { EmojiData } from './../../models/emoji-data.models';
 
@@ -36,6 +36,11 @@ export class ThreadComponent {
 
   showEmoji: boolean = false;
   showAnswerEmoji: boolean = false;
+
+  fileUrl: SafeResourceUrl | null = null;
+  selectedFile: File | null = null;
+  fileDownloadUrl!: string;
+  showEmojiPicker: boolean = false;
 
   @Output() threadClosed = new EventEmitter<void>();
 
@@ -297,9 +302,7 @@ export class ThreadComponent {
     });
 }
 
-
   toggleUserEmojiAnswer(answer: Answer, emoji: string, userId: string) {
-
     const emojiData = answer.emojis.find((e: EmojiData) => e.emoji === emoji);
     if (!emojiData) {
       answer.emojis.push({ emoji, userIds: [userId] });
@@ -357,5 +360,40 @@ export class ThreadComponent {
 
   toggleEmojitoAnswer() {
     this.showAnswerEmoji = !this.showAnswerEmoji;
+  }
+
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;  // Speichere die Datei
+      const objectUrl = URL.createObjectURL(file);  // Erstelle eine Objekt-URL
+      if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+        this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
+      } else {
+        this.fileUrl = null; 
+      }
+    }
+  }
+  toggleEmojiPicker() {
+    this.showEmojiPicker = !this.showEmojiPicker
+  }
+
+  tagUser: boolean = false;
+  toggleAutoListe() {
+    this.tagUser = !this.tagUser
+  }
+
+  addEmoji(event: any) {
+    const emoji = event.emoji.native; // Das ausgewählte Emoji
+    this.newAnswerText += emoji
+    this.showEmojiPicker = false;
+  }
+  closePreview() {
+    this.fileUrl = null;
+    this.selectedFile = null;
+  }
+  selectUser(user: User) {
+    this.newAnswerText += `@${user.name}`;
+    this.tagUser = false;
   }
 }

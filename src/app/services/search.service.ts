@@ -43,17 +43,20 @@ export class SearchService {
             const filteredUsers = users.filter(user =>
                 user.name.toLowerCase().includes(query.slice(1)) 
             );
+            console.log('Filtered Users:', filteredUsers);
             this.filteredUsersSubject.next(filteredUsers);
         } else if (searchTerm.startsWith('#')) {
             const filteredChannels = channels.filter(channel =>
                 channel.channelName.toLowerCase().includes(query.slice(1))
             );
+            console.log('Filtered Channels:', filteredChannels); 
             this.filteredChannelsSubject.next(filteredChannels);
         } else {
             
             const filteredEmails = users.filter(user =>
                 user.mail.toLowerCase().includes(query) 
             );
+            console.log('Filtered Emails:', filteredEmails);
             this.filteredUsersSubject.next(filteredEmails);
     
             const filteredMessages = messages.filter(message =>
@@ -61,6 +64,7 @@ export class SearchService {
             );
             this.filteredMessagesSubject.next(filteredMessages);
         }
+        this.showAutocompleteList()
     
     }
     

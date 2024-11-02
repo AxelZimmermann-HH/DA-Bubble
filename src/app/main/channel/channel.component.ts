@@ -170,7 +170,7 @@ export class ChannelComponent {
       if (doc.exists()) {
         const data = doc.data();
         this.selectedChannel = new Channel({ ...data, id });
-        this.updateChannelMembers();
+         this.updateChannelMembers();
       } else {
         this.selectedChannel = null;
       }
@@ -255,23 +255,24 @@ export class ChannelComponent {
     });
   }
 
-  updateChannelMembers() {
-    if (this.selectedChannel) {
+  async updateChannelMembers() {
+    if (this.selectedChannel && this.userData?.length > 0) {
       const currentMemberIds = this.selectedChannel.members.map((member: any) => member.userId);
+  
+      // Filter nur Mitglieder aus, die in userData existieren
       const updatedMembers = this.selectedChannel.members.filter((member: any) =>
         this.userData.some((user: User) => user.userId === member.userId)
       );
-
+  
+      // Check, ob sich die Anzahl der Mitglieder geändert hat
       if (updatedMembers.length !== currentMemberIds.length) {
-        const channelRef = doc(this.firestore, 'channels', this.selectedChannelId!);
-        updateDoc(channelRef, { members: updatedMembers })
-          .then(() => {
-            this.selectedChannel.members = updatedMembers;
-        
-          })
-          .catch((error) => {
-            console.error('Error updating channel members:', error);
-          });
+        try {
+          const channelRef = doc(this.firestore, 'channels', this.selectedChannelId!);
+          await updateDoc(channelRef, { members: updatedMembers });
+          this.selectedChannel.members = updatedMembers;
+        } catch (error) {
+          console.error('Error updating channel members:', error);
+        }
       }
     }
   }
@@ -336,9 +337,7 @@ export class ChannelComponent {
   }
 
   async sendEmail(email: string, message: string, fileUrl: string | null) {
-
     console.log(`E-Mail an ${email} gesendet mit Nachricht: ${message}`);
-
   }
 
   getChannelIdByName(channelName: string): string | null {
@@ -691,13 +690,10 @@ toggleEmojiReaction(message: Message, emojiData: EmojiData) {
     if (file) {
       this.selectedFile = file;  // Speichere die Datei
       const objectUrl = URL.createObjectURL(file);  // Erstelle eine Objekt-URL
-
-      // Erstelle eine sichere URL für die Vorschau von Bildern und PDFs
       if (file.type.startsWith('image/') || file.type === 'application/pdf') {
         this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
       } else {
-        // Für andere Dateitypen kann die Vorschau weggelassen werden
-        this.fileUrl = null; // Keine Vorschau
+        this.fileUrl = null; 
       }
     }
   }

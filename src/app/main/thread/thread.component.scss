@@ -46,7 +46,7 @@
 .message-main {
     display: flex;
     gap: 16px;
-    height: 192px;
+    height: auto;
     margin: 20px 0;
     padding: 25px 45px;
     position: relative;
@@ -112,7 +112,7 @@
 }
 
 .custom-input {
-    height: 145px;
+    height: auto;
     width: 380px;
     border-radius: 20px;
     gap: 8px;
@@ -367,5 +367,42 @@
     height: auto;
     white-space: wrap;
     z-index: 10;
+}
 
+.open-file-button {
+    border: 1px solid #797EF3;
+    border-radius: 30px;
+    background-color: #444DF2;
+    color: #FFFFFF;
+    padding: 12px 25px;
+    width: fit-content;
+    text-decoration: none;
+    transition: all 100ms ease-out;
+
+    &:hover {
+        cursor: pointer;
+        color: #444DF2;
+        background-color: #FFFFFF;
+    }
+}
+.searchListe {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: scroll;
+    scrollbar-width: none;
+    background: rgba(255, 255, 255, 1);
+    font-size: 18px;
+    font-weight: 400;
+    height: 150px;
+    width: max-content;
+    box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.2);
+    border-radius: 0 20px 20px 20px;
+    padding: 40px;
+
+}
+emoji-mart{
+    position: absolute;
+    bottom: 0;
 }

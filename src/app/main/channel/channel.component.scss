@@ -158,7 +158,7 @@
         .message-main {
             display: flex;
             gap: 16px;
-            height: 192px;
+            height: auto;
             margin: 20px 0;
             padding: 25px 45px;
             width: 100%;
@@ -167,6 +167,7 @@
         .message-content {
             display: flex;
             flex-direction: column;
+            justify-content:space-around;
             gap: 16px;
 
             .name-time {
@@ -544,9 +545,10 @@ emoji-mart {
     border-radius: 30px;
     background-color: #444DF2;
     color: #FFFFFF;
-    padding: 12px 25px;
+    padding: 12px 15px;
     width: fit-content;
     text-decoration: none;
+    align-self: center;
     transition: all 100ms ease-out;
 
     &:hover {

@@ -1,19 +1,35 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
-
-import {onRequest} from "firebase-functions/v2/https";
+import * as nodemailer from 'nodemailer';
+import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+// Konfiguration für den E-Mail-Versand
+const transporter = nodemailer.createTransport({
+  service: 'Gmail', // Du kannst auch andere SMTP-Dienste verwenden
+  auth: {
+    user: 'deine-email@gmail.com', // Deine E-Mail-Adresse
+    pass: 'dein-passwort', // Dein E-Mail-Passwort (achte auf die Sicherheit!)
+  },
+});
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+// Firebase Function zum Versenden der E-Mail
+export const sendEmail = onRequest(async (request, response) => {
+  const { email, message, fileUrl } = request.body;
+
+  const mailOptions = {
+    from: 'deine-email@gmail.com',
+    to: email,
+    subject: 'Nachricht von deiner App',
+    text: message,
+    html: fileUrl ? `<p>${message}</p><p><a href="${fileUrl}">Hier ist dein Anhang</a></p>` : message,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    logger.info(`E-Mail wurde an ${email} gesendet.`);
+    response.status(200).send('E-Mail wurde gesendet');
+  } catch (error) {
+    logger.error('Fehler beim Senden der E-Mail:', error);
+    response.status(500).send('Fehler beim Senden der E-Mail');
+  }
+});
+

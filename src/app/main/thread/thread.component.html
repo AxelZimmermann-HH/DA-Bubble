@@ -161,18 +161,63 @@
         <!-- Input for new answers -->
 
         <div class="custom-input">
+        
             <textarea placeholder="Antworten..." class="text-area" [(ngModel)]="newAnswerText"></textarea>
+            
+            <div *ngIf="selectedFile"
+            style="position: relative; background-color: #797EF3; color: #FFFFFF; display: flex;align-items: center; width: fit-content; gap: 16px; border-radius: 30px; padding: 12px 25px; margin: 0 20px;">
+            <!-- Datei-Vorschau für Bilder -->
+            <div *ngIf="selectedFile.type.startsWith('image/') && fileUrl" class="file-preview"
+                style="display: flex; align-items: center; flex-direction: column;">
+                <img [src]="fileUrl" alt="Image Preview" 
+                    style="max-width: 100px; max-height: 100px;">
+            </div>
+    
+            <!-- Datei-Vorschau für PDFs -->
+            <div *ngIf="selectedFile.type === 'application/pdf' && fileUrl" 
+                style="display: flex; align-items: center; flex-direction: column;">
+                <iframe [src]="fileUrl" width="200" height="200" style="border: none;"></iframe>
+            </div>
+    
+            <!-- Anzeige für andere Dateitypen -->
+            <div *ngIf="!fileUrl || (!selectedFile.type.startsWith('image/') && selectedFile.type !== 'application/pdf')"
+                style="display: flex; align-items: center; flex-direction: column;">
+                <p>{{ selectedFile.name }}</p>
+            </div>
+    
+            <!-- Schließen-Button für Datei-Vorschau -->
+            <img src="./../../../assets/icons/close.png" alt="Close" class="close-icon" (click)="closePreview()"
+                style="cursor: pointer;">
+        </div>
+
+            
             <div class="add-reaction">
                 <div class="reactions">
-                    <img src="./assets/icons/add-1.png" alt="Add" class="add-icon">
+                    <img src="./assets/icons/add-1.png" alt="Add" class="add-icon" (click)="fileInput.click()">
+                    <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)">
                     <div style="height: 50px; width: 1px; background-color: rgba(104, 104, 104, 1);"></div>
-                    <img src="./assets/icons/sentiment_satisfied-1.png" alt="Emoji" class="add-emoji">
-                    <img src="./assets/icons/alternate_email-1.png" alt="Email" class="add-mail">
+                    <img src="./assets/icons/sentiment_satisfied-1.png" alt="Emoji" class="add-emoji"  (click)="toggleEmojiPicker()">
+                    <img src="./assets/icons/alternate_email-1.png" alt="Email" class="add-mail" (click)="toggleAutoListe()">
                 </div>
+                <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmoji($event)"></emoji-mart>
                 <img src="./assets/icons/Send icon.png" alt="Send" class="send-icon"
                     (click)="addAnswer(message!.messageId)">
             </div>
+            
+            <div *ngIf="tagUser"
+            style="width: 300px;height: auto; border-radius: 30px;position: absolute; z-index: 111; bottom: 40px;left: 50px;">
+            <ul class="searchListe">
+                <li *ngFor="let user of userData">
+                    <div style="display: flex;align-items: center;gap:8px" (click)="selectUser(user)"><img
+                            [src]="getAvatarForUser(user.name)" alt=""
+                            style="width: 30px; height: 30px; border-radius: 30px;cursor:pointer"> {{user.name}}
+                    </div>
+                </li>
+            </ul>
         </div>
+        </div>
+
+
     </div>
 
 

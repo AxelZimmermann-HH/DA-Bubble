@@ -31,7 +31,7 @@
                             </div>
                         </td>
                     </tr>
-                    <tr *ngFor="let message of group.messages">
+                    <tr *ngFor="let message of group.messages" style="height: auto;">
                         <td [ngClass]="{'current-user': isCurrentUser(message.user)}">
                             <div class="message-main" [ngClass]="{'current-user': isCurrentUser(message.user)}">
                                 <img [src]="getAvatarForUser(message.user)" alt="" class="avatar">
@@ -41,10 +41,15 @@
                                         <p class="time">{{ message.formatTimestamp() }}</p>
                                     </div>
                                     <div class="speech-bubble" [ngClass]="{'b-radius': isCurrentUser(message.user)}">
-                                        <div>
+                                        <div style="display: flex;flex-direction: column;gap: 20px;">
                                             {{ message.text }}
                                             <div *ngIf="message.fileUrl"
-                                                style="display: flex;flex-direction: column;gap :16px">
+                                            style="    padding: 10px;
+                                            gap: 8px;
+                                            display: flex;
+                                            flex-direction: column;
+                                            border: 1px solid  #ECEEFE;
+                                            border-radius: 8px;">
                                                 <!-- Image Preview -->
                                                 <div *ngIf="message.fileType.startsWith('image/')">
                                                     <img [src]="getSafeUrl(message.fileUrl)" alt="Image Preview"
@@ -170,6 +175,18 @@
                     style="cursor: pointer;">
             </div>
 
+            <div *ngIf="tagUser"
+            style="width: 300px;height: auto; border-radius: 30px;position: absolute; z-index: 111; bottom: 40px;left: 50px;">
+            <ul class="searchListe">
+                <li *ngFor="let user of userData">
+                    <div style="display: flex;align-items: center;gap:8px" (click)="selectUser(user)"><img
+                            [src]="getAvatarForUser(user.name)" alt=""
+                            style="width: 30px; height: 30px; border-radius: 30px;cursor:pointer"> {{user.name}}
+                    </div>
+                </li>
+            </ul>
+        </div>
+
             <!-- Datei hochladen und Emoji hinzufügen -->
             <div class="add-reaction">
                 <div class="reactions">
@@ -179,12 +196,12 @@
 
                     <!-- Trennlinie -->
                     <div style="height: 35px;width: 1px;background-color: rgba(104, 104, 104, 1);"></div>
-                    <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail">
+                    <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail" (click)="toggleAutoListe()">
                     <!-- Emoji hinzufügen -->
                     <img src="./assets/icons/sentiment_satisfied-1.png" alt="Emoji hinzufügen" class="add-emoji"
                         (click)="toggleEmojiPicker()">
-                    <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"></emoji-mart>
                 </div>
+                <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"></emoji-mart>
 
                 <!-- Nachricht senden -->
                 <img src="./assets/icons/Send icon.png" (click)="sendMessage()" class="send-icon">
@@ -279,6 +296,7 @@
                     </div>
                     <img src="./assets/icons/Send icon.png" (click)="sendMessage()" class="send-icon">
                 </div>
+                
                 <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"></emoji-mart>
             </div>
         </div>
