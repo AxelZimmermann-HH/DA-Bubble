@@ -1,6 +1,7 @@
 import { Timestamp } from "@angular/fire/firestore";
 import { Answer } from "./answer.class";
 import { EmojiData } from './emoji-data.models';
+
 export interface MessageData {
   text?: string;
   user?: string;

@@ -434,10 +434,9 @@ export class ChannelComponent {
         this.fileDownloadUrl = await getDownloadURL(snapshot.ref);  // Datei-URL speichern
       } catch (error) {
         console.error('Fehler beim Hochladen der Datei:', error);
-        return; // Wenn der Upload fehlschlägt, abbrechen
+        return; 
       }
     } else {
-      // Wenn keine Datei hochgeladen wurde, setze fileDownloadUrl auf einen leeren String
       this.fileDownloadUrl = '';
     }
 

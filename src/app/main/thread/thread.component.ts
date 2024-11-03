@@ -13,6 +13,7 @@ import { ThreadService } from '../../services/thread.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { EmojiData } from './../../models/emoji-data.models';
+import {  getDownloadURL, getStorage, ref, uploadBytes } from '@angular/fire/storage';
 
 @Component({
   selector: 'app-thread',
@@ -123,24 +124,51 @@ export class ThreadComponent {
     });
   }
 
-  addAnswer(messageId: any) {
-    if (this.newAnswerText.trim() !== '') {
-      const username = this.findUserNameById(this.userId);
-      if (!username) {
+  async addAnswer(messageId: string) {
+    // Überprüfe, ob der Text nicht leer ist
+    if (this.newAnswerText.trim() === '' && !this.selectedFile) {
+      return; // Nichts zum Senden, Rückgabe
+  }
+    const username = this.findUserNameById(this.userId);
+    if (!username) {
         this.newAnswerText = '';
         return;
-      }
-      const answer = new Answer({
+    }
+
+    let fileUrl = null;
+
+    // Datei hochladen, wenn eine ausgewählt wurde
+    if (this.selectedFile) {
+        const filePath = `files/${this.selectedFile.name}`;
+
+        if (filePath) {
+            const storageRef = ref(getStorage(), filePath);
+            try {
+                const snapshot = await uploadBytes(storageRef, this.selectedFile);
+                fileUrl = await getDownloadURL(snapshot.ref); // Verwende die URL von der gespeicherten Datei
+            } catch (error) {
+                console.error('Fehler beim Hochladen der Datei:', error);
+                return;
+            }
+        }
+    }
+
+    // Erstelle ein neues Answer-Objekt mit den erforderlichen Informationen
+    const answer = new Answer({
         text: this.newAnswerText,
         user: username,
-        timestamp: new Date()
-      });
-      this.selectedAnswers.push(answer);
-      this.saveAnswerToFirestore(messageId, answer);
-      this.getAnswers(messageId)
-      this.newAnswerText = '';
-    }
-  }
+        timestamp: new Date(),
+        ...(fileUrl && { fileUrl, fileType: this.selectedFile?.type, fileName: this.selectedFile?.name }),
+    });
+
+    // Speichere die Antwort in der Liste und in Firestore
+    this.selectedAnswers.push(answer);
+    await this.saveAnswerToFirestore(messageId, answer); // Warten auf die Speicherung
+    this.getAnswers(messageId); // Hole die Antworten nach dem Speichern
+    this.newAnswerText = ''; // Setze das Eingabefeld zurück
+    this.selectedFile = null; // Setze die ausgewählte Datei zurück
+}
+
 
   saveAnswerToFirestore(messageId: string, answer: Answer) {
     const messageDocRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}`);

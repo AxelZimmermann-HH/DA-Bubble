@@ -103,7 +103,35 @@
                     <p class="time">{{ answer.formatTimestamp() }}</p>
                 </div>
                 <div class="speech-bubble" [ngClass]="{'border-radius': isCurrentUser(answer.user)}">
-                    {{ answer.text }}
+                    
+                    <div style="display: flex;flex-direction: column;gap: 20px;">
+                        {{ answer.text }}
+                    <div *ngIf="answer.fileUrl"
+                    style="    padding: 10px;
+                    gap: 8px;
+                    display: flex;
+                    flex-direction: column;
+                    border: 1px solid  #ECEEFE;
+                    border-radius: 8px;">
+                    <!-- Image Preview -->
+                    <div *ngIf="answer.fileType?.startsWith('image/')">
+                        <img [src]="getSafeUrl(answer.fileUrl)" alt="Image Preview"
+                            style="width: 70px; height: auto; object-fit: contain;">
+                    </div>
+                    <!-- PDF Preview -->
+                    <div *ngIf="answer.fileType === 'application/pdf'">
+                        <iframe [src]="getSafeUrl(answer.fileUrl)" width="200"
+                            height="70px" style="border: none;"></iframe>
+                    </div>
+                    <!-- Other File Types -->
+                    <div
+                        *ngIf="!answer.fileType?.startsWith('image/') && answer.fileType != 'application/pdf'">
+                        {{answer.fileName}}</div>
+                    <!-- Download Link -->
+                    <a [href]="getSafeUrl(answer.fileUrl)" class="open-file-button"
+                        target="_blank">Anhang öffnen</a>
+                </div>
+                    </div>
                 </div>
                 <div style="display: flex;align-items: center;gap: 8px;">
                     <div *ngFor="let emojiData of answer.emojis">

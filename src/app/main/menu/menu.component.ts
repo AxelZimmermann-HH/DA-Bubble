@@ -267,7 +267,9 @@ export class MenuComponent {
     this.selectedChannel.id = channel.id;
   
   }
- 
+  onNewMessageClick(){
+    this.channelSelected.emit(null);
+  }
 
   trackByChannelId(index: number, channel: any): string {
     return channel.id;  // Optimiert die Performance von *ngFor

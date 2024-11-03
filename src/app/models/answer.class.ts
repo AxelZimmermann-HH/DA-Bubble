@@ -9,6 +9,10 @@ export class Answer {
     editedText: string = '';
     static isEditing: boolean;
     emojis: EmojiData[] = [];
+    fileUrl?: string; // Neue Eigenschaft für die Datei-URL
+    fileType?: string; // Neue Eigenschaft für den Dateityp
+    fileName?: string; // Neue Eigenschaft für den Dateinamen
+
 
     constructor(obj?: any) {
         this.text = obj ? obj.text : '';
@@ -19,6 +23,9 @@ export class Answer {
         this.emojis = (obj?.emojis || []).map((e: any) =>
             typeof e === 'string' ? { emoji: e, userIds: [] } : e
           );
+          this.fileUrl = obj?.fileUrl; // Initialisiere die Datei-URL
+          this.fileType = obj?.fileType; // Initialisiere den Dateityp
+          this.fileName = obj?.fileName; // Initialisiere den Dateinamen
     }
 
     private getDateFromTimestamp(timestamp: any): Date {
@@ -39,7 +46,11 @@ export class Answer {
             text: this.text,
             user: this.user,
             timestamp: this.timestamp,
-            emojis: this.emojis
+            emojis: this.emojis,
+            fileUrl: this.fileUrl, // Füge die Datei-URL hinzu
+            fileType: this.fileType, // Füge den Dateityp hinzu
+            fileName: this.fileName // Füge den Dateinamen hinzu
+
         };
     }
 }

@@ -34,9 +34,16 @@ export class ChatService {
   
 
   onChannelSelected(channel: any) {
-    this.selectedChannelId = channel.id;
+    if (channel) {
+      this.selectedChannelId = channel.id;
     this.showChannel = true;
     this.showChat = false;
+    }
+    else{
+      this.selectedChannelId = null
+    }
+    
+    
   }
 
 
