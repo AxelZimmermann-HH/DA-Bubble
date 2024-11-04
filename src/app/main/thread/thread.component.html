@@ -12,8 +12,8 @@
 
         <!-- Main message section -->
          <div style="height: 100px;"></div>
-        <div class="message-main" [ngClass]="{'current-user': isCurrentUser(message!.user)}">
-            <img [src]="getAvatarForUser(message.user)" alt="Avatar" class="avatar">
+        <div class="message-main" [ngClass]="{'current-user':isCurrentUser(message!.user)}">
+            <img [src]="userService.getAvatarForUser(message.user)" alt="Avatar" class="avatar">
             <div class="message-content" *ngIf="!message.isEditing" [ngClass]="{'a-flex': isCurrentUser(message.user)}">
                 <div class="name-time" [ngClass]="{'current-user': isCurrentUser(message!.user)}">
                     {{ message.user }}
@@ -96,7 +96,7 @@
         <!-- Answer list -->
         <div class="message-main" [ngClass]="{'current-user': isCurrentUser(answer.user)}"
             *ngFor="let answer of selectedAnswers">
-            <img [src]="getAvatarForUser(answer.user)" alt="Avatar" class="avatar">
+            <img [src]="userService.getAvatarForUser(answer.user)" alt="Avatar" class="avatar">
             <div class="message-content" *ngIf="!answer.isEditing" [ngClass]="{'a-flex': isCurrentUser(answer.user)}">
                 <div class="name-time" [ngClass]="{'current-user': isCurrentUser(answer.user)}">
                     {{ answer.user }}
@@ -232,12 +232,12 @@
                     (click)="addAnswer(message!.messageId)">
             </div>
             
-            <div *ngIf="tagUser"
+            <div *ngIf="taggedUser"
             style="width: 300px;height: auto; border-radius: 30px;position: absolute; z-index: 111; bottom: 40px;left: 50px;">
             <ul class="searchListe">
                 <li *ngFor="let user of userData">
                     <div style="display: flex;align-items: center;gap:8px" (click)="selectUser(user)"><img
-                            [src]="getAvatarForUser(user.name)" alt=""
+                            [src]="userService.getAvatarForUser(user.name)" alt=""
                             style="width: 30px; height: 30px; border-radius: 30px;cursor:pointer"> {{user.name}}
                     </div>
                 </li>

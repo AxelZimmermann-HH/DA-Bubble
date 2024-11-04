@@ -7,11 +7,10 @@ export class Answer {
     timestamp!: Date;
     isEditing: boolean = false;
     editedText: string = '';
-    static isEditing: boolean;
     emojis: EmojiData[] = [];
-    fileUrl?: string; // Neue Eigenschaft für die Datei-URL
-    fileType?: string; // Neue Eigenschaft für den Dateityp
-    fileName?: string; // Neue Eigenschaft für den Dateinamen
+    fileUrl?: string; 
+    fileType?: string; 
+    fileName?: string; 
 
 
     constructor(obj?: any) {
@@ -23,9 +22,9 @@ export class Answer {
         this.emojis = (obj?.emojis || []).map((e: any) =>
             typeof e === 'string' ? { emoji: e, userIds: [] } : e
           );
-          this.fileUrl = obj?.fileUrl; // Initialisiere die Datei-URL
-          this.fileType = obj?.fileType; // Initialisiere den Dateityp
-          this.fileName = obj?.fileName; // Initialisiere den Dateinamen
+          this.fileUrl = obj?.fileUrl; 
+          this.fileType = obj?.fileType; 
+          this.fileName = obj?.fileName;
     }
 
     private getDateFromTimestamp(timestamp: any): Date {
@@ -42,15 +41,18 @@ export class Answer {
     }
 
     public toJson() {
-        return {
+        const json: any = {
             text: this.text,
             user: this.user,
             timestamp: this.timestamp,
             emojis: this.emojis,
-            fileUrl: this.fileUrl, // Füge die Datei-URL hinzu
-            fileType: this.fileType, // Füge den Dateityp hinzu
-            fileName: this.fileName // Füge den Dateinamen hinzu
-
         };
+        
+        // Nur hinzufügen, wenn definiert
+        if (this.fileUrl) json.fileUrl = this.fileUrl;
+        if (this.fileType) json.fileType = this.fileType; 
+        if (this.fileName) json.fileName = this.fileName; 
+
+        return json;
     }
 }

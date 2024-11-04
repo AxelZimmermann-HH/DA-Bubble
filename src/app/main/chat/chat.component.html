@@ -593,7 +593,7 @@
                 <div class="users-dialog">
                     @for (user of userList; track user.name) {
                         <div class="user-item" (click)="insertName(user.name)">
-                            <img class="further-user-avatar" [src]="this.userService.getAvatar(user)" alt="{{ user.name }}">
+                            <img class="further-user-avatar" [src]="userService.getAvatarForUser(user.name)" alt="{{ user.name }}">
                             <span class="user-name">{{ user.name }}</span>
                         </div>
                     }

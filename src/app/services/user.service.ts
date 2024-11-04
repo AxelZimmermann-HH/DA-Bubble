@@ -1,19 +1,41 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { User } from '../models/user.class';
-import { doc, Firestore, getDoc, updateDoc, collection, getDocs } from '@angular/fire/firestore';
+import { doc, Firestore, getDoc, updateDoc, collection, getDocs, onSnapshot } from '@angular/fire/firestore';
+import { MatDialog } from '@angular/material/dialog';
+import { ActivatedRoute } from '@angular/router';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private currentUserSubject = new BehaviorSubject<User | null>(null);  // Benutzer als Observable
-  currentUser$ = this.currentUserSubject.asObservable();  // Observable, auf das andere Komponenten zugreifen können
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  currentUser$ = this.currentUserSubject.asObservable();
+
   userData: User[] = [];
+  user = new User();
+  userId!: string;
 
-  constructor(private firestore: Firestore) { }
+  constructor(private firestore: Firestore,
+    public dialog: MatDialog,
+    private route: ActivatedRoute,
+  ) { }
 
+  // ngOnInit() {
+  //   this.route.params.subscribe(params => {
+  //     this.userId = params['userId'];
+  //     if (this.userId) {
+  //       console.log('Initialized userId:', this.userId);
+  //       this.loadUsers().then(() => {
+  //         this.loadCurrentUser(this.userId); // Lade den aktuellen Benutzer
+  //       });
+  //     } else {
+  //       console.error('userId is not defined in route params');
+  //     }
+  //   });
+  // }
+  
   async loadUsers2(): Promise<void> {
     try {
       const usersRef = collection(this.firestore, 'users');
@@ -28,13 +50,13 @@ export class UserService {
     try {
       const usersRef = collection(this.firestore, 'users');
       const snapshot = await getDocs(usersRef);
-      // Erstelle User-Objekte und fülle die benötigten Felder aus
+
       this.userData = snapshot.docs.map(doc => {
         const data = doc.data();
         return new User({
           name: data["name"],
           userId: doc.id,
-          avatar: data["avatar"] || '', // Standardwert verwenden, falls nicht vorhanden
+          avatar: data["avatar"] || '',
           mail: data["mail"] || '',
           online: data["online"] || false,
           password: data["password"] || ''
@@ -44,15 +66,34 @@ export class UserService {
       console.error('Fehler beim Laden der Benutzer:', error);
     }
   }
-  
 
-  getAvatar(user: User): any {
-    if (this.isNumber(user.avatar)) {
-      return './assets/avatars/avatar_' + user.avatar + '.png';  // Local asset avatar
-    } else if (user.avatar) {
-      return user.avatar;  // External URL avatar
+  getAllUsers(): Promise<void> {
+    return new Promise((resolve) => {
+      const userCollection = collection(this.firestore, 'users');
+      onSnapshot(userCollection, (snapshot) => {
+        this.userData = [];
+        snapshot.forEach((doc) => {
+          let user = new User({ ...doc.data(), id: doc.id });
+          this.userData.push(user);
+        });
+        resolve();
+      });
+    });
+  }
+
+  getAvatarForUser(userName: string) {
+    if (!this.userData || this.userData.length === 0) {
+      console.warn('User data is not loaded');
+      return './assets/avatars/avatar_1.png';
     }
-    return './assets/avatars/avatar_0.png';  // Default avatar when user not found
+
+    const user = this.userData.find((u) => u.name === userName);
+    if (user) {
+      return this.isNumber(user.avatar)
+        ? `./assets/avatars/avatar_${user.avatar}.png`
+        : user.avatar;
+    }
+    return './assets/avatars/avatar_1.png';
   }
 
   setUser(user: User) {
@@ -73,6 +114,7 @@ export class UserService {
       if (docSnap.exists()) {
         const user = new User(docSnap.data());
         this.setUser(user);
+        console.log('Current user loaded:', user);
       } else {
         console.error('No such user!');
       }
@@ -80,20 +122,18 @@ export class UserService {
       console.error('Error fetching user:', error);
     });
   }
-  
 
   updateUser(updatedUser: User): void {
     const currentUser = this.getUser();
     if (currentUser) {
       const userRef = doc(this.firestore, `users/${currentUser.userId}`);
-      
-      // Use the toJson method to get the updated data
+
       updateDoc(userRef, updatedUser.toJson())
         .then(() => {
-        
-          const updatedUserInstance = new User({ 
-            ...currentUser, 
-            ...updatedUser 
+
+          const updatedUserInstance = new User({
+            ...currentUser,
+            ...updatedUser
           });
           this.setUser(updatedUserInstance);
           console.log('User profile updated in Firestore:', updatedUser);
@@ -105,4 +145,12 @@ export class UserService {
       console.error('No current user to update');
     }
   }
+
+  findUserNameById(userId: string): string {
+    const user = this.userData.find((user: User) => user.userId === userId);
+    return user ? user.name : 'Unbekannt';
+  }
+
+
 }
+

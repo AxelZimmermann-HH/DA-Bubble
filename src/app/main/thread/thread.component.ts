@@ -43,6 +43,8 @@ export class ThreadComponent {
   fileDownloadUrl!: string;
   showEmojiPicker: boolean = false;
 
+  taggedUser: boolean = false;
+
   @Output() threadClosed = new EventEmitter<void>();
 
   @Input() selectedChannelId: string | null = null;
@@ -125,9 +127,9 @@ export class ThreadComponent {
   }
 
   async addAnswer(messageId: string) {
-    // Überprüfe, ob der Text nicht leer ist
+ 
     if (this.newAnswerText.trim() === '' && !this.selectedFile) {
-      return; // Nichts zum Senden, Rückgabe
+      return; 
   }
     const username = this.findUserNameById(this.userId);
     if (!username) {
@@ -137,7 +139,6 @@ export class ThreadComponent {
 
     let fileUrl = null;
 
-    // Datei hochladen, wenn eine ausgewählt wurde
     if (this.selectedFile) {
         const filePath = `files/${this.selectedFile.name}`;
 
@@ -153,7 +154,6 @@ export class ThreadComponent {
         }
     }
 
-    // Erstelle ein neues Answer-Objekt mit den erforderlichen Informationen
     const answer = new Answer({
         text: this.newAnswerText,
         user: username,
@@ -161,14 +161,12 @@ export class ThreadComponent {
         ...(fileUrl && { fileUrl, fileType: this.selectedFile?.type, fileName: this.selectedFile?.name }),
     });
 
-    // Speichere die Antwort in der Liste und in Firestore
     this.selectedAnswers.push(answer);
-    await this.saveAnswerToFirestore(messageId, answer); // Warten auf die Speicherung
-    this.getAnswers(messageId); // Hole die Antworten nach dem Speichern
-    this.newAnswerText = ''; // Setze das Eingabefeld zurück
-    this.selectedFile = null; // Setze die ausgewählte Datei zurück
+    await this.saveAnswerToFirestore(messageId, answer); 
+    this.getAnswers(messageId);
+    this.newAnswerText = '';
+    this.selectedFile = null;
 }
-
 
   saveAnswerToFirestore(messageId: string, answer: Answer) {
     const messageDocRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}`);
@@ -184,17 +182,7 @@ export class ThreadComponent {
       });
   }
 
-  getAvatarForUser(userName: string) {
-    const user = this.userData.find((u: { name: string; }) => u.name === userName);
-    if (user) {
-      if (this.userService.isNumber(user.avatar)) {
-        return './assets/avatars/avatar_' + user.avatar + '.png';
-      } else {
-        return user.avatar;
-      }
-    }
-    return './assets/avatars/avatar_0.png';
-  }
+
 
   isCurrentUser(currentUser: string): boolean {
     const currentUserObj = this.userData.find(u => u.userId === this.userId);
@@ -246,12 +234,6 @@ export class ThreadComponent {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
-
-
-
-
-
-
   //messages
   toggleEmojiReaction(message: Message, emojiData: EmojiData) {
     const currentUserId = this.userId; // Aktuelle Benutzer-ID
@@ -300,7 +282,6 @@ export class ThreadComponent {
       emojiData.userIds.push(currentUserId);
     }
   
-
     this.updateEmojisInAnswer(answer);
   }
 
@@ -345,11 +326,6 @@ export class ThreadComponent {
     this.updateEmojisInAnswer(answer)
   }
 
-
-
-
-
-
   getEmojiSrc(emoji: string): string {
     const emojiMap: { [key: string]: string } = {
       'nerd face': './assets/icons/emoji _nerd face_.png',
@@ -359,6 +335,7 @@ export class ThreadComponent {
     };
     return emojiMap[emoji] || '';
   }
+
   getEmojiReactionText(emojiData: EmojiData): string {
     const currentUserId = this.userId;
     const userNames = emojiData.userIds.map(userId => this.findUserNameById(userId));
@@ -380,12 +357,6 @@ export class ThreadComponent {
 
   toggleShowEmoji() { this.showEmoji = !this.showEmoji }
 
-  addSelectedEmoji(event: any) {
-    this.showEmoji = false;
-  }
-
-
-
   toggleEmojitoAnswer() {
     this.showAnswerEmoji = !this.showAnswerEmoji;
   }
@@ -393,8 +364,8 @@ export class ThreadComponent {
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
     if (file) {
-      this.selectedFile = file;  // Speichere die Datei
-      const objectUrl = URL.createObjectURL(file);  // Erstelle eine Objekt-URL
+      this.selectedFile = file;
+      const objectUrl = URL.createObjectURL(file);  
       if (file.type.startsWith('image/') || file.type === 'application/pdf') {
         this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
       } else {
@@ -402,13 +373,13 @@ export class ThreadComponent {
       }
     }
   }
+
   toggleEmojiPicker() {
     this.showEmojiPicker = !this.showEmojiPicker
   }
 
-  tagUser: boolean = false;
   toggleAutoListe() {
-    this.tagUser = !this.tagUser
+    this.taggedUser = !this.taggedUser
   }
 
   addEmoji(event: any) {
@@ -416,12 +387,14 @@ export class ThreadComponent {
     this.newAnswerText += emoji
     this.showEmojiPicker = false;
   }
+  
   closePreview() {
     this.fileUrl = null;
     this.selectedFile = null;
   }
+
   selectUser(user: User) {
     this.newAnswerText += `@${user.name}`;
-    this.tagUser = false;
+    this.taggedUser = false;
   }
 }
