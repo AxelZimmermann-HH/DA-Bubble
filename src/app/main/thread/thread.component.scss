@@ -86,8 +86,6 @@
         color: rgba(104, 104, 104, 1);
         margin: 0;
     }
-
-
 }
 
 .separator {
@@ -110,6 +108,9 @@
         width: 70%;
     }
 }
+
+
+//input
 
 .custom-input {
     height: auto;
@@ -211,18 +212,16 @@
 
 .current-user {
     flex-direction: row-reverse;
-    /* Spiegeln der Nachrichtenrichtung */
+}
+
+.current-user:hover .border-radius {
+    background-color: rgba(121, 126, 243, 1) !important;
+    color: rgba(255, 255, 255, 1);
 }
 
 .border-radius {
     border-radius: 30px 0px 30px 30px;
     background: rgba(121, 126, 243, 1);
-    color: rgba(255, 255, 255, 1);
-
-}
-
-.current-user:hover .border-radius {
-    background-color: rgba(121, 126, 243, 1) !important;
     color: rgba(255, 255, 255, 1);
 }
 
@@ -265,12 +264,15 @@
     background-color: #FFFFFF !important;
     color: black;
 }
+
 .current-user {
     flex-direction: row-reverse;
 }
+
 .reaction-left {
     left: 16px;
 }
+
 .textAreaContainer {
     position: relative;
     width: 100%;
@@ -290,6 +292,7 @@
     resize: none;
     box-sizing: border-box;
 }
+
 .button-icons-group {
     position: absolute;
     bottom: 8px;
@@ -337,6 +340,7 @@
         }
     }
 }
+
 .emoji-container {
     position: relative;
     width: 64px;
@@ -385,6 +389,7 @@
         background-color: #FFFFFF;
     }
 }
+
 .searchListe {
     list-style: none;
     display: flex;
@@ -402,7 +407,45 @@
     padding: 40px;
 
 }
-emoji-mart{
+
+emoji-mart {
     position: absolute;
     bottom: 0;
+}
+
+.fileUrl {
+    padding: 10px;
+    gap: 8px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ECEEFE;
+    border-radius: 8px;
+}
+
+.emoji-reaction-text {
+    font-size: 16px;
+    font-weight: 700;
+    overflow: scroll;
+    height: 54px;
+    scrollbar-width: none;
+    text-align: center;
+}
+
+.d-flex {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.selectedFileStyle {
+    position: relative;
+    background-color: #797EF3;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    gap: 16px;
+    border-radius: 30px;
+    padding: 12px 25px;
+    margin: 0 20px;
 }

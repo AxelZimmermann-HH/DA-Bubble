@@ -28,7 +28,7 @@ export class ThreadComponent {
   userId!: string;
   userData: User[] = [];
 
-  newAnswerText!: string;
+  newAnswerText: string = "";
 
   channel = new Channel();
   channelData: Channel[] = [];
@@ -63,16 +63,13 @@ export class ThreadComponent {
   ) { }
 
   ngOnInit(): void {
-    this.getAllUsers();
+    this.userService.getAllUsers()
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
     });
     this.getAnswers(this.message.messageId);
-  }
-
-  findUserNameById(userId: string) {
-    const user = this.userData.find((user: User) => user.userId === userId);
-    return user ? user.name : undefined;
+   
+   
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -85,28 +82,6 @@ export class ThreadComponent {
     }
   }
 
-
-  getAllUsers() {
-    const userCollection = collection(this.firestore, 'users');
-    onSnapshot(userCollection, (snapshot) => {
-      this.userData = snapshot.docs.map(doc => new User({ ...doc.data(), id: doc.id }));
-    });
-  }
-
-  getMessagesForChannel(channelId: string) {
-    const messageCollection = collection(this.firestore, `channels/${channelId}/messages`);
-    onSnapshot(messageCollection, (snapshot) => {
-      this.allMessages = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        return new Message({
-          ...data,
-          timestamp: data['timestamp'],
-          answers: data['answers'] ? data['answers'].map((a: any) => new Answer(a)) : []
-        }, doc.id);
-      });
-      console.log('All Messages:', this.allMessages);
-    });
-  }
 
   getAnswers(messageId: string) {
     const messageDocRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}`);
@@ -127,11 +102,10 @@ export class ThreadComponent {
   }
 
   async addAnswer(messageId: string) {
- 
-    if (this.newAnswerText.trim() === '' && !this.selectedFile) {
-      return; 
-  }
-    const username = this.findUserNameById(this.userId);
+
+    if (this.newAnswerText.trim() === '' && !this.selectedFile)return;
+
+    const username = this.userService.findUserNameById(this.userId);
     if (!username) {
         this.newAnswerText = '';
         return;
@@ -146,7 +120,7 @@ export class ThreadComponent {
             const storageRef = ref(getStorage(), filePath);
             try {
                 const snapshot = await uploadBytes(storageRef, this.selectedFile);
-                fileUrl = await getDownloadURL(snapshot.ref); // Verwende die URL von der gespeicherten Datei
+                fileUrl = await getDownloadURL(snapshot.ref); 
             } catch (error) {
                 console.error('Fehler beim Hochladen der Datei:', error);
                 return;
@@ -162,7 +136,7 @@ export class ThreadComponent {
     });
 
     this.selectedAnswers.push(answer);
-    await this.saveAnswerToFirestore(messageId, answer); 
+    this.saveAnswerToFirestore(messageId, answer); 
     this.getAnswers(messageId);
     this.newAnswerText = '';
     this.selectedFile = null;
@@ -182,16 +156,6 @@ export class ThreadComponent {
       });
   }
 
-
-
-  isCurrentUser(currentUser: string): boolean {
-    const currentUserObj = this.userData.find(u => u.userId === this.userId);
-    return currentUserObj ? currentUserObj.name === currentUser : false;
-  }
-
-  closeThread() {
-    this.threadClosed.emit();
-  }
 
   editDirectMessage(answer: any) {
     answer.isEditing = true;
@@ -288,7 +252,6 @@ export class ThreadComponent {
   updateEmojisInAnswer(answer: Answer) {
     const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${this.message.messageId}`);
 
-    // Abrufen der aktuellen Nachricht
     getDoc(messageRef).then((docSnap) => {
         if (docSnap.exists()) {
             const messageData = docSnap.data();
@@ -338,11 +301,11 @@ export class ThreadComponent {
 
   getEmojiReactionText(emojiData: EmojiData): string {
     const currentUserId = this.userId;
-    const userNames = emojiData.userIds.map(userId => this.findUserNameById(userId));
+    const userNames = emojiData.userIds.map(userId => this.userService.findUserNameById(userId));
 
     const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
     if (currentUserIndex > -1) {
-      const currentUserName = this.findUserNameById(currentUserId);
+      const currentUserName = this.userService.findUserNameById(currentUserId);
       const filteredUserNames = userNames.filter(name => name !== currentUserName);
 
       let nameList = filteredUserNames.join(", ");
@@ -361,6 +324,20 @@ export class ThreadComponent {
     this.showAnswerEmoji = !this.showAnswerEmoji;
   }
 
+  toggleEmojiPicker() {
+    this.showEmojiPicker = !this.showEmojiPicker
+  }
+
+  toggleAutoListe() {
+    this.taggedUser = !this.taggedUser
+  }
+
+  addEmoji(event: any) {
+    const emoji = event.emoji.native; 
+    this.newAnswerText += emoji
+    this.showEmojiPicker = false;
+  }
+
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
     if (file) {
@@ -374,20 +351,6 @@ export class ThreadComponent {
     }
   }
 
-  toggleEmojiPicker() {
-    this.showEmojiPicker = !this.showEmojiPicker
-  }
-
-  toggleAutoListe() {
-    this.taggedUser = !this.taggedUser
-  }
-
-  addEmoji(event: any) {
-    const emoji = event.emoji.native; // Das ausgewählte Emoji
-    this.newAnswerText += emoji
-    this.showEmojiPicker = false;
-  }
-  
   closePreview() {
     this.fileUrl = null;
     this.selectedFile = null;
@@ -397,4 +360,10 @@ export class ThreadComponent {
     this.newAnswerText += `@${user.name}`;
     this.taggedUser = false;
   }
+
+
+  closeThread() {
+    this.threadClosed.emit();
+  }
+
 }

@@ -12,7 +12,7 @@
                 </div>
                 <p *ngIf="channelService.selectedChannel.members.length>0" class="numberofmembers">{{channelService.selectedChannel.members.length}}
                 </p>
-                <button class="addUserBtn" (click)="openDialogAddUser()">
+                <button class="addUserBtn" (click)="channelService.openDialogAddUser()">
                     <img src="./assets/icons/person_add.png" alt="">
                 </button>
             </div>
@@ -32,24 +32,19 @@
                         </td>
                     </tr>
                     <tr *ngFor="let message of group.messages" style="height: auto;">
-                        <td [ngClass]="{'current-user': isCurrentUser(message.user)}">
-                            <div class="message-main" [ngClass]="{'current-user':isCurrentUser(message.user)}">
+                        <td [ngClass]="{'current-user':userService.isCurrentUser(message.user)}">
+                            <div class="message-main" [ngClass]="{'current-user':userService.isCurrentUser(message.user)}">
                                 <img [src]="userService.getAvatarForUser(message.user)" alt="" class="avatar">
                                 <div class="message-content" *ngIf="!message.isEditing">
-                                    <div class="name-time" [ngClass]="{'current-user': isCurrentUser(message.user)}">
+                                    <div class="name-time" [ngClass]="{'current-user': userService.isCurrentUser(message.user)}">
                                         {{ message.user }}
                                         <p class="time">{{ message.formatTimestamp() }}</p>
                                     </div>
-                                    <div class="speech-bubble" [ngClass]="{'b-radius': isCurrentUser(message.user)}">
+                                    <div class="speech-bubble" [ngClass]="{'b-radius': userService.isCurrentUser(message.user)}">
                                         <div style="display: flex;flex-direction: column;gap: 20px;">
                                             {{ message.text }}
                                             <div *ngIf="message.fileUrl"
-                                            style="    padding: 10px;
-                                            gap: 8px;
-                                            display: flex;
-                                            flex-direction: column;
-                                            border: 1px solid  #ECEEFE;
-                                            border-radius: 8px;">
+                                          class="fileUrl">
                                                 <!-- Image Preview -->
                                                 <div *ngIf="message.fileType.startsWith('image/')">
                                                     <img [src]="fileService.getSafeUrl(message.fileUrl)" alt="Image Preview"
@@ -79,27 +74,20 @@
                                     <div style="display: flex;align-items: center;gap: 8px;">
                                         <div *ngFor="let emojiData of message.emojis">
                                             <span class="emoji-container" *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0" 
-                                                (click)="toggleEmojiReaction(message, emojiData)">
-                                                <img [src]="getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" />
+                                                (click)="emojiService.toggleEmojiReaction(message, emojiData,userId, selectedChannelId)">
+                                                <img [src]="emojiService.getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" />
                                                 <span>{{ emojiData.userIds.length }}</span> <!-- Anzeige der Anzahl der Benutzer -->
                                                 <div class="emoji-tooltip"  *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0">
                                                     <span 
                                                           style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                                                        <img [src]="getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" width="30px" />
-                                                        <span style="font-size: 16px;
-                                                        font-weight: 700;
-                                                        overflow: scroll;
-                                                        height: 54px;
-                                                        scrollbar-width: none;
-                                                        text-align: center;">
-                                                            {{ getEmojiReactionText(emojiData) }}
+                                                        <img [src]="emojiService.getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" width="30px" />
+                                                        <span class="emoji-reaction-text">
+                                                            {{emojiService.getEmojiReactionText(emojiData, userId) }}
                                                         </span>
                                                         <span style="font-size: 16px; font-weight: 400;"> {{ emojiData.userIds.length > 1 ? 'haben reagiert' : 'hat reagiert' }}</span>
                                                     </span>
                                                 </div>
                                             </span>
-                                            
-                                            
                                         </div>
                                     </div>
                                 </div>
@@ -122,20 +110,20 @@
                                 </emoji-mart>
 
                             </div>
-                            <div class="reaction-hover" [ngClass]="{'reaction-left': isCurrentUser(message.user)}"
+                            <div class="reaction-hover" [ngClass]="{'reaction-left': userService.isCurrentUser(message.user)}"
                                 *ngIf="!message.isEditing">
                                 <img src="./assets/icons/emoji _nerd face_.png" alt="nerd face"
-                                    (click)="toggleUserEmoji(message, 'nerd face', userId)" />
+                                    (click)="emojiService.toggleUserEmoji(message, 'nerd face', userId, selectedChannelId)" />
                                 <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png"
                                     alt="raising both hands"
-                                    (click)="toggleUserEmoji(message, 'raising both hands', userId)" />
+                                    (click)="emojiService.toggleUserEmoji(message, 'raising both hands', userId, selectedChannelId)" />
                                 <img src="./assets/icons/emoji _white heavy check mark_.png" alt="heavy check mark"
-                                    (click)="toggleUserEmoji(message, 'heavy check mark', userId)" />
+                                    (click)="emojiService.toggleUserEmoji(message, 'heavy check mark', userId, selectedChannelId)" />
                                 <img src="./assets/icons/emoji _rocket_.png" alt="rocket"
-                                    (click)="toggleUserEmoji(message, 'rocket', userId)" />
+                                    (click)="emojiService.toggleUserEmoji(message, 'rocket', userId, selectedChannelId)" />
 
                                 <img src="./assets/icons/comment.png" alt="" (click)="openThread(message)">
-                                <img src="./assets/icons/more_vert.png" alt="" *ngIf="isCurrentUser(message.user)"
+                                <img src="./assets/icons/more_vert.png" alt="" *ngIf="userService.isCurrentUser(message.user)"
                                     (click)="editDirectMessage(message)">
                             </div>
                         </td>
@@ -150,7 +138,7 @@
 
             <!-- Vorschau der ausgewählten Datei -->
             <div *ngIf="fileService.selectedFile"
-                style="position: relative; background-color: #797EF3; color: #FFFFFF; display: flex; width: fit-content; gap: 16px; border-radius: 30px; padding: 12px 25px; margin: 0 20px">
+                class="selectedFileStyle">
                 <!-- Datei-Vorschau für Bilder -->
                 <div *ngIf="fileService.selectedFile.type.startsWith('image/') && fileService.fileUrl" class="file-preview"
                     style="display: flex; align-items: center; flex-direction: column;">
@@ -224,7 +212,7 @@
                                 channel.channelName }}
                             </div>
                         </li>
-                        <li *ngFor="let user of filteredUsers" (click)="selectValue(user.name)">
+                        <li *ngFor="let user of userService.userData" (click)="selectValue(user.name)">
                             <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;"
                                 *ngIf="inputValue.startsWith('@')" class="channel_liste">
                                 <img [src]="userService.getAvatarForUser(user.name)" alt=""
@@ -238,17 +226,14 @@
                         </li>
                     </ul>
                 </div>
-
-
             </div>
-
 
             <div class="custom-input">
                 <textarea placeholder="Starte eine neue Nachricht" class="text-area"
                     [(ngModel)]="newMessageText"></textarea>
 
                 <div *ngIf="fileService.selectedFile"
-                    style="position: relative; background-color: #797EF3; color: #FFFFFF; display: flex; width: fit-content; gap: 16px; border-radius: 30px; padding: 12px 25px; margin: 0 20px">
+                   class="selectedFileStyle">
                     <!-- Datei-Vorschau für Bilder -->
                     <div *ngIf="fileService.selectedFile.type.startsWith('image/') && fileService.fileUrl" class="file-preview"
                         style="display: flex; align-items: center; flex-direction: column;">

@@ -7,6 +7,7 @@ import { collection, doc, Firestore, onSnapshot, updateDoc } from '@angular/fire
 import { DialogEditChannelComponent } from '../main/channel/dialog-edit-channel/dialog-edit-channel.component';
 import { MatDialog } from '@angular/material/dialog';
 import { SearchService } from './search.service';
+import { DialogAddUserComponent } from '../dialog-add-user/dialog-add-user.component';
 
 @Injectable({
     providedIn: 'root'
@@ -86,4 +87,10 @@ export class ChannelService {
         const channel = this.filteredChannels.find(channel => channel.channelName === channelName);
         return channel ? channel.id : null;
     }
+
+    openDialogAddUser() {
+        this.dialog.open(DialogAddUserComponent, {
+          data: { channel: this.selectedChannel, source: 'channelComponent' }
+        });
+      }
 }
