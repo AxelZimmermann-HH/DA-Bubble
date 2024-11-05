@@ -35,7 +35,7 @@ export class LoginComponent {
 
     setTimeout(() => {
       this.showLoading = false;
-    }, 2500); 
+    }, 3000); 
   
   }
 

@@ -48,35 +48,55 @@ app-password-main {
     animation: fadeOutBackground 1s ease-in-out forwards 3s;
 }
 
+.logo-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 83px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    animation: moveToTopLeft 1s ease-in-out forwards 2s;
+}
+
 .logo {
     display: flex;
     align-items: center;
     gap: 16px;
-    padding-left: 70px;
-
     img {
         width: auto;
         height: 184px;
         animation: fadeInLogo 1s ease-in-out forwards;
     }
     p {
-        font-family: 'Nunito', sans-serif;
-        font-size: 83px;
-        font-weight: 700;
         padding-top: 10px;
-        color: white;
         opacity: 0;
-        animation: fadeInText 1s ease-in-out forwards 1s;
-      }
+        animation: fadeInText  1s ease-in-out forwards 1s;
+    }
 }
 
+@keyframes moveToTopLeft {
+    0% {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    100% {
+        top: 30px; /* Position im Header */
+        left: 30px;
+        transform: translate(0, 0) scale(0.5);
+        color: black ;
+        font-size: 64px;
+    }
+}
 
 @keyframes fadeInLogo {
     from {
         opacity: 0;
         transform: translateX(50px);
     }
-
     to {
         opacity: 1;
         transform: translateX(0);
@@ -95,11 +115,41 @@ app-password-main {
     }
 }
 
-
-
-
 @keyframes fadeOutBackground {
     to {
         opacity: 0;
+    }
+}
+
+/* Responsiveness */
+
+@media (max-width: 1024px) {
+    .logo img {
+        height: 150px;
+    }
+
+    .logo p {
+        font-size: 32px;
+    }
+}
+
+@media (max-width: 768px) {
+ 
+    .logo img {
+        height: 120px;
+    }
+
+    .logo p {
+        font-size: 50px;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo img {
+        height: 90px;
+    }
+
+    .logo p {
+        font-size: 36px;
     }
 }
