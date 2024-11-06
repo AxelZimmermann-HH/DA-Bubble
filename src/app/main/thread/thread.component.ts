@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, Output, SimpleChanges } from '@angular/core';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
@@ -13,7 +13,8 @@ import { ThreadService } from '../../services/thread.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { EmojiData } from './../../models/emoji-data.models';
-import {  getDownloadURL, getStorage, ref, uploadBytes } from '@angular/fire/storage';
+import { getDownloadURL, getStorage, ref, uploadBytes } from '@angular/fire/storage';
+import { AnswersService } from '../../services/answers.service';
 
 @Component({
   selector: 'app-thread',
@@ -59,6 +60,7 @@ export class ThreadComponent {
     private route: ActivatedRoute,
     public userService: UserService,
     public threadService: ThreadService,
+    public answersService : AnswersService,
     private sanitizer: DomSanitizer
   ) { }
 
@@ -68,8 +70,8 @@ export class ThreadComponent {
       this.userId = params['userId'];
     });
     this.getAnswers(this.message.messageId);
-   
-   
+
+
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -81,7 +83,6 @@ export class ThreadComponent {
       this.selectedAnswers = []
     }
   }
-
 
   getAnswers(messageId: string) {
     const messageDocRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}`);
@@ -103,65 +104,49 @@ export class ThreadComponent {
 
   async addAnswer(messageId: string) {
 
-    if (this.newAnswerText.trim() === '' && !this.selectedFile)return;
+    if (this.newAnswerText.trim() === '' && !this.selectedFile) return;
 
     const username = this.userService.findUserNameById(this.userId);
     if (!username) {
-        this.newAnswerText = '';
-        return;
+      this.newAnswerText = '';
+      return;
     }
 
     let fileUrl = null;
 
     if (this.selectedFile) {
-        const filePath = `files/${this.selectedFile.name}`;
+      const filePath = `files/${this.selectedFile.name}`;
 
-        if (filePath) {
-            const storageRef = ref(getStorage(), filePath);
-            try {
-                const snapshot = await uploadBytes(storageRef, this.selectedFile);
-                fileUrl = await getDownloadURL(snapshot.ref); 
-            } catch (error) {
-                console.error('Fehler beim Hochladen der Datei:', error);
-                return;
-            }
+      if (filePath) {
+        const storageRef = ref(getStorage(), filePath);
+        try {
+          const snapshot = await uploadBytes(storageRef, this.selectedFile);
+          fileUrl = await getDownloadURL(snapshot.ref);
+        } catch (error) {
+          console.error('Fehler beim Hochladen der Datei:', error);
+          return;
         }
+      }
     }
 
     const answer = new Answer({
-        text: this.newAnswerText,
-        user: username,
-        timestamp: new Date(),
-        ...(fileUrl && { fileUrl, fileType: this.selectedFile?.type, fileName: this.selectedFile?.name }),
+      text: this.newAnswerText,
+      user: username,
+      timestamp: new Date(),
+      ...(fileUrl && { fileUrl, fileType: this.selectedFile?.type, fileName: this.selectedFile?.name }),
     });
 
     this.selectedAnswers.push(answer);
-    this.saveAnswerToFirestore(messageId, answer); 
-    this.getAnswers(messageId);
+    this.answersService.saveAnswerToFirestore(messageId, answer, this.selectedChannelId);
+    this.getAnswers(this.message.messageId);
     this.newAnswerText = '';
     this.selectedFile = null;
-}
-
-  saveAnswerToFirestore(messageId: string, answer: Answer) {
-    const messageDocRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}`);
-
-    updateDoc(messageDocRef, {
-      answers: arrayUnion(answer.toJson())
-    })
-      .then(() => {
-        console.log("Antwort erfolgreich gespeichert");
-      })
-      .catch(error => {
-        console.error("Fehler beim Speichern der Antwort: ", error);
-      });
   }
 
-
-  editDirectMessage(answer: any) {
-    answer.isEditing = true;
-    answer.editedText = answer.text;
+  editMessage(message: Message) {
+    message.isEditing = true;
+    message.editedText = message.text;
   }
-
   saveEditAnswer(answer: Answer) {
     const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${this.message.messageId}`);
     getDoc(messageRef).then((docSnap) => {
@@ -245,7 +230,7 @@ export class ThreadComponent {
     } else {
       emojiData.userIds.push(currentUserId);
     }
-  
+
     this.updateEmojisInAnswer(answer);
   }
 
@@ -253,26 +238,26 @@ export class ThreadComponent {
     const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${this.message.messageId}`);
 
     getDoc(messageRef).then((docSnap) => {
-        if (docSnap.exists()) {
-            const messageData = docSnap.data();
-            const updatedAnswers = messageData['answers'].map((a: any) => {
-                if (a.text === answer.text && a.user === answer.user ) {
-                    a.emojis = answer.emojis;
-                }
-                return a;
-            });
-            updateDoc(messageRef, { answers: updatedAnswers })
-                .then(() => {
-                    console.log("Emoji-Reaktionen für die Antwort erfolgreich gespeichert");
-                })
-                .catch((error) => {
-                    console.error("Fehler beim Speichern der Emoji-Reaktionen für die Antwort: ", error);
-                });
-        }
+      if (docSnap.exists()) {
+        const messageData = docSnap.data();
+        const updatedAnswers = messageData['answers'].map((a: any) => {
+          if (a.text === answer.text && a.user === answer.user) {
+            a.emojis = answer.emojis;
+          }
+          return a;
+        });
+        updateDoc(messageRef, { answers: updatedAnswers })
+          .then(() => {
+            console.log("Emoji-Reaktionen für die Antwort erfolgreich gespeichert");
+          })
+          .catch((error) => {
+            console.error("Fehler beim Speichern der Emoji-Reaktionen für die Antwort: ", error);
+          });
+      }
     }).catch((error) => {
-        console.error('Fehler beim Abrufen der Nachricht: ', error);
+      console.error('Fehler beim Abrufen der Nachricht: ', error);
     });
-}
+  }
 
   toggleUserEmojiAnswer(answer: Answer, emoji: string, userId: string) {
     const emojiData = answer.emojis.find((e: EmojiData) => e.emoji === emoji);
@@ -324,16 +309,18 @@ export class ThreadComponent {
     this.showAnswerEmoji = !this.showAnswerEmoji;
   }
 
-  toggleEmojiPicker() {
+  toggleEmojiPicker(event: MouseEvent) {
+    event.stopPropagation();
     this.showEmojiPicker = !this.showEmojiPicker
   }
 
-  toggleAutoListe() {
+  toggleAutoListe(event: MouseEvent) {
+    event.stopPropagation();
     this.taggedUser = !this.taggedUser
   }
 
   addEmoji(event: any) {
-    const emoji = event.emoji.native; 
+    const emoji = event.emoji.native;
     this.newAnswerText += emoji
     this.showEmojiPicker = false;
   }
@@ -342,11 +329,11 @@ export class ThreadComponent {
     const file: File = event.target.files[0];
     if (file) {
       this.selectedFile = file;
-      const objectUrl = URL.createObjectURL(file);  
+      const objectUrl = URL.createObjectURL(file);
       if (file.type.startsWith('image/') || file.type === 'application/pdf') {
         this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
       } else {
-        this.fileUrl = null; 
+        this.fileUrl = null;
       }
     }
   }
@@ -355,6 +342,25 @@ export class ThreadComponent {
     this.fileUrl = null;
     this.selectedFile = null;
   }
+
+
+  @HostListener('document:click', ['$event'])
+  onClick(event: MouseEvent) {
+    const searchList = document.querySelector('.searchListe');
+    const taggedUserDiv = document.querySelector('.tagged-user-list');
+    const emojiPicker = document.querySelector('.emoji-picker');
+
+    if (this.taggedUser && searchList && taggedUserDiv &&
+      !searchList.contains(event.target as Node) && !taggedUserDiv.contains(event.target as Node)) {
+      this.taggedUser = false;
+    }
+
+    if ((this.showEmojiPicker || this.showAnswerEmoji) && emojiPicker && !emojiPicker.contains(event.target as Node)) {
+      this.showEmojiPicker = false;
+      this.showAnswerEmoji = false;
+    }
+  }
+
 
   selectUser(user: User) {
     this.newAnswerText += `@${user.name}`;

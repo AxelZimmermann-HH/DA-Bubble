@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { User } from '../models/user.class';
 import { Channel } from '../models/channel.class';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { Message } from '../models/message.class';
+import { map } from 'rxjs/operators';
 
 @Injectable({
     providedIn: 'root'
@@ -11,21 +12,38 @@ import { Message } from '../models/message.class';
 export class SearchService {
 
     private filteredUsersSubject = new BehaviorSubject<User[]>([]);
-    filteredUsers$ = this.filteredUsersSubject.asObservable();
-
     private filteredChannelsSubject = new BehaviorSubject<Channel[]>([]);
-    filteredChannels$ = this.filteredChannelsSubject.asObservable();
-
-    private showAutocompleteSubject = new BehaviorSubject<boolean>(false);
-    showAutocomplete$ = this.showAutocompleteSubject.asObservable();
-
     private filteredMessagesSubject = new BehaviorSubject<Message[]>([]);
-    filteredMessages$ = this.filteredMessagesSubject.asObservable();
-
+    private showAutocompleteSubject = new BehaviorSubject<boolean>(false);
     private searchTermSubject = new BehaviorSubject<string>('');
+
+    filteredUsers$ = this.filteredUsersSubject.asObservable();
+    filteredChannels$ = this.filteredChannelsSubject.asObservable();
+    filteredMessages$ = this.filteredMessagesSubject.asObservable();
+    showAutocomplete$ = this.showAutocompleteSubject.asObservable();
     searchTerm$ = this.searchTermSubject.asObservable();
 
-    constructor() { }
+
+    filteredData$: Observable<{
+        users: User[],
+        channels: Channel[],
+        messages: Message[],
+        showAutocomplete: boolean
+    }> = combineLatest([
+        this.filteredUsers$,
+        this.filteredChannels$,
+        this.filteredMessages$,
+        this.showAutocomplete$
+    ]).pipe(
+        map(([users, channels, messages, showAutocomplete]) => ({
+            users,
+            channels,
+            messages,
+            showAutocomplete
+        }))
+    );
+
+
 
     showAutocompleteList() {
         this.showAutocompleteSubject.next(true);
@@ -38,10 +56,10 @@ export class SearchService {
 
     filterByType(searchTerm: string, users: User[], channels: Channel[], messages: Message[]) {
         const query = searchTerm.toLowerCase();
-    
+
         if (searchTerm.startsWith('@')) {
             const filteredUsers = users.filter(user =>
-                user.name.toLowerCase().includes(query.slice(1)) 
+                user.name.toLowerCase().includes(query.slice(1))
             );
             console.log('Filtered Users:', filteredUsers);
             this.filteredUsersSubject.next(filteredUsers);
@@ -49,30 +67,34 @@ export class SearchService {
             const filteredChannels = channels.filter(channel =>
                 channel.channelName.toLowerCase().includes(query.slice(1))
             );
-            console.log('Filtered Channels:', filteredChannels); 
+            console.log('Filtered Channels:', filteredChannels);
             this.filteredChannelsSubject.next(filteredChannels);
         } else {
-            
+
             const filteredEmails = users.filter(user =>
-                user.mail.toLowerCase().includes(query) 
+                user.mail.toLowerCase().includes(query)
             );
             console.log('Filtered Emails:', filteredEmails);
             this.filteredUsersSubject.next(filteredEmails);
-    
+
             const filteredMessages = messages.filter(message =>
                 message.text.toLowerCase().includes(query)
             );
             this.filteredMessagesSubject.next(filteredMessages);
         }
         this.showAutocompleteList()
-    
     }
-    
+
 
     updateSearchTerm(term: string) {
         this.searchTermSubject.next(term);
+        if (term.length < 3) {
+            this.hideAutocompleteList();
+            this.clearFilters();
+        } else {
+            this.showAutocompleteList();
+        }
     }
-
 
     clearFilters() {
         this.filteredUsersSubject.next([]);

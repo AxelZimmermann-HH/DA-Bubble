@@ -167,7 +167,7 @@
         .message-content {
             display: flex;
             flex-direction: column;
-            justify-content:space-around;
+            justify-content: space-around;
             gap: 16px;
 
             .name-time {
@@ -466,7 +466,7 @@ td:hover .b-radius {
     }
 }
 
-emoji-mart {
+.emoji-picker {
     position: absolute;
     bottom: 0;
 }
@@ -513,9 +513,29 @@ emoji-mart {
     box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.2);
     border-radius: 0 20px 20px 20px;
     padding: 40px;
-
 }
 
+.tagged-user-list {
+    width: 300px;
+    height: auto;
+    border-radius: 30px;
+    position: absolute;
+    z-index: 111;
+    bottom: 40px;
+    left: 50px;
+}
+.selectedUser {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: max-content;
+    padding:6px 20px 6px 6px;
+    &:hover{
+        background: rgba(236, 238, 254, 1);
+        border-radius: 30px;
+        cursor: pointer;
+    }
+}
 .channel_liste {
     padding: 10px 20px;
 
@@ -590,6 +610,7 @@ emoji-mart {
     z-index: 10;
 
 }
+
 .fileUrl {
     padding: 10px;
     gap: 8px;
@@ -598,6 +619,7 @@ emoji-mart {
     border: 1px solid #ECEEFE;
     border-radius: 8px;
 }
+
 .selectedFileStyle {
     position: relative;
     background-color: #797EF3;
@@ -609,4 +631,13 @@ emoji-mart {
     border-radius: 30px;
     padding: 12px 25px;
     margin: 0 20px;
+}
+
+.emoji-reaction-text {
+    font-size: 16px;
+    font-weight: 700;
+    overflow: scroll;
+    height: 54px;
+    scrollbar-width: none;
+    text-align: center;
 }

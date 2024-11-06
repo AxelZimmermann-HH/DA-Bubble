@@ -150,10 +150,11 @@ export class UserService {
     return user ? user.name : 'Unbekannt';
   }
 
-  isCurrentUser(currentUser: string): boolean {
-    const user = this.userData.find((u) => u.name === currentUser);
+  isCurrentUser(currentUser: string, userid:string): boolean {
+    const user = this.userData.find((u) => u.userId === userid);
     return user ? user.name === currentUser : false;
   }
+
   getUserIdByname(userName: string) {
     const user = this.userData.find((user: User) => user.name === userName);
     return user ? user.userId : undefined;

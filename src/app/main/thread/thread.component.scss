@@ -228,7 +228,14 @@
 .a-flex {
     align-items: flex-end;
 }
-
+.emoji-reaction-text {
+    font-size: 16px;
+    font-weight: 700;
+    overflow: scroll;
+    height: 54px;
+    scrollbar-width: none;
+    text-align: center;
+}
 .reaction-hover {
     display: none;
     width: max-content;
@@ -406,9 +413,38 @@
     border-radius: 0 20px 20px 20px;
     padding: 40px;
 
+    img {
+        width: 30px;
+        height: 30px;
+        border-radius: 30px;
+        cursor: pointer
+    }
 }
 
-emoji-mart {
+.selectedUser {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: max-content;
+    padding:6px 20px 6px 6px;
+    &:hover{
+        background: rgba(236, 238, 254, 1);
+        border-radius: 30px;
+        cursor: pointer;
+    }
+}
+
+.tagged-user-list {
+    width: 300px;
+    height: auto;
+    border-radius: 30px;
+    position: absolute;
+    z-index: 111;
+    bottom: 40px;
+    left: 50px;
+}
+
+.emoji-picker {
     position: absolute;
     bottom: 0;
 }

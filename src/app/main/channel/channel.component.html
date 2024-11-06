@@ -32,15 +32,15 @@
                         </td>
                     </tr>
                     <tr *ngFor="let message of group.messages" style="height: auto;">
-                        <td [ngClass]="{'current-user':userService.isCurrentUser(message.user)}">
-                            <div class="message-main" [ngClass]="{'current-user':userService.isCurrentUser(message.user)}">
+                        <td [ngClass]="{'current-user':userService.isCurrentUser(message.user, userId)}">
+                            <div class="message-main" [ngClass]="{'current-user':userService.isCurrentUser(message.user, userId)}">
                                 <img [src]="userService.getAvatarForUser(message.user)" alt="" class="avatar">
                                 <div class="message-content" *ngIf="!message.isEditing">
-                                    <div class="name-time" [ngClass]="{'current-user': userService.isCurrentUser(message.user)}">
+                                    <div class="name-time" [ngClass]="{'current-user': userService.isCurrentUser(message.user, userId)}">
                                         {{ message.user }}
                                         <p class="time">{{ message.formatTimestamp() }}</p>
                                     </div>
-                                    <div class="speech-bubble" [ngClass]="{'b-radius': userService.isCurrentUser(message.user)}">
+                                    <div class="speech-bubble" [ngClass]="{'b-radius': userService.isCurrentUser(message.user, userId)}">
                                         <div style="display: flex;flex-direction: column;gap: 20px;">
                                             {{ message.text }}
                                             <div *ngIf="message.fileUrl"
@@ -96,7 +96,7 @@
                                     </textarea>
                                     <div class="button-icons-group">
                                         <img src="./assets/icons/sentiment_satisfied-1.png" alt=""
-                                            (click)="toggleEditEmojiPicker()">
+                                            (click)="toggleEditEmojiPicker($event)">
                                         <div class="button-group">
                                             <button (click)="cancelMessageEdit(message)"
                                                 class="cancelBtn">Abbrechen</button>
@@ -106,11 +106,11 @@
                                     </div>
                                 </div>
                                 <emoji-mart *ngIf="showEditEmojiPicker && message.isEditing"
-                                    (emojiSelect)="addEmojiToEditMessage($event, message)">
+                                    (emojiSelect)="addEmojiToEditMessage($event, message)" class="emoji-picker">
                                 </emoji-mart>
 
                             </div>
-                            <div class="reaction-hover" [ngClass]="{'reaction-left': userService.isCurrentUser(message.user)}"
+                            <div class="reaction-hover" [ngClass]="{'reaction-left': userService.isCurrentUser(message.user, userId)}"
                                 *ngIf="!message.isEditing">
                                 <img src="./assets/icons/emoji _nerd face_.png" alt="nerd face"
                                     (click)="emojiService.toggleUserEmoji(message, 'nerd face', userId, selectedChannelId)" />
@@ -123,7 +123,7 @@
                                     (click)="emojiService.toggleUserEmoji(message, 'rocket', userId, selectedChannelId)" />
 
                                 <img src="./assets/icons/comment.png" alt="" (click)="openThread(message)">
-                                <img src="./assets/icons/more_vert.png" alt="" *ngIf="userService.isCurrentUser(message.user)"
+                                <img src="./assets/icons/more_vert.png" alt="" *ngIf="userService.isCurrentUser(message.user, userId)"
                                     (click)="editDirectMessage(message)">
                             </div>
                         </td>
@@ -163,11 +163,10 @@
                     style="cursor: pointer;">
             </div>
 
-            <div *ngIf="taggedUser"
-            style="width: 300px;height: auto; border-radius: 30px;position: absolute; z-index: 111; bottom: 40px;left: 50px;">
+            <div *ngIf="taggedUser" class="tagged-user-list">
             <ul class="searchListe">
                 <li *ngFor="let user of userService.userData">
-                    <div style="display: flex;align-items: center;gap:8px" (click)="selectUser(user)"><img
+                    <div class="selectedUser" (click)="selectUser(user)"><img
                             [src]="userService.getAvatarForUser(user.name)" alt=""
                             style="width: 30px; height: 30px; border-radius: 30px;cursor:pointer"> {{user.name}}
                     </div>
@@ -184,12 +183,12 @@
 
                     <!-- Trennlinie -->
                     <div style="height: 35px;width: 1px;background-color: rgba(104, 104, 104, 1);"></div>
-                    <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail" (click)="toggleAutoListe()">
+                    <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail" (click)="toggleAutoListe($event)">
                     <!-- Emoji hinzufügen -->
                     <img src="./assets/icons/sentiment_satisfied-1.png" alt="Emoji hinzufügen" class="add-emoji"
-                        (click)="toggleEmojiPicker()">
+                        (click)="toggleEmojiPicker($event)">
                 </div>
-                <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"></emoji-mart>
+                <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)" class="emoji-picker"></emoji-mart>
 
                 <!-- Nachricht senden -->
                 <img src="./assets/icons/Send icon.png" (click)="sendMessage()" class="send-icon">
@@ -257,11 +256,10 @@
                     <img src="./../../../assets/icons/close.png" alt="Close" class="close-icon" (click)="fileService.closePreview()"
                         style="cursor: pointer;">
                 </div>
-                <div *ngIf="taggedUser"
-                    style="width: 300px;height: auto; border-radius: 30px;position: absolute; z-index: 111; bottom: 40px;left: 50px;">
+                <div *ngIf="taggedUser" class="tagged-user-list">
                     <ul class="searchListe">
                         <li *ngFor="let user of userService.userData">
-                            <div style="display: flex;align-items: center;gap:8px" (click)="selectUser(user)"><img
+                            <div class="selectedUser" (click)="selectUser(user)"><img
                                     [src]="userService.getAvatarForUser(user.name)" alt=""
                                     style="width: 30px; height: 30px; border-radius: 30px;cursor:pointer"> {{user.name}}
                             </div>
@@ -275,14 +273,14 @@
                         <input type="file" #fileInput style="display: none" (change)="fileService.onFileSelected($event)">
                         <div style="height: 35px;width: 1px;background-color:  rgba(104, 104, 104, 1);"></div>
                         <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji"
-                            (click)="toggleEmojiPicker()">
+                            (click)="toggleEmojiPicker($event)">
                         <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail"
-                            (click)="toggleAutoListe()">
+                            (click)="toggleAutoListe($event)">
                     </div>
                     <img src="./assets/icons/Send icon.png" (click)="sendMessage()" class="send-icon">
                 </div>
                 
-                <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"></emoji-mart>
+                <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)" class="emoji-picker"></emoji-mart>
             </div>
         </div>
     </ng-template>
