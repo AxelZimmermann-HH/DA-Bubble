@@ -22,20 +22,20 @@ export class UserService {
     private route: ActivatedRoute,
   ) { }
 
-  // ngOnInit() {
-  //   this.route.params.subscribe(params => {
-  //     this.userId = params['userId'];
-  //     if (this.userId) {
-  //       console.log('Initialized userId:', this.userId);
-  //       this.loadUsers().then(() => {
-  //         this.loadCurrentUser(this.userId); // Lade den aktuellen Benutzer
-  //       });
-  //     } else {
-  //       console.error('userId is not defined in route params');
-  //     }
-  //   });
-  // }
-  
+  ngOnInit() {
+    this.route.params.subscribe(params => {
+      this.userId = params['userId'];
+      if (this.userId) {
+        console.log('Initialized userId:', this.userId);
+        this.loadUsers().then(() => {
+          this.loadCurrentUser(this.userId);
+        });
+      } else {
+        console.error('userId is not defined in route params');
+      }
+    });
+  }
+
   async loadUsers2(): Promise<void> {
     try {
       const usersRef = collection(this.firestore, 'users');
@@ -50,7 +50,6 @@ export class UserService {
     try {
       const usersRef = collection(this.firestore, 'users');
       const snapshot = await getDocs(usersRef);
-
       this.userData = snapshot.docs.map(doc => {
         const data = doc.data();
         return new User({
@@ -151,6 +150,28 @@ export class UserService {
     return user ? user.name : 'Unbekannt';
   }
 
+  isCurrentUser(currentUser: string, userid:string): boolean {
+    const user = this.userData.find((u) => u.userId === userid);
+    return user ? user.name === currentUser : false;
+  }
 
+  getUserIdByname(userName: string): string | undefined {
+
+    const nameParts = userName.trim().split(' ');
+  
+
+    const user = this.userData.find((user: User) => {
+        const userParts = user.name.toLowerCase().split(' ');
+
+        return nameParts.every(part => userParts.some(userPart => userPart.toLowerCase().includes(part.toLowerCase())));
+    });
+    
+    return user ? user.userId : undefined;
+}
+
+
+  findUserByName(userName: string): User | undefined {
+    return this.userData.find(user => user.name === userName);
+  }
 }
 

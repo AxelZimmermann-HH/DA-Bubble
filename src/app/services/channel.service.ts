@@ -1,12 +1,13 @@
 import { Injectable, Input } from '@angular/core';
 import { User } from '../models/user.class';
 import { Channel } from '../models/channel.class';
-import { BehaviorSubject } from 'rxjs';
 import { Message } from '../models/message.class';
 import { collection, doc, Firestore, onSnapshot, updateDoc } from '@angular/fire/firestore';
 import { DialogEditChannelComponent } from '../main/channel/dialog-edit-channel/dialog-edit-channel.component';
 import { MatDialog } from '@angular/material/dialog';
 import { SearchService } from './search.service';
+import { DialogAddUserComponent } from '../dialog-add-user/dialog-add-user.component';
+import { UserService } from './user.service';
 
 @Injectable({
     providedIn: 'root'
@@ -28,7 +29,8 @@ export class ChannelService {
 
     constructor(public firestore: Firestore,
         public dialog: MatDialog,
-        public searchService: SearchService
+        public searchService: SearchService,
+        public userService:UserService
     ) { }
 
 
@@ -86,4 +88,10 @@ export class ChannelService {
         const channel = this.filteredChannels.find(channel => channel.channelName === channelName);
         return channel ? channel.id : null;
     }
+
+    openDialogAddUser() {
+        this.dialog.open(DialogAddUserComponent, {
+          data: { channel: this.selectedChannel, source: 'channelComponent' }
+        });
+      }
 }
