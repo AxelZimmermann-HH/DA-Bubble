@@ -80,7 +80,8 @@ export class ThreadComponent {
     }
 
     if (changes['selectedChannelId'] && !changes['selectedChannelId'].isFirstChange()) {
-      this.selectedAnswers = []
+      this.selectedAnswers = [];
+      this.closeThread()
     }
   }
 
@@ -147,6 +148,7 @@ export class ThreadComponent {
     message.isEditing = true;
     message.editedText = message.text;
   }
+
   saveEditAnswer(answer: Answer) {
     const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${this.message.messageId}`);
     getDoc(messageRef).then((docSnap) => {

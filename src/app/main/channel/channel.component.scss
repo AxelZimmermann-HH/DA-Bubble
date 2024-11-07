@@ -524,18 +524,28 @@ td:hover .b-radius {
     bottom: 40px;
     left: 50px;
 }
+
 .selectedUser {
     display: flex;
     align-items: center;
     gap: 8px;
     width: max-content;
-    padding:6px 20px 6px 6px;
-    &:hover{
+    padding: 6px 20px 6px 6px;
+
+    img {
+        width: 30px;
+        height: 30px;
+        border-radius: 30px;
+        cursor: pointer
+    }
+
+    &:hover {
         background: rgba(236, 238, 254, 1);
         border-radius: 30px;
         cursor: pointer;
     }
 }
+
 .channel_liste {
     padding: 10px 20px;
 

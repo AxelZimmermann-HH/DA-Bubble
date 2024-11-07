@@ -9,7 +9,7 @@ import { ThreadComponent } from "../thread/thread.component";
 import { AddChannelUserComponent } from './add-channel-user/add-channel-user.component';
 import { Answer } from '../../models/answer.class';
 import { ActivatedRoute } from '@angular/router';
-import { addDoc, collection, doc, Firestore, onSnapshot, Timestamp, updateDoc } from '@angular/fire/firestore';
+import { addDoc, collection, doc, Firestore, Timestamp, updateDoc } from '@angular/fire/firestore';
 import { UserService } from '../../services/user.service';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { ChatComponent } from "../chat/chat.component";
@@ -103,6 +103,7 @@ export class ChannelComponent {
     this.subscribeToSearch();
     this.subscribeToFilteredData();
     this.channelService.getAllChannels();
+
   }
 
   ngOnChanges(): void {
@@ -189,22 +190,41 @@ export class ChannelComponent {
 
   async sendMessage() {
     if (this.newMessageText.trim() === '' && !this.fileService.selectedFile) return;
+
+    const taggedUsernames = this.extractTaggedUsernames(this.newMessageText);
+
+
     const userName = this.userService.findUserNameById(this.userId);
     if (!userName) return;
 
     const fileUrl = await this.uploadFile();
 
-    if (!fileUrl && !this.newMessageText.trim()) {
-      console.error('Es gibt keine Nachricht und keine Datei zum Senden.');
-      return;
-    }
+    if (!fileUrl && !this.newMessageText.trim()) return;
 
     if (this.channelService.selectedChannel) {
       await this.sendChannelMessage(this.selectedChannelId, this.newMessageText, fileUrl);
     } else {
       await this.handleDirectMessageOrEmail(fileUrl);
     }
+
+
+    for (const username of taggedUsernames) {
+      await this.sendDirectMessage(username, this.newMessageText, fileUrl);
+    }
+
     this.resetInput();
+  }
+
+  extractTaggedUsernames(message: string): string[] {
+    const tagRegex = /@([A-Za-z0-9_]+)/g; // Akzeptiert auch Namen mit Leerzeichen
+    const taggedUsernames = [];
+    let match;
+
+    while ((match = tagRegex.exec(message)) !== null) {
+      taggedUsernames.push(match[1].trim());  // Den getaggten Namen hinzufügen
+    }
+
+    return taggedUsernames;
   }
 
   async uploadFile(): Promise<string | null> {
@@ -231,7 +251,7 @@ export class ChannelComponent {
       await this.sendEmail(inputValue, this.newMessageText, fileUrl);
     } else if (inputValue.startsWith('@')) {
       const userName = inputValue.slice(1).trim();
-      await this.sendDirectMessage(userName);
+      await this.sendDirectMessage(userName, this.newMessageText, fileUrl);
     } else if (inputValue.startsWith('#')) {
       const channelName = inputValue.slice(1).trim();
       const channelId = this.channelService.getChannelIdByName(channelName);
@@ -268,42 +288,29 @@ export class ChannelComponent {
     }
   }
 
-  async sendDirectMessage(recipientName: string) {
-
-    await this.uploadFileToDirektMessage();
+  async sendDirectMessage(recipientName: string, messageText: string, fileUrl: string | null) {
+    if (!messageText.trim() && !fileUrl) {
+      return;
+    }
 
     const receiverID = this.userService.getUserIdByname(recipientName);
     if (!receiverID) {
-      console.error('Empfänger-ID konnte nicht gefunden werden.');
       return;
     }
 
     const chatId = await this.initializeChat(receiverID);
     if (!chatId) return;
 
-    await this.sendChatMessage(chatId);
+  
+    await this.sendChatMessage(chatId, messageText, fileUrl);
+
     this.resetInputFields();
   }
 
-  async uploadFileToDirektMessage() {
-    if (this.fileService.selectedFile) {
-      const filePath = `files/${this.fileService.selectedFile.name}`;
-      const storageRef = ref(getStorage(), filePath);
-
-      try {
-        const snapshot = await uploadBytes(storageRef, this.fileService.selectedFile);
-        this.fileService.fileDownloadUrl = await getDownloadURL(snapshot.ref);  // Datei-URL speichern
-      } catch (error) {
-        console.error('Fehler beim Hochladen der Datei:', error);
-        return;
-      }
-    } else {
-      this.fileService.fileDownloadUrl = '';
-    }
-  }
 
   async initializeChat(receiverID: string) {
     const chatId = await this.chatService.createChatID(this.userId, receiverID);
+
     const chatExists = await this.chatService.doesChatExist(chatId);
 
     if (!chatExists) {
@@ -312,15 +319,17 @@ export class ChannelComponent {
     return chatId;
   }
 
-  async sendChatMessage(chatId: string) {
+  async sendChatMessage(chatId: string, messageText: string , fileUrl:string|null) {
+
     const fileName = this.fileService.selectedFile ? this.fileService.selectedFile.name : '';
     const fileType = this.fileService.selectedFile ? this.fileService.selectedFile.type : '';
+    const finalFileUrl = fileUrl || this.fileService.fileDownloadUrl;
 
     try {
       await this.chatService.sendMessageToChat(
         chatId,
-        this.newMessageText,
-        this.fileService.fileDownloadUrl,
+        messageText,
+        finalFileUrl,
         fileName,
         fileType,
         this.userId
@@ -331,7 +340,6 @@ export class ChannelComponent {
   }
 
   resetInputFields() {
-    this.newMessageText = '';
     this.fileService.selectedFile = null;
     this.fileService.fileDownloadUrl = '';
   }

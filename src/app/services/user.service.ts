@@ -155,9 +155,23 @@ export class UserService {
     return user ? user.name === currentUser : false;
   }
 
-  getUserIdByname(userName: string) {
-    const user = this.userData.find((user: User) => user.name === userName);
+  getUserIdByname(userName: string): string | undefined {
+
+    const nameParts = userName.trim().split(' ');
+  
+
+    const user = this.userData.find((user: User) => {
+        const userParts = user.name.toLowerCase().split(' ');
+
+        return nameParts.every(part => userParts.some(userPart => userPart.toLowerCase().includes(part.toLowerCase())));
+    });
+    
     return user ? user.userId : undefined;
+}
+
+
+  findUserByName(userName: string): User | undefined {
+    return this.userData.find(user => user.name === userName);
   }
 }
 
