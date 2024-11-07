@@ -8,6 +8,10 @@ import { Channel } from '../models/channel.class';
   providedIn: 'root'
 })
 export class SharedService {
+  //Variablen für Mobile Ansicht, word in der app.component gecheckt
+  isMobile:boolean = false;
+  goBackHeader:boolean = false;
+
   // Observable für den Suchbegriff
   private searchTermSubject = new BehaviorSubject<string>('');
   searchTerm$ = this.searchTermSubject.asObservable();

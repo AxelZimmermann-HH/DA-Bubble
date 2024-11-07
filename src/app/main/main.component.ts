@@ -6,6 +6,7 @@ import { RouterOutlet } from '@angular/router';
 import { ChatComponent } from "./chat/chat.component";
 import { CommonModule } from '@angular/common';
 import { ChatService } from '../services/chat.service';
+import { SharedService } from '../services/shared.service';
 
 @Component({
   selector: 'app-main',
@@ -17,7 +18,7 @@ import { ChatService } from '../services/chat.service';
 })
 export class MainComponent {
 
-  constructor(public chatService: ChatService) { }
+  constructor(public chatService: ChatService, public sharedService: SharedService) { }
 
 
 

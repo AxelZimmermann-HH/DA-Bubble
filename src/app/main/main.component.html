@@ -2,7 +2,8 @@
   <app-header></app-header>
   <div class="d-flex">
 
-    <app-menu (channelSelected)="this.chatService.onChannelSelected($event)"
+    <app-menu *ngIf="this.chatService.showMenu" [ngClass]="this.sharedService.isMobile ? 'mobile-menu' : ''"
+      (channelSelected)="this.chatService.onChannelSelected($event)"
       (chatSelected)="this.chatService.onChatSelected()">
     </app-menu>
 

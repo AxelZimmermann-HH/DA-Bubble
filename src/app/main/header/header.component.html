@@ -1,8 +1,17 @@
 <div class="header-content">
-    <div class="logo">
+    <div class="logo" *ngIf="!this.sharedService.goBackHeader">
         <img src="./assets/icons/Logo.svg" alt="">
         <p>DABubble</p>
     </div>
+
+    <div class="logo" *ngIf="this.sharedService.goBackHeader" (click)="hideChatChannel()">
+       
+        <img class="back-icon" src="\assets\icons\keyboard_arrow_down.png" alt="">
+        <img class="workspace_logo" src="\assets\icons\workspace_logo.png" alt="">
+        <span class="header1">Devspace</span>
+
+    </div>
+
     <div class="desktop-search">
         <div class="input">
             <input id="search" type="text" placeholder="Devspace durchsuchen" (input)="onSearchInput($event)">
@@ -37,7 +46,7 @@
         <img (click)="openDialogLogout()" class="header-menu" src="./assets/icons/keyboard_arrow_down_1.png" alt="">
     </div>
 </div>
-<div class="responsive-search">
+<div class="responsive-search" *ngIf="this.chatService.showMenu">
     <div class="input">
         <input id="search" class="res-search" type="text" placeholder="Devspace durchsuchen"
             (input)="onSearchInput($event)">

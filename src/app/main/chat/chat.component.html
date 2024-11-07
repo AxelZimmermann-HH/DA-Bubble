@@ -1,5 +1,5 @@
-<div class="channel-container" *ngIf="user">
-    <div class="channel-header">
+<div class="channel-container" *ngIf="user" [ngClass]="this.sharedService.isMobile ? 'mobile-channel-container' : 'channel-container'">
+    <div class="channel-header" [ngClass]="this.sharedService.isMobile ? 'channel-header-mobile' : 'channel-header'">
         <div class="user" (click)="openUserProfil(user)">
             <div class="avatar-container">
                 <img class="user-avatar" [src]="getAvatarForUser(user.name)" alt="">
@@ -18,7 +18,7 @@
         <div *ngFor="let group of chatService.groupedMessages | keyvalue; let i = index">
             <div style="position: relative;">
                 <hr class="separator-line">
-                <button class="day-time-btn">{{ isToday(group.value[0].timestamp) ? 'Heute' :
+                <button class="day-time-btn header3">{{ isToday(group.value[0].timestamp) ? 'Heute' :
                     group.value[0].dayDateMonth }}</button>
             </div>
 
@@ -29,11 +29,11 @@
                         <table class="chat-table">
                             <tr>
                                 <td>
-                                    <div class="message-main">
+                                    <div class="message-main" [ngClass]="this.sharedService.isMobile ? 'message-main-mobile' : 'message-main'">
                                         @if (userService.isNumber(user.avatar)) {
-                                        <img class="avatar" src="\assets\avatars\avatar_{{user.avatar}}.png" alt="">
+                                        <img class="avatar" [ngClass]="this.sharedService.isMobile ? 'avatar-mobile' : 'avatar'" src="\assets\avatars\avatar_{{user.avatar}}.png" alt="">
                                         } @else {
-                                        <img class="avatar" src={{user.avatar}} alt="">
+                                        <img class="avatar" [ngClass]="this.sharedService.isMobile ? 'avatar-mobile' : 'avatar'" src={{user.avatar}} alt="">
                                         }
                                         <div class="message-content">
                                             <div class="name-time"> {{ user.name }}
@@ -254,10 +254,10 @@
                                             (click)="editDirectMessage(message)">
                                     </div>
 
-                                    <div class="message-main">
+                                    <div class="message-main" [ngClass]="this.sharedService.isMobile ? 'message-main-mobile' : 'message-main'">
                                         <div class="message-content" *ngIf="editingMessageId !== message.messageId">
                                             <div class="name-time">
-                                                <p class="time">{{ message.time }} Uhr</p> {{ currentUser.name }}
+                                                <p class="time">{{ message.time }} Uhr</p> {{ currentUser.name + ' (Du)'}}
                                             </div>
                                             <div class="speech-bubble">
                                                 <span>{{ message.text }}</span>
@@ -482,7 +482,7 @@
 
 
                                         </div>
-                                        <img class="avatar" [src]="getAvatarForUser(currentUser.name)"
+                                        <img class="avatar" [ngClass]="this.sharedService.isMobile ? 'avatar-mobile' : 'avatar'" [src]="getAvatarForUser(currentUser.name)"
                                         alt="">
                                     </div>
 
@@ -576,7 +576,7 @@
                 <div>
                     <img src="./assets/icons/sentiment_satisfied-1.png" (click)="toogleEmojis()" alt="" class="add-emoji">
              
-                    <emoji-mart *ngIf="showEmojis"
+                    <emoji-mart *ngIf="showEmojis" 
                       set="google"
                       
                       [emojiSize]="24"

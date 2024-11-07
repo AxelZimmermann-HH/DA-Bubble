@@ -3,6 +3,7 @@ import { addDoc, collection, doc, documentId, Firestore, getDocs, onSnapshot, qu
 import { BehaviorSubject } from 'rxjs';
 import { directMessage } from '../models/directMessage.class';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { SharedService } from './shared.service';
 
 @Injectable({
   providedIn: 'root'
@@ -22,28 +23,33 @@ export class ChatService {
   selectedChannelId: string | null = null;
   showChannel = true;
   showChat = true;
+  showMenu = true;
   textContent: string | null = null;
   safeUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
 
-  constructor(public firestore: Firestore, private sanitizer: DomSanitizer) {
+  constructor(public firestore: Firestore, private sanitizer: DomSanitizer, public sharedService: SharedService) {
     this.showChannel = true;
     this.showChat = false;
+    if(this.sharedService.isMobile){
+      this.showMenu = true;
+      this.showChannel = false;
+      this.showChat = false;
+    }
   }
 
-  
-  
 
   onChannelSelected(channel: any) {
     if (channel) {
       this.selectedChannelId = channel.id;
-    this.showChannel = true;
-    this.showChat = false;
+      this.showChannel = true;
+      this.showChat = false;
+      if(this.sharedService.isMobile){
+        this.changeToMobile()
+      }
     }
     else{
       this.selectedChannelId = null
-    }
-    
-    
+    } 
   }
 
 
@@ -51,6 +57,14 @@ export class ChatService {
     console.log('Chat selected in MainComponent');
     this.showChannel = false;
     this.showChat = true;
+    if(this.sharedService.isMobile){
+      this.changeToMobile()
+    }
+  }
+
+  changeToMobile(){
+    this.showMenu = false;
+    this.sharedService.goBackHeader = true;
   }
 
   //öffnet den privaten Chat

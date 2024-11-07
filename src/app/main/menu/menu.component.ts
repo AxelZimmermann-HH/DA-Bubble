@@ -22,7 +22,7 @@ export class MenuComponent {
     public firestore: Firestore, 
     public route: ActivatedRoute,
     public dialog: MatDialog, 
-    private sharedService: SharedService, 
+    public sharedService: SharedService, 
     public chatService: ChatService, 
     public userService: UserService,
     ){}

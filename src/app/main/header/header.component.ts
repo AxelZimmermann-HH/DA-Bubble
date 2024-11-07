@@ -11,6 +11,7 @@ import { UserService } from '../../services/user.service';
 import { User } from '../../models/user.class';
 import { collection, doc, Firestore, getDoc, onSnapshot } from '@angular/fire/firestore';
 import { ActivatedRoute } from '@angular/router';
+import { ChatService } from '../../services/chat.service';
 
 @Component({
   selector: 'app-header',
@@ -25,7 +26,13 @@ export class HeaderComponent implements OnInit {
   userData: any = [];
   userId!: string;
 
-  constructor(public dialog: MatDialog, private sharedService: SharedService, public userService: UserService, public firestore: Firestore, public route: ActivatedRoute) { }
+  constructor(
+    public dialog: MatDialog, 
+    public sharedService: SharedService, 
+    public chatService: ChatService,
+    public userService: UserService, 
+    public firestore: Firestore, 
+    public route: ActivatedRoute) { }
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
@@ -35,7 +42,7 @@ export class HeaderComponent implements OnInit {
   ngOnInit() {
 
     this.isMobile = window.innerWidth <= 500;
-
+    
 
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
@@ -98,5 +105,12 @@ export class HeaderComponent implements OnInit {
       }
     }
     return './assets/avatars/avatar_0.png';  // Default avatar when user not found
+  }
+
+  hideChatChannel(){
+    this.chatService.showChannel = false;
+    this.chatService.showChat = false;
+    this.chatService.showMenu = true;
+    this.sharedService.goBackHeader = false;
   }
 }
