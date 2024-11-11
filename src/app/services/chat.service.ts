@@ -48,8 +48,13 @@ export class ChatService {
       }
     }
     else {
-      this.selectedChannelId = null
+      this.selectedChannelId = null;
+      if(this.sharedService.isMobile){
+        this.changeToMobile();
+        this.showChannel = true;
+      }
     } 
+   
   }
 
 

@@ -8,6 +8,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { SearchService } from './search.service';
 import { DialogAddUserComponent } from '../dialog-add-user/dialog-add-user.component';
 import { UserService } from './user.service';
+import { SharedService } from './shared.service';
+import { AddChannelUserComponent } from '../main/channel/add-channel-user/add-channel-user.component';
 
 @Injectable({
     providedIn: 'root'
@@ -30,7 +32,8 @@ export class ChannelService {
     constructor(public firestore: Firestore,
         public dialog: MatDialog,
         public searchService: SearchService,
-        public userService:UserService
+        public userService: UserService,
+        public sharedService: SharedService
     ) { }
 
 
@@ -77,9 +80,9 @@ export class ChannelService {
         });
     }
 
-    openDialogEditChannel(channel: any) {
-        this.dialog.open(DialogEditChannelComponent, { data: channel });
-    }
+    // openDialogEditChannel(channel: any) {
+    //     this.dialog.open(DialogEditChannelComponent, { data: channel });
+    // }
 
     getChannelIdByName(channelName: string): string | null {
         this.searchService.filteredChannels$.subscribe(channels => {
@@ -89,9 +92,30 @@ export class ChannelService {
         return channel ? channel.id : null;
     }
 
-    openDialogAddUser() {
-        this.dialog.open(DialogAddUserComponent, {
-          data: { channel: this.selectedChannel, source: 'channelComponent' }
+    openUsersList(channelId: string) {
+        this.dialog.open(AddChannelUserComponent, {
+            data: {
+                channelId: channelId,
+                channel: this.selectedChannel
+            }
         });
+    }
+    openDialogAddUser() {
+        if (this.sharedService.isMobile) {
+            this.openUsersList(this.selectedChannel.id)
+        }
+        else {
+            this.dialog.open(DialogAddUserComponent, {
+                data: { channel: this.selectedChannel, source: 'channelComponent' }
+            });
+        }
+
+    }
+    openDialogEditChannel(channel: any) {
+        if (channel) {
+          this.dialog.open(DialogEditChannelComponent, { data: channel });
+        } else {
+          console.error('No channel selected.');
+        }
       }
 }

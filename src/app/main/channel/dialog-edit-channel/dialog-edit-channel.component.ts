@@ -1,7 +1,6 @@
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { collection, doc, Firestore, onSnapshot, updateDoc } from '@angular/fire/firestore';
-
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Channel } from '../../../models/channel.class';
@@ -9,6 +8,9 @@ import { User } from '../../../models/user.class';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { SharedService } from '../../../services/shared.service';
+import { UserService } from '../../../services/user.service';
+import { DialogAddUserComponent } from '../../../dialog-add-user/dialog-add-user.component';
 
 
 @Component({
@@ -19,7 +21,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
   styleUrl: './dialog-edit-channel.component.scss'
 })
 export class DialogEditChannelComponent {
- 
+
   channelData: any = [];
   channelId!: string;
   userData: any = [];
@@ -29,9 +31,15 @@ export class DialogEditChannelComponent {
   newChannelName!: string;
   newChannelDescription!: string;
 
-  constructor(public dialogRef: MatDialogRef<DialogEditChannelComponent>, public firestore: Firestore, @Inject(MAT_DIALOG_DATA) public channel: Channel) {
+  constructor(
+    public dialogRef: MatDialogRef<DialogEditChannelComponent>,
+    public firestore: Firestore, @Inject(MAT_DIALOG_DATA)
+    public channel: Channel,
+    public sharedService: SharedService,
+    public userService: UserService,
+    public dialog: MatDialog) {
 
-   
+
     if (this.channel && this.channel.channelName) {
       this.newChannelName = this.channel.channelName;
     } else {
@@ -91,6 +99,13 @@ export class DialogEditChannelComponent {
         });
     }
     this.isEditingDescription = false; // Exit edit mode
+  }
+
+  openDialogAddUser() {
+    this.dialogRef.close()
+    this.dialog.open(DialogAddUserComponent, {
+      data: { channel: this.channel, source: 'channelComponent' }
+    });
   }
 }
 

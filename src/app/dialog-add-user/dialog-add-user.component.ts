@@ -13,7 +13,7 @@ import { UserService } from '../services/user.service';
 @Component({
   selector: 'app-dialog-add-user',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatFormField, MatInputModule, MatSelectModule],
+  imports: [CommonModule, FormsModule, MatInputModule, MatSelectModule],
   templateUrl: './dialog-add-user.component.html',
   styleUrl: './dialog-add-user.component.scss'
 })

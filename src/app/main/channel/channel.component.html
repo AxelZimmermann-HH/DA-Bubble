@@ -2,12 +2,12 @@
     <div class="channel-container" *ngIf="channelService.selectedChannel else loadingTemplate">
         <div class="channel-header">
             <button class="edit-channel"
-                (click)="this.sharedService.openDialogEditChannel(channelService.selectedChannel)">
+                (click)="this.channelService.openDialogEditChannel(channelService.selectedChannel)">
                 <p># {{channelService.selectedChannel.channelName}}</p>
                 <img src="./assets/icons/keyboard_arrow_down_1.png" alt="">
             </button>
             <div class="add-members">
-                <div class="member-preview" (click)="openUsersList(selectedChannelId!)">
+                <div class="member-preview" (click)="channelService.openUsersList(selectedChannelId!)">
                     <img *ngFor="let member of channelService.selectedChannel.members"
                         [src]="userService.getAvatarForUser(member.name)" alt="" class="avatar">
                 </div>
@@ -27,7 +27,7 @@
                 <ng-container *ngFor="let group of  this.messagesService.allMessages">
                     <tr>
                         <td colspan="2">
-                            <div style="position: relative; width: 100%;margin:0 75px">
+                            <div class="date-group">
                                 <hr class="separator-line">
                                 <button class="day-time-btn">{{ group.date }}</button>
                             </div>

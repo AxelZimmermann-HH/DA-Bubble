@@ -4,6 +4,7 @@ import { User } from '../models/user.class';
 import { doc, Firestore, getDoc, updateDoc, collection, getDocs, onSnapshot } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
+import { DialogUserProfilComponent } from '../main/dialog-user-profil/dialog-user-profil.component';
 
 
 @Injectable({
@@ -82,7 +83,7 @@ export class UserService {
 
   getAvatarForUser(userName: string) {
     if (!this.userData || this.userData.length === 0) {
-      console.warn('User data is not loaded');
+    
       return './assets/avatars/avatar_1.png';
     }
 
@@ -173,5 +174,14 @@ export class UserService {
   findUserByName(userName: string): User | undefined {
     return this.userData.find(user => user.name === userName);
   }
+
+  openUserProfil(member: any) {
+    this.dialog.open(DialogUserProfilComponent, {
+      data: { user: member, isEditable: false } // Not editable from "Add Channel User"
+    });
+    console.log('add channel user ', member.name);
+  }
+
+  
 }
 

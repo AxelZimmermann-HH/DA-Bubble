@@ -255,7 +255,7 @@ td:hover .speech-bubble {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: auto;
+    width: max-content;
     height: 35px;
     border-radius: 30px;
     padding: 5px 15px;
@@ -523,8 +523,10 @@ td:hover .b-radius {
             border-color: rgba(68, 77, 242, 1);
         }
     }
-    p{
-        font-size: 24px; font-weight: 700;
+
+    p {
+        font-size: 24px;
+        font-weight: 700;
     }
 }
 
@@ -575,19 +577,29 @@ td:hover .b-radius {
         cursor: pointer;
     }
 }
-.trennLine{
-    height: 35px;width: 1px;background-color: rgba(104, 104, 104, 1);
+
+.trennLine {
+    height: 35px;
+    width: 1px;
+    background-color: rgba(104, 104, 104, 1);
 }
+
 .channel_liste {
     padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 
     &:hover {
         background: rgba(236, 238, 254, 1);
         padding: 10px 20px;
         border-radius: 30px;
     }
-    img{
-        width: 30px; height: 30px; border-radius: 30px;
+
+    img {
+        width: 30px;
+        height: 30px;
+        border-radius: 30px;
     }
 }
 
@@ -669,12 +681,18 @@ td:hover .b-radius {
         object-fit: contain;
     }
 }
-.image-preview{
-    max-width: 100px; max-height: 100px; 
+
+.image-preview {
+    max-width: 100px;
+    max-height: 100px;
 }
-.file-preview{
-    display: flex; align-items: center; flex-direction: column;
+
+.file-preview {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
 }
+
 .selectedFileStyle {
     position: relative;
     background-color: #797EF3;
@@ -695,4 +713,57 @@ td:hover .b-radius {
     height: 54px;
     scrollbar-width: none;
     text-align: center;
+}
+
+.date-group {
+    position: relative;
+    width: 100%;
+    margin: 0 75px
+}
+
+@media (max-width: 768px) {
+    .channel-container {
+        height: calc(100vh - 90px);
+    }
+
+    .channel-template-header .inputChannel {
+        font-size: 14px;
+    }
+
+    .searchListe {
+        padding: 20px;
+        font-size: 14px;
+    }
+
+    .channel-header {
+        padding: 20px;
+
+        .edit-channel {
+            font-size: 18px;
+        }
+    }
+
+    .member-preview,
+    .numberofmembers {
+        display: none;
+    }
+
+    .date-group {
+        margin: 0 30px;
+    }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+    }
+
+    .channel-content .chat-table .message-main {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .channel-content .chat-table .message-content .label-answers{
+        font-size: 12px;
+        font-weight: 700;
+    }
 }
