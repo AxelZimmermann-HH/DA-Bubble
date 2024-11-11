@@ -1,4 +1,4 @@
-<div style="display: flex; align-items: center; gap: 16px;">
+<div class="channel-body">
     <div class="channel-container" *ngIf="channelService.selectedChannel else loadingTemplate">
         <div class="channel-header">
             <button class="edit-channel"
@@ -46,14 +46,14 @@
                                     </div>
                                     <div class="speech-bubble"
                                         [ngClass]="{'b-radius': userService.isCurrentUser(message.user, userId)}">
-                                        <div style="display: flex;flex-direction: column;gap: 20px;">
+                                        <div class="speech-bubble-content">
                                             {{ message.text }}
                                             <div *ngIf="message.fileUrl" class="fileUrl">
                                                 <!-- Image Preview -->
                                                 <div *ngIf="message.fileType.startsWith('image/')">
                                                     <img [src]="fileService.getSafeUrl(message.fileUrl)"
                                                         alt="Image Preview"
-                                                        style="width: 70px; height: auto; object-fit: contain;">
+                                                        >
                                                 </div>
                                                 <!-- PDF Preview -->
                                                 <div *ngIf="message.fileType === 'application/pdf'">
@@ -76,7 +76,7 @@
                                         {{ message.answers.length }} Antworten
                                         <p class="time">Letzte Antwort {{message.getLastAnswerTimestamp()}} </p>
                                     </div>
-                                    <div style="display: flex;align-items: center;gap: 8px;">
+                                    <div class="d-flex">
                                         <div *ngFor="let emojiData of message.emojis">
                                             <span class="emoji-container"
                                                 *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0"
@@ -84,23 +84,23 @@
                                                 <img [src]="emojiService.getEmojiSrc(emojiData.emoji)"
                                                     [alt]="emojiData.emoji" />
                                                 <span>{{ emojiData.userIds.length }}</span>
-                                                <!-- Anzeige der Anzahl der Benutzer -->
+                                        
                                                 <div class="emoji-tooltip"
                                                     *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0">
-                                                    <span
-                                                        style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                                                    <span class="emojiData">
                                                         <img [src]="emojiService.getEmojiSrc(emojiData.emoji)"
                                                             [alt]="emojiData.emoji" width="30px" />
                                                         <span class="emoji-reaction-text">
                                                             {{emojiService.getEmojiReactionText(emojiData, userId) }}
                                                         </span>
-                                                        <span style="font-size: 16px; font-weight: 400;"> {{emojiData.userIds.length > 1 ? 'haben reagiert' : 'hat reagiert' }}</span>
+                                                        <span > {{emojiData.userIds.length > 1 ? 'haben reagiert' : 'hat reagiert' }}</span>
                                                     </span>
                                                 </div>
                                             </span>
                                         </div>
                                     </div>
                                 </div>
+                                <!-- edit message -->
                                 <div *ngIf="message.isEditing" class="textAreaContainer">
                                     <textarea [(ngModel)]="message.editedText" class="textEditingArea">
                                     </textarea>
@@ -118,7 +118,6 @@
                                 <emoji-mart *ngIf="showEditEmojiPicker && message.isEditing"
                                     (emojiSelect)="addEmojiToEditMessage($event, message)" class="emoji-picker">
                                 </emoji-mart>
-
                             </div>
                             <div class="reaction-hover"
                                 [ngClass]="{'reaction-left': userService.isCurrentUser(message.user, userId)}"
@@ -152,20 +151,19 @@
             <div *ngIf="fileService.selectedFile" class="selectedFileStyle">
                 <!-- Datei-Vorschau für Bilder -->
                 <div *ngIf="fileService.selectedFile.type.startsWith('image/') && fileService.fileUrl"
-                    class="file-preview" style="display: flex; align-items: center; flex-direction: column;">
-                    <img [src]="fileService.fileUrl" alt="Image Preview" class="image-preview"
-                        style="max-width: 100px; max-height: 100px;">
+                    class="file-preview">
+                    <img [src]="fileService.fileUrl" alt="Image Preview" class="image-preview">       
                 </div>
 
                 <!-- Datei-Vorschau für PDFs -->
                 <div *ngIf="fileService.selectedFile.type === 'application/pdf' && fileService.fileUrl"
-                    class="file-preview" style="display: flex; align-items: center; flex-direction: column;">
+                    class="file-preview">
                     <iframe [src]="fileService.fileUrl" width="200" height="200" style="border: none;"></iframe>
                 </div>
 
                 <!-- Anzeige für andere Dateitypen -->
                 <div *ngIf="!fileService.fileUrl || (!fileService.selectedFile.type.startsWith('image/') && fileService.selectedFile.type !== 'application/pdf')"
-                    class="file-preview" style="display: flex; align-items: center; flex-direction: column;">
+                    class="file-preview" >
                     <p>{{ fileService.selectedFile.name }}</p>
                 </div>
 
@@ -177,9 +175,9 @@
             <div *ngIf="taggedUser" class="tagged-user-list">
                 <ul class="searchListe">
                     <li *ngFor="let user of userService.userData">
-                        <div class="selectedUser" (click)="selectUser(user)"><img
-                                [src]="userService.getAvatarForUser(user.name)" alt=""
-                                style="width: 30px; height: 30px; border-radius: 30px;cursor:pointer"> {{user.name}}
+                        <div class="selectedUser" (click)="selectUser(user)">
+                            <img  [src]="userService.getAvatarForUser(user.name)" alt="">
+                                 {{user.name}}
                         </div>
                     </li>
                 </ul>
@@ -193,7 +191,7 @@
                     <input type="file" #fileInput style="display: none" (change)="fileService.onFileSelected($event)">
 
                     <!-- Trennlinie -->
-                    <div style="height: 35px;width: 1px;background-color: rgba(104, 104, 104, 1);"></div>
+                    <div class="trennLine"></div>
                     <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail"
                         (click)="toggleAutoListe($event)">
                     <!-- Emoji hinzufügen -->
@@ -209,12 +207,10 @@
             </div>
         </div>
     </div>
-
-
     <ng-template #loadingTemplate>
         <div class="channel-container">
             <div class="channel-template-header">
-                <p style="font-size: 24px; font-weight: 700;">Neue Nachricht</p>
+                <p >Neue Nachricht</p>
                 <input class="inputChannel" type="text" placeholder="An #channel, oder @jemand oder E-Mail Adresse"
                     (input)="onInput($event)" [(ngModel)]="inputValue" />
                 <div *ngIf="showAutocomplete" class="autocomplete-list">
@@ -225,10 +221,9 @@
                             </div>
                         </li>
                         <li *ngFor="let user of userService.userData" (click)="selectValue(user.name)">
-                            <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;"
+                            <div class="d-flex"
                                 *ngIf="inputValue.startsWith('@')" class="channel_liste">
-                                <img [src]="userService.getAvatarForUser(user.name)" alt=""
-                                    style="width: 30px; height: 30px; border-radius: 30px;" />
+                                <img [src]="userService.getAvatarForUser(user.name)" alt="" />
                                 {{ user.name }}
                             </div>
                         </li>
@@ -247,20 +242,19 @@
                 <div *ngIf="fileService.selectedFile" class="selectedFileStyle">
                     <!-- Datei-Vorschau für Bilder -->
                     <div *ngIf="fileService.selectedFile.type.startsWith('image/') && fileService.fileUrl"
-                        class="file-preview" style="display: flex; align-items: center; flex-direction: column;">
-                        <img [src]="fileService.fileUrl" alt="Image Preview" class="image-preview"
-                            style="max-width: 100px; max-height: 100px;">
+                        class="file-preview" >
+                        <img [src]="fileService.fileUrl" alt="Image Preview" class="image-preview">
                     </div>
 
                     <!-- Datei-Vorschau für PDFs -->
                     <div *ngIf="fileService.selectedFile.type === 'application/pdf' && fileService.fileUrl"
-                        class="file-preview" style="display: flex; align-items: center; flex-direction: column;">
+                        class="file-preview" >
                         <iframe [src]="fileService.fileUrl" width="200" height="200" style="border: none;"></iframe>
                     </div>
 
                     <!-- Anzeige für andere Dateitypen -->
                     <div *ngIf="!fileService.fileUrl || (!fileService.selectedFile.type.startsWith('image/') && fileService.selectedFile.type !== 'application/pdf')"
-                        class="file-preview" style="display: flex; align-items: center; flex-direction: column;">
+                        class="file-preview">
                         <p>{{ fileService.selectedFile.name }}</p>
                     </div>
 

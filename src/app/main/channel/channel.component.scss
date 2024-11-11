@@ -1,3 +1,9 @@
+.channel-body {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
 .channel-container {
     background-color: #FFFFFF;
     width: 100%;
@@ -440,12 +446,33 @@ td:hover .b-radius {
     }
 }
 
+.d-flex {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.emojiData {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 400;
+}
+
 .textAreaContainer {
     position: relative;
     width: 100%;
     min-width: 300px;
     height: 170px;
     background-color: #ECEEFE;
+}
+
+.speech-bubble-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .textEditingArea {
@@ -496,6 +523,9 @@ td:hover .b-radius {
             border-color: rgba(68, 77, 242, 1);
         }
     }
+    p{
+        font-size: 24px; font-weight: 700;
+    }
 }
 
 .searchListe {
@@ -545,7 +575,9 @@ td:hover .b-radius {
         cursor: pointer;
     }
 }
-
+.trennLine{
+    height: 35px;width: 1px;background-color: rgba(104, 104, 104, 1);
+}
 .channel_liste {
     padding: 10px 20px;
 
@@ -553,6 +585,9 @@ td:hover .b-radius {
         background: rgba(236, 238, 254, 1);
         padding: 10px 20px;
         border-radius: 30px;
+    }
+    img{
+        width: 30px; height: 30px; border-radius: 30px;
     }
 }
 
@@ -618,7 +653,6 @@ td:hover .b-radius {
     height: 112px;
     white-space: wrap;
     z-index: 10;
-
 }
 
 .fileUrl {
@@ -628,8 +662,19 @@ td:hover .b-radius {
     flex-direction: column;
     border: 1px solid #ECEEFE;
     border-radius: 8px;
-}
 
+    img {
+        width: 70px;
+        height: auto;
+        object-fit: contain;
+    }
+}
+.image-preview{
+    max-width: 100px; max-height: 100px; 
+}
+.file-preview{
+    display: flex; align-items: center; flex-direction: column;
+}
 .selectedFileStyle {
     position: relative;
     background-color: #797EF3;

@@ -192,8 +192,7 @@ export class ChannelComponent {
     if (this.newMessageText.trim() === '' && !this.fileService.selectedFile) return;
 
     const taggedUsernames = this.extractTaggedUsernames(this.newMessageText);
-
-
+    
     const userName = this.userService.findUserNameById(this.userId);
     if (!userName) return;
 

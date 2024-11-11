@@ -259,24 +259,24 @@ export class MenuComponent {
   }
 
 
-  //edit
+  //öffnet einen ausgewählten channel
   onChannelClick(channel: any) {
     this.selectedChannel = channel;
     this.channelSelected.emit(channel);
     this.selectedChannel.id = channel.id;
   }
 
+  //Öffnet eine neue Nachricht
   onNewMessageClick() {
     if (this.chatService.showChat ){
       this.chatService.showChat = false;
       this.chatService.showChannel=true
       this.channelSelected.emit(null);
     }
-      
     this.channelSelected.emit(null);
   }
 
-  trackByChannelId(index: number, channel: any): string {
+  trackByChannelId( channel: any): string {
     return channel.id;  // Optimiert die Performance von *ngFor
   }
 

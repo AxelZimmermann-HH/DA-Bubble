@@ -4,7 +4,8 @@
     left: 50%;
     transform: translate(-50%, -50%);
     border-radius: 0 30px 30px 30px;
-    width: 872px;
+    width: 80%;
+    max-width: 872px;
     height: 616px;
     background-color: white;
     margin: 0;
@@ -84,7 +85,8 @@
     }
 
     .separate-line {
-        width: 739px;
+        width: 100%;
+        max-width: 739px;
         height: 0px;
         border: 1px solid rgba(173, 176, 217, 1);
     }
@@ -117,7 +119,7 @@
     font-family: Nunito;
     font-size: 18px;
     font-weight: 400;
-    
+
 }
 
 .editBtn {
@@ -178,4 +180,41 @@
     font-family: Nunito;
     font-size: 18px;
     font-weight: 400;
+}
+
+@media (max-width: 768px) {
+
+    .channel-container .channel-header p {
+        font-size: 18px;
+    }
+
+    .channel-container .channel-header img {
+        width: 20px;
+        height: 20px;
+    }
+
+    .channel-container .channel-name {
+        font-size: 14px;
+        padding: 16px;
+
+        img {
+            width: 20px;
+        }
+    }
+
+    .editBtn {
+        font-size: 14px;
+    }
+
+    .channel-description {
+        font-size: 14px;
+    }
+
+    .channel-container .userName {
+        font-size: 18px;
+    }
+
+    .channel-container .close-channel {
+        font-size: 14px;
+    }
 }
