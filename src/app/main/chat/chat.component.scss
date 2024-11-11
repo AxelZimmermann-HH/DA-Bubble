@@ -109,7 +109,7 @@
     position: relative;
     width: 100%;
     overflow-y: scroll;
-    height: 500px;
+    height: calc(100% - 370px);
     scrollbar-width: none;
     padding-top: 25px;
 
@@ -755,4 +755,8 @@ display: flex;
     border: unset;
     border-radius: unset;
     height: calc(100vh - 82px);
+}
+
+.mobile-channel-content{
+    height: calc(100% - 300px);
 }

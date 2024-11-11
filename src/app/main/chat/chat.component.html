@@ -12,7 +12,7 @@
             </span>
         </div>
     </div>
-    <div class="channel-content" #chatContainer>
+    <div class="channel-content" #chatContainer [ngClass]="this.sharedService.isMobile? 'mobile-channel-content':'channel-content'">
 
         <!-- Gruppierte Nachrichten anzeigen -->
         <div *ngFor="let group of chatService.groupedMessages | keyvalue; let i = index">
