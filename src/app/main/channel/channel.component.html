@@ -24,7 +24,8 @@
                 <tr>
                     <td style="height: 50px;"></td>
                 </tr>
-                <ng-container *ngFor="let group of  this.messagesService.allMessages">
+
+                <ng-container *ngFor="let group of filteredSearchMessages"> 
                     <tr>
                         <td colspan="2">
                             <div class="date-group">
@@ -33,6 +34,7 @@
                             </div>
                         </td>
                     </tr>
+
                     <tr *ngFor="let message of group.messages" style="height: auto;">
                         <td [ngClass]="{'current-user':userService.isCurrentUser(message.user, userId)}">
                             <div class="message-main"
@@ -49,6 +51,7 @@
                                         <div class="speech-bubble-content">
                                             {{ message.text }}
                                             <div *ngIf="message.fileUrl" class="fileUrl">
+
                                                 <!-- Image Preview -->
                                                 <div *ngIf="message.fileType.startsWith('image/')">
                                                     <img [src]="fileService.getSafeUrl(message.fileUrl)"

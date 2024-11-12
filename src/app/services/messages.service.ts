@@ -12,7 +12,7 @@ export class MessagesService {
 
     constructor(public firestore: Firestore) { }
 
-    getAllMessages(channelId:string|null) {
+    getAllMessages(channelId:string|null, callback: () => void) {
         const messagesQuery = query(
             collection(this.firestore, `channels/${channelId}/messages`),
             orderBy('timestamp', 'asc')
@@ -47,6 +47,9 @@ export class MessagesService {
                 date,
                 messages: groupedMessages[date]
             }));
+
+            callback()
         });
     }
+
 }
