@@ -280,11 +280,9 @@ export class MenuComponent {
     return channel.id;  // Optimiert die Performance von *ngFor
   }
 
-
   selectChat() {
     this.chatSelected.emit();
   }
-
 
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);

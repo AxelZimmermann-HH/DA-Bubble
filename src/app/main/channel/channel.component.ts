@@ -347,8 +347,16 @@ export class ChannelComponent {
     }
 
     openThread(message: Message) {
-      this.isThreadOpen = true;
-      this.selectedMessage = message;
+      if(!this.sharedService.isMobile){
+        this.isThreadOpen = true;
+        this.selectedMessage = message;
+      }
+      else{
+        this.isThreadOpen = true;
+        this.selectedMessage = message;
+        this.dialog.closeAll()
+      }
+    
     }
     //Emojis
     toggleEmojiPicker(event: MouseEvent) {

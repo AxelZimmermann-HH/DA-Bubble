@@ -26,13 +26,7 @@ export class SharedService {
     this.searchTermSubject.next(term);
   }
 
-  openDialogEditChannel(channel: any) {
-    if (channel) {
-      this.dialog.open(DialogEditChannelComponent, { data: channel });
-    } else {
-      console.error('No channel selected.');
-    }
-  }
+ 
 
   // Methode zum Umschalten des Logout-Container-Zustands
   toggleLogoutContainer() {

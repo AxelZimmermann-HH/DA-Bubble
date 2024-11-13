@@ -1,5 +1,5 @@
 <div class="channel-body">
-    <div class="channel-container" *ngIf="channelService.selectedChannel else loadingTemplate">
+    <div  *ngIf="channelService.selectedChannel else loadingTemplate"   [ngClass]="sharedService.isMobile && isThreadOpen ? 'channel-container-mobile' : 'channel-container' "  >
         <div class="channel-header">
             <button class="edit-channel"
                 (click)="this.channelService.openDialogEditChannel(channelService.selectedChannel)">
@@ -19,7 +19,7 @@
                 </button>
             </div>
         </div>
-        <div class="channel-content">
+        <div class="channel-content" [ngClass]="sharedService.isMobile ? 'mobile-channel-content' : 'channel-content'">
             <table class="chat-table">
                 <tr>
                     <td style="height: 50px;"></td>
