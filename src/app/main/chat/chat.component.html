@@ -516,7 +516,7 @@
     </div>
 
     <!-- Nachrichteneingabe -->
-    <div class="custom-input">
+    <div class="custom-input" [ngClass]="this.sharedService.isMobile ? 'mobile-custom-input' : 'custom-input'">
 
         
         <textarea contenteditable="true" placeholder="Nachricht an {{ user.name }}" class="text-area" [formControl]="directMessage"></textarea>
