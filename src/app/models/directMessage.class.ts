@@ -12,9 +12,11 @@ export class directMessage {
     messageId!: string;
     chatId!: string;
     fileDownloadUrl!: string;
+    audioDownloadUrl!:string;
     fileName!: string;
     fileType!: string;
-    safeUrl?: SafeResourceUrl;  // Neue Property für die sichere URL
+    safeFileUrl?: SafeResourceUrl;  // Neue Property für die sichere URL
+    safeAudioUrl?: SafeResourceUrl;
     //Reactions
     reactionCelebrate!: User[];
     reactionCheck!: User[];
@@ -34,9 +36,11 @@ export class directMessage {
         this.messageId = obj ? obj.messageId : '';
         this.chatId = obj ? obj.chatId : '';
         this.fileDownloadUrl = obj ? obj.fileDownloadUrl : '';
+        this.audioDownloadUrl = obj ? obj.audioDownloadUrl : '';
         this.fileName = obj ? obj.fileName : '';
         this.fileType = obj ? obj.fileType : '';
-        this.safeUrl = obj ? obj.safeUrl : '';
+        this.safeFileUrl = obj ? obj.safeFileUrl : '';
+        this.safeAudioUrl = obj ? obj.safeAudioUrl : '';
 
         this.reactionCelebrate = Array.isArray(obj?.reactionCelebrate) ? obj.reactionCelebrate : []; 
         this.reactionCheck = Array.isArray(obj?.reactionCheck) ? obj.reactionCheck : []; 
@@ -56,6 +60,7 @@ export class directMessage {
             messageId:this.messageId,
             chatId:this.chatId,
             fileDownloadUrl:this.fileDownloadUrl,
+            audioDownloadUrl:this.audioDownloadUrl,
             fileName:this.fileName,
             fileType:this.fileType,
             reactionCelebrate: this.reactionCelebrate,

@@ -65,7 +65,7 @@
                                                     <span>{{message.fileName}}</span>
                                                     <img *ngIf="message.fileType == 'image/jpeg' || message.fileType == 'image/png'" class="preview-img" [src]="message.fileDownloadUrl" alt="">
 
-                                                    <object *ngIf="message.fileType == 'application/pdf'" [data]="message.safeUrl" type="application/pdf" width="60%" height="100%">
+                                                    <object *ngIf="message.fileType == 'application/pdf'" [data]="message.safeFileUrl" type="application/pdf" width="60%" height="100%">
                                                         Dein Browser unterstützt keine PDF-Anzeige
                                                     </object>
 
@@ -73,6 +73,12 @@
                                                     <button  class="open-file-button"
                                                         (click)="downloadFile(message.fileDownloadUrl, message.fileName)">Anhang
                                                         öffnen</button>
+                                                </div>
+                                                <div *ngIf="message.audioDownloadUrl">
+                                                    <audio controls>
+                                                        <source [src]="message.audioDownloadUrl" type="audio/mpeg" />
+                                                            Your browser does not support the audio element.
+                                                    </audio>
                                                 </div>
                                             </div>
 
@@ -287,7 +293,7 @@
 
                                                     <img *ngIf="message.fileType == 'image/jpeg' || message.fileType == 'image/png'" class="preview-img" [src]="message.fileDownloadUrl" alt="">
 
-                                                    <object *ngIf="message.fileType == 'application/pdf'" [data]="message.safeUrl" type="application/pdf" width="60%" height="100%">
+                                                    <object *ngIf="message.fileType == 'application/pdf'" [data]="message.safeFileUrl" type="application/pdf" width="60%" height="100%">
                                                         Dein Browser unterstützt keine PDF-Anzeige
                                                     </object>
 
@@ -296,6 +302,12 @@
                                                     <button class="open-file-button" (click)="downloadFile(message.fileDownloadUrl, message.fileName)">
                                                         Anhang öffnen
                                                     </button>
+                                                </div>
+                                                <div *ngIf="message.audioDownloadUrl">
+                                                    <audio controls>
+                                                        <source [src]="message.audioDownloadUrl" type="audio/mpeg" />
+                                                            Your browser does not support the audio element.
+                                                    </audio>
                                                 </div>
                                             </div>
 
@@ -475,7 +487,7 @@
 
                                                 <img *ngIf="message.fileType == 'image/jpeg' || message.fileType == 'image/png'" class="preview-img" [src]="message.fileDownloadUrl" alt="">
 
-                                                <object *ngIf="message.fileType == 'application/pdf'" [data]="message.safeUrl" type="application/pdf" width="60%" height="100%">
+                                                <object *ngIf="message.fileType == 'application/pdf'" [data]="message.safeFileUrl" type="application/pdf" width="60%" height="100%">
                                                     Dein Browser unterstützt keine PDF-Anzeige
                                                 </object>
 
@@ -536,7 +548,7 @@
 
             <img *ngIf="this.selectedFileType == 'image/jpeg' || this.selectedFileType  == 'image/png'" style="height: 60px; width: 40%;object-fit: contain;" [src]="fileDownloadUrl" alt="">
 
-            <iframe *ngIf="this.selectedFileType == 'application/pdf' && safeUrl" [src]="this.safeUrl" type="application/pdf" width="40%" height="60px">
+            <iframe *ngIf="this.selectedFileType == 'application/pdf' && safeFileUrl" [src]="this.safeFileUrl" type="application/pdf" width="40%" height="60px">
                 Dein Browser unterstützt keine PDF-Anzeige
             </iframe>
 
@@ -557,6 +569,15 @@
 
         </div>
         }
+        @if(this.audioDownloadUrl){
+            <!-- Audio-Player anzeigen, falls eine Audiodatei vorhanden ist -->
+            <div>
+                <audio controls>
+                    <source [src]="this.audioDownloadUrl" type="audio/mpeg" />
+                        Your browser does not support the audio element.
+                </audio>
+            </div>
+        }
 
         <div class="add-reaction">
             <div class="reactions">
@@ -567,6 +588,16 @@
                     </label>
 
                     <input style="display: none;" id="file-upload" type="file" (change)="onFileSelected($event)" />
+                </div>
+
+                <div class="audio-container">
+
+                    <div (mousedown)="startRecording()" (mouseup)="stopRecording()" class="audio-button">
+                        <img [ngClass]="this.recordingAudio ? 'scale' : 'add-audio'" class="add-audio" [src]="this.recordingAudio ? './assets/icons/microphone_recording.png' : './assets/icons/microphone.png'" alt="">
+                    </div>
+                    <div *ngIf="recordingAudio" class="record-container">
+                        <span class="letters">Halte zum Aufnehmen {{displayTime}}</span>
+                    </div>
                 </div>
 
 
@@ -598,8 +629,9 @@
             <button (click)="sendDirectMessage(); 
             selectedFile = null; 
             this.selectedFileName = ''; 
-            this.fileDownloadUrl=''" 
-            [disabled]="directMessage.invalid && !selectedFile">
+            this.fileDownloadUrl='';
+            this.audioDownloadUrl=''"
+            [disabled]="directMessage.invalid && !selectedFile && !this.safeAudioUrl">
                 <img src="./assets/icons/Send icon.png">
             </button>
         </div>

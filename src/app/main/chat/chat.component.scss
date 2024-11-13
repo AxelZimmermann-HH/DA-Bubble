@@ -607,8 +607,58 @@
     .add-icon:hover,
     .add-emoji:hover,
     .add-mail:hover {
+        cursor: pointer;
         transform: scale(1.2);
         background: rgba(236, 238, 254, 1);
+    }
+
+    .audio-container{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+    }
+
+    .add-audio:hover{
+        transform: scale(1.2);
+        cursor: pointer;
+        background: none;
+    }
+
+    .letters{
+        font-family: "Nunito";
+        font-weight: bold;
+        color: #686868;
+        font-size: 17px;
+    }
+
+    .record-container {
+        background-image: linear-gradient(-45deg, #ff8f80, #ffd1d1);
+        background-size: 400% 400%;
+        animation: gradient 1s ease infinite;
+    }
+    
+    @keyframes gradient {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    .scale{
+        animation: scale 1s ease-in-out infinite;
+    }
+
+    @keyframes scale {
+        0% {transform: scale(1.0);}
+        50%{transform: scale(1.3);}
+        100%{transform: scale(1.0);}
     }
 
     .add-icon:hover {

@@ -140,14 +140,16 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     const fileDownloadUrl = this.fileDownloadUrl;
     const fileName = this.selectedFileName;
     const fileType = this.selectedFileType;
+    const audioDownloadUrl = this.audioDownloadUrl;
   
     // Nachricht an den aktuellen Chat-Partner senden
-    await this.chatService.setChatData(newDm, fileDownloadUrl, fileName, fileType, this.currentUserId);
+    await this.chatService.setChatData(newDm, fileDownloadUrl, fileName, fileType, this.currentUserId, audioDownloadUrl);
   
     this.directMessage.setValue('');
     this.selectedFile = null;
     this.selectedFileName = '';
     this.fileDownloadUrl = '';
+    this.audioDownloadUrl = '';
   
     // Nachricht an mehrere Benutzer senden
     await this.sendMessagesToMultipleUsers(newDm, fileDownloadUrl, fileName, fileType);  
@@ -253,15 +255,21 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
       await this.uploadFile()
     }
   }
-  safeUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
+  safeFileUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
+  safeAudioUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
 
   //Holt sich eine sichere URL
-  async loadSafeFile(fileUrl: string) {
+  async loadSafeFile(fileUrl: string, fileType:string) {
     if (!fileUrl) {
       console.error('Die Datei-URL ist ungültig.');
       return;
     }
-    this.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fileUrl);
+    if(fileType == 'image/png' || 'image/jpeg' || 'application/pdf'){
+      this.safeFileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fileUrl);
+    }
+    if(fileType == 'audio/mpeg'){
+      this.safeAudioUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fileUrl);
+    }
   }
 
 
@@ -283,7 +291,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
 
       if (this.selectedFileType == 'application/pdf') {
         console.log('Lade die Datei von URL:', this.fileDownloadUrl);
-        await this.loadSafeFile(this.fileDownloadUrl)
+        await this.loadSafeFile(this.fileDownloadUrl, this.selectedFileType)
       }
       if (this.selectedFileType == 'text/plain') {
         await this.chatService.fetchTextFile(this.fileDownloadUrl)
@@ -326,8 +334,98 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     });
   }
 
+  //Audio Nachricht>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-  //Emojis
+  private mediaRecorder: MediaRecorder | null = null;
+  private audioChunks: Blob[] = [];
+  recordingAudio: boolean = false;
+
+  async startRecording(){
+    this.safeAudioUrl = '';
+    this.audioDownloadUrl = '';
+    this.recordingAudio = true;
+    this.startTimer();
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    this.mediaRecorder = new MediaRecorder(stream);
+    this.audioChunks = [];
+
+    this.mediaRecorder.ondataavailable = (event) => {
+      this.audioChunks.push(event.data);
+    };
+
+    this.mediaRecorder.start();
+  }
+  
+  stopRecording(){
+    this.mediaRecorder?.stop();
+    this.recordingAudio = false;
+    this.resetTimer();
+    this.mediaRecorder?.addEventListener("stop", () => {
+      const audioBlob = new Blob(this.audioChunks, { type: 'audio/mpeg' });
+      this.uploadAudio(audioBlob);
+    });
+  }
+
+  private seconds: number = 0;
+  private timerInterval: any;
+
+  displayTime: string = '00:00';
+
+  startTimer(){
+
+    this.timerInterval = setInterval(() => {
+      this.seconds++;
+      this.updateDisplay();
+    }, 1000);
+  }
+  
+  stopTimer(): void {
+    clearInterval(this.timerInterval);
+    this.timerInterval = null;
+  }
+
+  resetTimer(): void {
+    this.stopTimer();
+    this.seconds = 0;
+    this.updateDisplay();
+  }
+
+  private updateDisplay(): void {
+    const minutes = Math.floor(this.seconds / 60);
+    const remainingSeconds = this.seconds % 60;
+    this.displayTime = 
+      `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+  }
+
+  audioDownloadUrl: string = '';
+  fileType: string = '';
+
+  async uploadAudio(audioBlob: Blob) {
+    const storage = getStorage();
+    const audioRef = ref(storage, `audios/${Date.now()}.mp3`);
+
+    // Datei zu Firebase Storage hochladen
+    const snapshot = await uploadBytes(audioRef, audioBlob);
+    const url = await getDownloadURL(snapshot.ref);
+    this.audioDownloadUrl = url;
+    this.fileType = audioBlob.type;
+    await this.loadSafeFile(this.audioDownloadUrl, this.fileType)
+    // URL der Audiodatei in Firestore speichern
+    //const messagesRef = collection(this.firestore, 'messages');
+    //await addDoc(messagesRef, {
+    //  audioUrl: downloadURL,
+    //  timestamp: new Date(),
+    //  // weitere Felder hinzufügen (z.B. Nutzer-ID)
+    //});
+  }
+
+
+  ngOnDestroy(): void {
+    // Clear the interval to prevent memory leaks
+
+  }
+
+  //Emojis>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   showEmojis: boolean = false;
 
   toogleEmojis() {
@@ -436,4 +534,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
       });
     }
   }
+
+  
 }
