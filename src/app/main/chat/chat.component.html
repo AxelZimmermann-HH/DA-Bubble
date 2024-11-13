@@ -5,7 +5,7 @@
                 <img class="user-avatar" [src]="getAvatarForUser(user.name)" alt="">
                 <div [ngClass]="{'offline-point': !user.online}" class="online-point"></div>
             </div>
-            <span class="header1">{{ user.name }}
+            <span class="header1" [ngClass]="this.sharedService.isMobile? 'header2':'header1'">{{ user.name }}
                 @if (user.name === currentUser?.name) {
                     (Du)
                 }
@@ -13,7 +13,27 @@
         </div>
     </div>
     <div class="channel-content" #chatContainer [ngClass]="this.sharedService.isMobile? 'mobile-channel-content':'channel-content'">
+    <!-- Wenn keine Nachrichten vorhanden sind -->
+    <div class="new-chat-info-container" *ngIf="chatService.chatIsEmpty"  [ngClass]="this.sharedService.isMobile ? 'mobile-new-chat-info-container' : 'new-chat-info-container'">
+        <div class="new-chat-user-avatar-container">
+            <img class="new-chat-user-avatar" [src]="getAvatarForUser(user.name)" alt="" [ngClass]="this.sharedService.isMobile ? 'mobile-new-chat-user-avatar' : 'new-chat-user-avatar'">
+            <span class="header1" [ngClass]="this.sharedService.isMobile? 'header2':'header1'">{{ user.name }}
+                @if (user.name === currentUser?.name) {
+                    (Du)
+                }
+            </span>
+        </div>
 
+        @if (user.name === currentUser?.name) {
+            <span class="info header6"><b>Dieser Raum ist nur für dich da.</b> Mache dir Notizen, liste deine To-dos auf oder 
+                bewahre Links und Dateien griffbereit auf.
+                Du kannst hier auch gerne Dinge mit dir selbst besprechen.
+            </span>
+        } @else {
+            <span class="info header6">Diese Unterhaltung findet nur zwischen <span class="name-colored">&#64;{{ user.name }}</span> und dir statt.</span>
+        }
+
+    </div>
         <!-- Gruppierte Nachrichten anzeigen -->
         <div *ngFor="let group of chatService.groupedMessages | keyvalue; let i = index">
             <div style="position: relative;">
@@ -493,28 +513,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Wenn keine Nachrichten vorhanden sind -->
-    <div class="new-chat-info-container" *ngIf="chatService.chatIsEmpty">
-        <div class="new-chat-user-avatar-container">
-            <img class="new-chat-user-avatar" [src]="getAvatarForUser(user.name)" alt="">
-            <span class="header1">{{ user.name }}
-                @if (user.name === currentUser?.name) {
-                    (Du)
-                }
-            </span>
-        </div>
-
-        @if (user.name === currentUser?.name) {
-            <span class="info header6"><b>Dieser Raum ist nur für dich da.</b> Mache dir Notizen, liste deine To-dos auf oder 
-                bewahre Links und Dateien griffbereit auf.
-                Du kannst hier auch gerne Dinge mit dir selbst besprechen.
-            </span>
-        } @else {
-            <span class="info header6">Diese Unterhaltung findet nur zwischen <span class="name-colored">&#64;{{ user.name }}</span> und dir statt.</span>
-        }
-
     </div>
 
     <!-- Nachrichteneingabe -->

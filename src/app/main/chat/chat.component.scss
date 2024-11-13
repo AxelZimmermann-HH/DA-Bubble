@@ -88,15 +88,31 @@
     border-radius: 100px;
 }
 
+.mobile-new-chat-user-avatar{
+    width: 88px;
+    height: 88px;
+}
+
 .new-chat-info-container{
-    position: absolute;
-    top: 544px;
-    left: 45px;
+    //position: absolute;
+    //top: 544px;
+    //left: 45px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
     width: 90%;
+    height: 100%;
+    justify-content: flex-end;
+    margin-left: 45px;
+}
+
+.mobile-new-chat-info-container{
+    margin: 0;
+    padding: 0px 16px;
 }
 
 .info{
-    position: absolute;
+    //position: absolute;
     top: 124px;
     color: #686868;
 
@@ -754,7 +770,7 @@ display: flex;
     margin: 0;
     border: unset;
     border-radius: unset;
-    height: calc(100vh - 82px);
+    height: calc(100vh - 77px);
 }
 
 .mobile-channel-content{
