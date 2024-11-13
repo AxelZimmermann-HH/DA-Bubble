@@ -20,6 +20,11 @@ import { ChannelService } from '../../services/channel.service';
 import { FileService } from '../../services/file.service';
 import { EmojisService } from '../../services/emojis.service';
 
+interface MessageGroup {
+  date: string;
+  messages: any[]; 
+}
+
 @Component({
   selector: 'app-channel',
   standalone: true,
@@ -54,6 +59,7 @@ export class ChannelComponent {
 
   filteredUsers: User[] = [];
   filteredMessages: Message[] = [];
+  filteredSearchMessages: MessageGroup[] = [];
   showAutocomplete: boolean = false;
   filteredChannels: Channel[] = [];
   selectedUser: User | null = null;
@@ -98,8 +104,15 @@ export class ChannelComponent {
     });
 
     this.subscribeToSearch();
-    this.subscribeToFilteredData();
     this.channelService.getAllChannels();
+    
+    this.messagesService.getAllMessages('channelId', () => {
+      this.filteredSearchMessages = this.messagesService.allMessages;
+    });
+    
+
+    this.subscribeToFilteredData();
+    
 
   }
 
@@ -107,8 +120,10 @@ export class ChannelComponent {
     this.isLoading = true;
     if (this.selectedChannelId) {
       this.channelService.loadChannel(this.selectedChannelId).then(() => {
-        this.messagesService.getAllMessages(this.selectedChannelId);
-        this.isLoading = false;
+        this.messagesService.getAllMessages(this.selectedChannelId, () => {
+          this.filteredSearchMessages = this.messagesService.allMessages;
+          this.isLoading = false;
+        });
       }).catch(error => {
         console.error('Fehler beim Laden des Channels:', error);
         this.isLoading = false;
@@ -138,23 +153,28 @@ export class ChannelComponent {
   subscribeToSearch() {
     this.sharedService.searchTerm$.subscribe((term) => {
       if (term.length >= 3) {
-        this.filterData(term);
+        this.filterMessages(term);
       } else {
-        this.resetFilteredData();
+        this.resetFilteredMessages();
       }
     });
   }
 
-  filterData(term: string) {
-    this.filteredMessages = this.messagesService.allMessages.filter((message: any) =>
-      message.text.toLowerCase().includes(term.toLowerCase())
-    );
+  filterMessages(term: string) {
+    this.filteredSearchMessages = this.messagesService.allMessages
+      .map(group => ({
+        ...group,
+        messages: group.messages.filter((message: any) =>
+          (message.user && message.user.toLowerCase().includes(term.toLowerCase())) ||
+          (message.text && message.text.toLowerCase().includes(term.toLowerCase()))
+        )
+      }))
 
+      .filter(group => group.messages.length > 0);
   }
-
-  resetFilteredData() {
-    this.filteredMessages = this.messagesService.allMessages;
-    this.filteredUsers = this.userService.userData;
+  
+  resetFilteredMessages() {
+    this.filteredSearchMessages = this.messagesService.allMessages;
   }
   //////////////////////////////////////////////////////////////////////////////
 
