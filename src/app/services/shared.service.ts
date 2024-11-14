@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
-import { DialogEditChannelComponent } from '../main/channel/dialog-edit-channel/dialog-edit-channel.component';
-import { Channel } from '../models/channel.class';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class SharedService {
+  
   //Variablen für Mobile Ansicht, word in der app.component gecheckt
   isMobile:boolean = false;
   goBackHeader:boolean = false;
@@ -25,8 +25,6 @@ export class SharedService {
   updateSearchTerm(term: string) {
     this.searchTermSubject.next(term);
   }
-
- 
 
   // Methode zum Umschalten des Logout-Container-Zustands
   toggleLogoutContainer() {

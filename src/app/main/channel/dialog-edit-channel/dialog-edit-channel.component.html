@@ -1,11 +1,11 @@
 <div class="channel-container">
-    <div class="channel-header">
+    <div [ngClass]="sharedService.isMobile ? 'isMobile channel-header' : 'channel-header'">
         <div class="d-flex"><img src="./assets/icons/tag.png" alt="">
             <p>{{channel.channelName}}</p>
         </div>
         <img src="./assets/icons/close.png" alt="" (click)="dialogRef.close()" class="closebtn">
     </div>
-    <div class="channel-name" [ngClass]="{ 'editing': isEditing }">
+    <div class="channel-name" [ngClass]="{ 'editing': isEditing, 'isMobile': sharedService.isMobile}">
         <div class="d-flex">
             <div *ngIf="!isEditing">{{ channel.channelName }}</div>
             <button class="editBtn" (click)="isEditing ? editChannelName() : toggleInputName()"
@@ -20,7 +20,7 @@
             <p>{{  channel.channelName }}</p>
         </div>
     </div>
-    <div class="channel-description" [ngClass]="{ 'editing': isEditingDescription }">
+    <div class="channel-description" [ngClass]="{ 'editing': isEditingDescription , 'isMobile' : sharedService.isMobile}" >
         <div class="d-flex">
             <div>Beschreibung</div>
             <button class="editBtn" (click)="isEditingDescription ? saveChannelDescription() : toggleDescriptionEdit()">
@@ -39,9 +39,9 @@
             <div class="userName">{{channel.creatorName}}</div>
         </div>
     </div>
-    <div *ngIf="this.sharedService.isMobile" class="members">
+    <div *ngIf="this.sharedService.isMobile" [ngClass]="sharedService.isMobile ? 'members isMobile' : 'members'">
       
-            <div class="members-header">Mitglieder<img src="./assets/icons/close.png" (click)="dialogRef.close()"></div>
+            <div class="members-header">Mitglieder</div>
             <ul class="users-menu">
                 <li *ngFor="let member of channel.members" class="usersList" (click)="userService.openUserProfil(member); dialogRef.close()">
                     <img [src]="userService.getAvatarForUser(member.name)" alt=""
@@ -54,5 +54,5 @@
             <div class="add-users" (click)="openDialogAddUser()"><img src="./assets/icons/person_add.png" alt=""> Mitglieder hinzufügen</div>
       
     </div>
-    <button class="close-channel" (click)="dialogRef.close()">Channel verlassen</button>
+    <button class="close-channel" [ngClass]="sharedService.isMobile ? 'isMobile close-channel' : 'close-channel'" (click)="dialogRef.close()">Channel verlassen</button>
 </div>

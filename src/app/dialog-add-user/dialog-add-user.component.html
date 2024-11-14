@@ -1,10 +1,14 @@
-<div class="addUser-content" *ngIf="data?.source === 'channelComponent'; else addChannelTemplate">
-  <div class="addUser-header">
+<div [ngClass]="sharedService.isMobile ? 'addUser-content-mobile addUser-content' : 'addUser-content'" 
+*ngIf="data?.source === 'channelComponent'; else addChannelTemplate">
+  <div [ngClass]="sharedService.isMobile ? 'close-line' : 'd-none'" (click)="dialogRef.close()"></div>
+
+  <div  [ngClass]="sharedService.isMobile ? 'm-20 addUser-header' :  'addUser-header'">
     <p>Leute hinzufügen</p><img src="./assets/icons/close.png" alt="" (click)="dialogRef.close()">
   </div>
-  <p style="color: rgba(121, 126, 243, 1);font-size: 18px;font-weight: 400;"># {{data?.channel.channelName}}</p>
 
-  <div class="custom-dropdown">
+  <p [ngClass]="sharedService.isMobile ? 'm-20 channel-name' : 'channel-name'"># {{data?.channel.channelName}}</p>
+
+   <div [ngClass]="sharedService.isMobile ? 'm-20 custom-dropdown' : 'custom-dropdown'">
     <div class="dropdown-selected" (click)="toggleDropdown()" [ngClass]="{'selected-user': selectedUser}">
       <img *ngIf="selectedUser" [src]="getAvatarForUser(selectedUser.name)" alt="" class="slectedUserImg">
       <span>{{ selectedUser ? selectedUser.name : 'Name eingeben' }}</span>
@@ -19,18 +23,21 @@
     </ul>
 
   </div>
-  <button class="createBtn" [disabled]="!selectedUser" (click)="addMember(selectedUser)">Hinzufügen</button>
+  <button [ngClass]="sharedService.isMobile ? 'm-20 createBtn' :  'createBtn'" 
+  [disabled]="!selectedUser" 
+  (click)="addMember()">Hinzufügen</button>
 </div>
 
 <ng-template #addChannelTemplate>
-<div class="adduser-container">
-  <div class="addUser-header">
+<div [ngClass]="sharedService.isMobile ? 'addUser-content-mobile addUser-content' : 'addUser-content'">
+  <div [ngClass]="sharedService.isMobile ? 'close-line' : 'd-none'" (click)="dialogRef.close()"></div>
+  <div [ngClass]="sharedService.isMobile ? 'm-20 addUser-header' :  'addUser-header'">
     <p>Leute hinzufügen</p><img src="./../../assets/icons/close.png" alt="" (click)="dialogRef.close()">
   </div>
-  <div class="flex-direction">
+  <div class="flex-direction" [ngClass]="sharedService.isMobile ? 'flex-direction m-20' : 'flex-direction'">
     <div class="d-flex">
-      <input type="radio" name="options" (change)="selectedOption = 'channel'">
-      Alle Mitglieder von <span class="channel-name"># {{channel.channelName}}</span> hinzufügen
+      <input type="radio" name="options" (change)="selectedOption = 'channel' ">
+      Alle Mitglieder von <span [ngClass]="sharedService.isMobile ? 'channel-name' : 'channel-name'"># {{channel.channelName}}</span> hinzufügen
     </div>
     <div class="d-flex">
       <input type="radio" name="options" (change)="selectedOption = 'user'">
@@ -38,7 +45,7 @@
     </div>
   </div>
 
-  <div class="custom-dropdown">
+  <div *ngIf="selectedOption === 'user'" [ngClass]="sharedService.isMobile ? 'm-20 custom-dropdown' : 'custom-dropdown'">
     <div class="dropdown-selected" (click)="toggleDropdown()" [ngClass]="{'selected-user': selectedUser}">
       <img *ngIf="selectedUser" [src]="getAvatarForUser(selectedUser.name)" alt="" class="slectedUserImg">
       <span>{{ selectedUser ? selectedUser.name : 'Name eingeben' }}</span>
@@ -51,10 +58,10 @@
         {{ user.name }}
       </li>
     </ul>
-
   </div>
 
-  <button class="createBtn" [disabled]="!selectedOption"
-    (click)="addMember(selectedUser)">Hinzufügen</button>
+  <button [ngClass]="sharedService.isMobile ? 'createBtn m-20' : 'createBtn'" 
+  [disabled]="!selectedOption || (selectedOption === 'user' && !selectedUser)" 
+    (click)="addMember()">Hinzufügen</button>
 </div>
 </ng-template>

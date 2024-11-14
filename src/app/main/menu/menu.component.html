@@ -1,13 +1,11 @@
-<button class="menu-toggle-button" 
-    *ngIf="!this.sharedService.isMobile"    
-    (click)="openCloseMenu()" 
-    (mouseover)="setHoverIcon()"
-    (mouseleave)="setUnhoverIcon()">
+<button class="menu-toggle-button" *ngIf="!this.sharedService.isMobile" (click)="openCloseMenu()"
+    (mouseover)="setHoverIcon()" (mouseleave)="setUnhoverIcon()">
     <span class="rotate-text header4">{{openCloseButtonText}}</span>
     <img style="transform: rotate(90deg);" src="\assets\icons\{{openCloseIcon}}" alt="">
 </button>
 
-<div class="menu-container gap-25" *ngIf="showMenu" [ngClass]="this.sharedService.isMobile ? 'mobile-menu-container' : 'menu-container gap-25'">
+<div class="menu-container gap-25" *ngIf="showMenu"
+    [ngClass]="this.sharedService.isMobile ? 'mobile-menu-container' : 'menu-container gap-25'">
 
     <div class="menu-header-container">
         <div class="flex-align-center gap-15">
@@ -15,10 +13,11 @@
             <span class="header1">Devspace</span>
         </div>
         <button class="new-message-button" (mouseover)="newDmIcon = 'edit_square-1.png'"
-            (mouseleave)="newDmIcon = 'edit_square.png'" >
-            <img src="\assets\icons\{{newDmIcon}}" alt="" *ngIf="!sharedService.isMobile" (click)="onNewMessageClick()" >
+            (mouseleave)="newDmIcon = 'edit_square.png'" (click)="onNewMessageClick()" *ngIf="!sharedService.isMobile">
+            <img [src]="'/assets/icons/' + newDmIcon" alt="New Message Icon">
         </button>
-        <img src="./assets/icons/edit-icon.png" alt="" *ngIf="sharedService.isMobile" (click)="onNewMessageClick()" class="edit-icon">
+        <img src="/assets/icons/edit-icon.png" alt="Edit Icon" *ngIf="sharedService.isMobile"
+            (click)="onNewMessageClick()" class="edit-icon">
     </div>
 
     <div class="channel-container">
@@ -76,17 +75,18 @@
 
         <div class="user-container" *ngIf="showUser">
 
-        
+
             <div class="user" (click)="this.chatService.openDirectMessage(currentUserId, user.userId); selectChat();"
                 *ngFor="let user of filteredUsers">
                 <div class="avatar-container">
                     <img class="user-avatar" [src]="getAvatarForUser(user.name)" alt="">
                     <div [ngClass]="{'offline-point': !user.online}" class="online-point"></div>
-                    <div *ngIf="unreadCounts.get(user.chatId) ?? 0"  class="message-count">{{ unreadCounts.get(user.chatId)}}</div>
+                    <div *ngIf="unreadCounts.get(user.chatId) ?? 0" class="message-count">{{
+                        unreadCounts.get(user.chatId)}}</div>
                 </div>
                 <span class="header3">{{user.name}}
                     @if (user.name === currentUser?.name) {
-                        (Du)
+                    (Du)
                     }
                 </span>
             </div>

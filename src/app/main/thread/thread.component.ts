@@ -15,6 +15,7 @@ import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { EmojiData } from './../../models/emoji-data.models';
 import { getDownloadURL, getStorage, ref, uploadBytes } from '@angular/fire/storage';
 import { AnswersService } from '../../services/answers.service';
+import { SharedService } from '../../services/shared.service';
 
 @Component({
   selector: 'app-thread',
@@ -61,7 +62,8 @@ export class ThreadComponent {
     public userService: UserService,
     public threadService: ThreadService,
     public answersService : AnswersService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    public sharedService :SharedService
   ) { }
 
   ngOnInit(): void {

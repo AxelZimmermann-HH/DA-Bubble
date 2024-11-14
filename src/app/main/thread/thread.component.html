@@ -8,7 +8,7 @@
         <img src="./assets/icons/close.png" alt="Close Thread" (click)="closeThread()">
     </div>
 
-    <div class="thread-content">
+    <div class="thread-content" [ngClass]="sharedService.isMobile ? 'thread-content-mobile' : 'thread-content'">
 
         <!-- Main message section -->
 

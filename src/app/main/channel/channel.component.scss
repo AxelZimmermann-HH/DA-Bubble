@@ -732,6 +732,13 @@ td:hover .b-radius {
 @media (max-width: 768px) {
     .channel-container {
         height: calc(100vh - 90px);
+        border-radius: 0;
+        position: absolute;
+        bottom: 0;
+    }
+
+    .channel-header {
+        height: 45px;
     }
 
     .channel-template-header .inputChannel {
@@ -749,6 +756,18 @@ td:hover .b-radius {
         .edit-channel {
             font-size: 18px;
         }
+    }
+
+    .speech-bubble {
+        font-size: 14px;
+    }
+
+    .channel-content .chat-table .message-content .time {
+        font-size: 12px;
+    }
+
+    .channel-content .chat-table .message-main span {
+        font-size: 12px;
     }
 
     .member-preview,
@@ -773,5 +792,9 @@ td:hover .b-radius {
     .channel-content .chat-table .message-content .label-answers {
         font-size: 12px;
         font-weight: 700;
+    }
+
+    .emoji-picker {
+        left: 0;
     }
 }

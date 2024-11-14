@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { Channel } from '../models/channel.class';
 import { User } from '../models/user.class';
 import { UserService } from '../services/user.service';
+import { SharedService } from '../services/shared.service';
 
 @Component({
   selector: 'app-dialog-add-user',
@@ -34,7 +35,10 @@ export class DialogAddUserComponent {
   constructor(
     public firestore: Firestore,
     public dialogRef: MatDialogRef<DialogAddUserComponent>,
-    public userService: UserService, @Inject(MAT_DIALOG_DATA) public data: any
+    public userService: UserService,
+    @Inject(MAT_DIALOG_DATA)
+    public data: any,
+    public sharedService: SharedService
   ) {
     if (data && data.channel) {
       this.channel = new Channel(data.channel);
@@ -60,14 +64,14 @@ export class DialogAddUserComponent {
 
   updateChannelMembers() {
     if (this.userData.length === 0) {
-      return; 
+      return;
     }
-  
+
     const currentMemberIds = this.channel.members.map((member: any) => member.userId);
     const updatedMembers = this.channel.members.filter((member: any) =>
       this.userData.some((user: User) => user.userId === member.userId)
     );
-  
+
     if (updatedMembers.length !== currentMemberIds.length) {
       const channelRef = doc(this.firestore, 'channels', this.channelId);
       updateDoc(channelRef, { members: updatedMembers })
@@ -80,31 +84,67 @@ export class DialogAddUserComponent {
         });
     }
   }
-  
 
-  async addMember(user: User) {
-    if (user) {
-      const channelRef = doc(this.firestore, 'channels', this.channel.id);
-      try {
-        const currentMembers = this.channel.members || [];
-        const isMemberAlready = currentMembers.some(member => member.userId === user.userId);
+
+  // async addMember(user: User) {
+  //   if (user) {
+  //     const channelRef = doc(this.firestore, 'channels', this.channel.id);
+  //     try {
+  //       const currentMembers = this.channel.members || [];
+  //       const isMemberAlready = currentMembers.some(member => member.userId === user.userId);
+  //       if (isMemberAlready) {
+  //         this.dialogRef.close(false);
+  //         return;
+  //       }
+  //       const updatedMembers = [...currentMembers, user.toJson()];
+
+  //       await updateDoc(channelRef, { members: updatedMembers });
+
+  //       this.dialogRef.close(true);
+
+
+  //     } catch (error) {
+  //       console.error('Fehler beim Hinzufügen des Mitglieds:', error);
+  //     }
+  //   }
+  // }
+
+  async addMember() {
+    
+    const channelRef = doc(this.firestore, 'channels', this.channel.id);
+    try {
+      const currentMembers = this.channel.members || [];
+
+      if (this.selectedOption === 'channel') {
+        // Füge alle Mitglieder hinzu, wenn 'Alle Mitglieder' ausgewählt ist
+        const newMembers = this.userData
+          .filter((user: any) => !currentMembers.some(member => member.userId === user.userId)) // Füge nur neue Mitglieder hinzu
+          .map((user: any) => user.toJson());
+
+        if (newMembers.length > 0) {
+          const updatedMembers = [...currentMembers, ...newMembers];
+          await updateDoc(channelRef, { members: updatedMembers });
+          this.dialogRef.close(true);
+        } else {
+          this.dialogRef.close(false); // Keine neuen Mitglieder hinzuzufügen
+        }
+
+      } else if (this.selectedOption === 'user' || this.selectedUser) {
+        // Füge nur den ausgewählten Benutzer hinzu, wenn 'Bestimmte Leute' ausgewählt ist
+        const isMemberAlready = currentMembers.some(member => member.userId === this.selectedUser.userId);
         if (isMemberAlready) {
           this.dialogRef.close(false);
           return;
         }
-        const updatedMembers = [...currentMembers, user.toJson()];
-        
+
+        const updatedMembers = [...currentMembers, this.selectedUser.toJson()];
         await updateDoc(channelRef, { members: updatedMembers });
-
         this.dialogRef.close(true);
-
-
-      } catch (error) {
-        console.error('Fehler beim Hinzufügen des Mitglieds:', error);
       }
+    } catch (error) {
+      console.error('Fehler beim Hinzufügen des Mitglieds/der Mitglieder:', error);
     }
   }
-
 
   toggleDropdown() {
     this.dropdownOpen = !this.dropdownOpen;
@@ -113,12 +153,12 @@ export class DialogAddUserComponent {
   selectUser(user: any) {
     this.selectedUser = user;
     this.dropdownOpen = false;
-    console.log('selected user ', this.selectedUser.avatar);
   }
 
   removeSelectedUser(event: Event) {
     event.stopPropagation();
     this.selectedUser = null;
+    this.dropdownOpen = false;
   }
 
 
