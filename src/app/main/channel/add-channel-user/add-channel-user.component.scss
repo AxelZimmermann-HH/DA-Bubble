@@ -24,7 +24,7 @@
     font-size: 24px;
 
     img {
-        border-radius: 20px;
+        border-radius: 30px;
         width: 40px;
         height: 40px;
 
@@ -80,8 +80,9 @@
         height: 32px;
         padding: 10px;
         gap: 10px;
-        border-radius: 20px;
-        &:hover{
+        border-radius:30px;
+
+        &:hover {
             content: url('./../../../../assets/icons/person_add_hover.png')
         }
     }
@@ -93,7 +94,8 @@
         cursor: pointer;
     }
 }
-.online-point{
+
+.online-point {
     border-radius: 50%;
     width: 14px;
     height: 14px;
@@ -105,7 +107,7 @@
     position: absolute;
 }
 
-.offline-point{
+.offline-point {
     border-radius: 50%;
     width: 14px;
     height: 14px;
@@ -116,13 +118,23 @@
     z-index: 11;
     position: absolute;
 }
+
 @media (max-width:768px) {
-    .channel-users{
+    .channel-users {
         right: 50%;
         transform: translate(50%, -50%);
-        
     }
-    ul{
+
+    .members-header {
+        font-size: 18px;
+    }
+
+    .members-header img {
+        width: 25px;
+        height: 25px;
+    }
+
+    ul {
         padding-inline-start: 20px;
     }
 }

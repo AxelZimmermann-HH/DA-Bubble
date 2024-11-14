@@ -43,7 +43,6 @@ export class HeaderComponent implements OnInit {
 
     this.isMobile = window.innerWidth <= 500;
     
-
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
       this.getUserById(this.userId);

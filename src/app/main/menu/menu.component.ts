@@ -7,7 +7,7 @@ import { SharedService } from '../../services/shared.service';
 import { ChatService } from '../../services/chat.service';
 import { UserService } from '../../services/user.service';
 import { ActivatedRoute } from '@angular/router';
-
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 
 
 @Component({
@@ -25,6 +25,7 @@ export class MenuComponent {
     public sharedService: SharedService, 
     public chatService: ChatService, 
     public userService: UserService,
+    private breakpointObserver: BreakpointObserver
   ) { }
 
   newDmIcon = 'edit_square.png'
@@ -255,8 +256,18 @@ export class MenuComponent {
 
   //öffnet den Channel hinzufügen Dialog
   openDialogAddChannel() {
-    this.dialog.open(DialogAddChannelComponent, { data: { userId: this.userId } })
+    const isMobile = this.breakpointObserver.isMatched('(max-width: 600px)');
+
+    const dialogConfig = {
+      width: isMobile ? '100vw' : '600px',
+      height: isMobile ? '100vh' : 'auto', 
+      maxWidth: '100vw',                 
+      panelClass: isMobile ? 'full-screen-dialog' : '', // Mobile CSS-Klasse
+      data: { userId: this.userId }        // Weitergabe von Daten an den Dialog
+    };
+    this.dialog.open(DialogAddChannelComponent, dialogConfig);
   }
+
 
 
   //öffnet einen ausgewählten channel
@@ -268,23 +279,23 @@ export class MenuComponent {
 
   //Öffnet eine neue Nachricht
   onNewMessageClick() {
-    if (this.chatService.showChat ){
+    if (this.chatService.showChat){
       this.chatService.showChat = false;
       this.chatService.showChannel=true
       this.channelSelected.emit(null);
     }
     this.channelSelected.emit(null);
+    console.log('shared Mobile:', this.sharedService.isMobile);
+    
   }
 
   trackByChannelId( channel: any): string {
     return channel.id;  // Optimiert die Performance von *ngFor
   }
 
-
   selectChat() {
     this.chatSelected.emit();
   }
-
 
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);

@@ -137,7 +137,7 @@
 .channel-content {
     width: 100%;
     overflow-y: scroll;
-    height: 500px;
+    height: calc(100% - 370px);
     scrollbar-width: none;
 
     .chat-table {
@@ -718,12 +718,27 @@ td:hover .b-radius {
 .date-group {
     position: relative;
     width: 100%;
-    margin: 0 75px
+    margin: 0 75px;
+}
+
+.mobile-channel-content {
+    height: calc(100% - 300px);
+}
+
+.channel-container-mobile {
+    display: none;
 }
 
 @media (max-width: 768px) {
     .channel-container {
         height: calc(100vh - 90px);
+        border-radius: 0;
+        position: absolute;
+        bottom: 0;
+    }
+
+    .channel-header {
+        height: 45px;
     }
 
     .channel-template-header .inputChannel {
@@ -741,6 +756,18 @@ td:hover .b-radius {
         .edit-channel {
             font-size: 18px;
         }
+    }
+
+    .speech-bubble {
+        font-size: 14px;
+    }
+
+    .channel-content .chat-table .message-content .time {
+        font-size: 12px;
+    }
+
+    .channel-content .chat-table .message-main span {
+        font-size: 12px;
     }
 
     .member-preview,
@@ -762,8 +789,12 @@ td:hover .b-radius {
         font-size: 14px;
     }
 
-    .channel-content .chat-table .message-content .label-answers{
+    .channel-content .chat-table .message-content .label-answers {
         font-size: 12px;
         font-weight: 700;
+    }
+
+    .emoji-picker {
+        left: 0;
     }
 }

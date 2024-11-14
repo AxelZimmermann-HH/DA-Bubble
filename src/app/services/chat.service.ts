@@ -183,7 +183,8 @@ export class ChatService {
               reactionCheck: messageData['reactionCheck'],
               reactionNerd: messageData['reactionNerd'],
               reactionRocket: messageData['reactionRocket'],
-              isRead: messageData['isRead']
+              isRead: messageData['isRead'],
+              audioDownloadUrl: messageData['audioDownloadUrl']
             };
 
             this.chatMessages.push(chatData);
@@ -253,7 +254,7 @@ export class ChatService {
 
 
   // Nachricht senden
-  async setChatData(newDm: string, fileDownloadUrl: string, selectedFileName: string, fileType: string, currentUserId: string) {
+  async setChatData(newDm: string, fileDownloadUrl: string, selectedFileName: string, fileType: string, currentUserId: string, audioDownloadUrl:string) {
     const newDirectMessage = new directMessage();
     newDirectMessage.chatId = this.chatId;
     newDirectMessage.senderId = currentUserId;
@@ -265,6 +266,7 @@ export class ChatService {
     newDirectMessage.fileName = selectedFileName;
     newDirectMessage.fileDownloadUrl = fileDownloadUrl;
     newDirectMessage.fileType = fileType;
+    newDirectMessage.audioDownloadUrl = audioDownloadUrl;
     const dmData = newDirectMessage.toJson();
 
     await this.saveNewDirectMessage(dmData);

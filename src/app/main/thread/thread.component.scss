@@ -1,6 +1,6 @@
 .thread-container {
     height: 940px;
-    width: 485px;
+    width: 100%;
     background-color: #FFFFFF;
     border-radius: 30px;
     box-sizing: border-box;
@@ -39,16 +39,18 @@
 .thread-content {
     width: 100%;
     overflow-y: scroll;
-    height: 500px;
+    height: calc(100% - 360px);
     scrollbar-width: none;
 }
-
+.thread-content-mobile{
+    height: calc(100% - 300px);  
+}
 .message-main {
     display: flex;
     gap: 16px;
     height: auto;
     margin: 20px 0;
-    padding: 25px 45px;
+    padding: 20px;
     position: relative;
 
     &:hover {
@@ -114,7 +116,7 @@
 
 .custom-input {
     height: auto;
-    width: 380px;
+    width: 80%;
     border-radius: 20px;
     gap: 8px;
     background: rgb(255, 255, 255);
@@ -228,6 +230,7 @@
 .a-flex {
     align-items: flex-end;
 }
+
 .emoji-reaction-text {
     font-size: 16px;
     font-weight: 700;
@@ -236,6 +239,7 @@
     scrollbar-width: none;
     text-align: center;
 }
+
 .reaction-hover {
     display: none;
     width: max-content;
@@ -426,8 +430,9 @@
     align-items: center;
     gap: 8px;
     width: max-content;
-    padding:6px 20px 6px 6px;
-    &:hover{
+    padding: 6px 20px 6px 6px;
+
+    &:hover {
         background: rgba(236, 238, 254, 1);
         border-radius: 30px;
         cursor: pointer;
@@ -484,4 +489,33 @@
     border-radius: 30px;
     padding: 12px 25px;
     margin: 0 20px;
+}
+
+@media (max-width: 768px) {
+    .thread-container {
+        height: calc(100vh - 90px);
+        border-radius:0;
+        position: absolute;
+        bottom: 0;
+    }
+
+    .thread-container .thread-header {
+        height: 45px;
+        padding:20px;
+        font-size: 24px;
+    }
+    .thread-container .thread-header img{
+        width: 30px;
+        height: 30px;
+    }
+    .avatar{
+        width: 40px;
+        height: 40px;
+    }
+    .speech-bubble {
+        font-size: 14px;
+    }
+    .separator .label-answers{
+        font-size: 14px;
+    }
 }

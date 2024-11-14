@@ -10,6 +10,7 @@ import { DialogAddUserComponent } from '../dialog-add-user/dialog-add-user.compo
 import { UserService } from './user.service';
 import { SharedService } from './shared.service';
 import { AddChannelUserComponent } from '../main/channel/add-channel-user/add-channel-user.component';
+import { BreakpointObserver } from '@angular/cdk/layout';
 
 @Injectable({
     providedIn: 'root'
@@ -33,7 +34,8 @@ export class ChannelService {
         public dialog: MatDialog,
         public searchService: SearchService,
         public userService: UserService,
-        public sharedService: SharedService
+        public sharedService: SharedService,
+        private breakpointObserver: BreakpointObserver
     ) { }
 
 
@@ -100,6 +102,7 @@ export class ChannelService {
             }
         });
     }
+
     openDialogAddUser() {
         if (this.sharedService.isMobile) {
             this.openUsersList(this.selectedChannel.id)
@@ -109,13 +112,31 @@ export class ChannelService {
                 data: { channel: this.selectedChannel, source: 'channelComponent' }
             });
         }
-
     }
+
+    // openDialogAddUser() {
+    //     const isMobile = this.breakpointObserver.isMatched('(max-width: 600px)');
+    //     const dialogConfig = {
+    //         data: { channel: this.selectedChannel, source: 'channelComponent' },
+    //         panelClass: isMobile ? 'full-screen-dialog' : '', // Wenn mobile Ansicht, dann die 'full-screen-dialog' Klasse
+    //         width:isMobile ? '100vw' : '514px',  // 100% Breite für mobile Geräte, sonst Standardgröße
+    //         maxWidth: '100vw',  // Maximale Breite auf mobilen Geräten
+    //         height: isMobile ? 'auto' : '294px',  // Auto-Höhe für mobile Geräte
+    //         position: isMobile ? { bottom: '0', left: '0' } : { top: '50%', left: '50%' }, // Dialog unten positionieren bei mobilen Geräten
+    //     };
+
+    //     // Öffnen Sie den Dialog mit der angegebenen Konfiguration
+    //     this.dialog.open(DialogAddUserComponent, dialogConfig);
+
+    // }
+
+
     openDialogEditChannel(channel: any) {
+
         if (channel) {
-          this.dialog.open(DialogEditChannelComponent, { data: channel });
-        } else {
-          console.error('No channel selected.');
+            this.dialog.open(DialogEditChannelComponent, { data: channel });
+          } else {
+            console.error('No channel selected.');
+          }
         }
-      }
-}
+    }

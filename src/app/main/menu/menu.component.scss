@@ -1,13 +1,14 @@
 html {
-    overflow:   scroll;
-  }
-  
-  ::-webkit-scrollbar {
-      width: 0px;
-      background: transparent; /* make scrollbar transparent */
-  }
+    overflow: scroll;
+}
 
-.menu-container{
+::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+    /* make scrollbar transparent */
+}
+
+.menu-container {
     height: 940px;
     background-color: #FFFFFF;
     border-radius: 30px;
@@ -19,26 +20,26 @@ html {
     overflow: auto;
 }
 
-.mobile-menu-container{
+.mobile-menu-container {
     margin: 0;
     border: unset;
     border-radius: unset;
 }
 
-.flex-align-center{
+.flex-align-center {
     display: flex;
     align-items: center;
 }
 
-.gap-15{
+.gap-15 {
     gap: 15px;
 }
 
-.gap-25{
+.gap-25 {
     gap: 25px;
 }
 
-.new-message-button{
+.new-message-button {
     height: 40px;
     width: 40px;
     display: flex;
@@ -47,13 +48,14 @@ html {
     border: unset;
     background-color: unset;
     border-radius: 30px;
-    &:hover{
+
+    &:hover {
         cursor: pointer;
         background-color: #ECEEFE;
     }
 }
 
-.plus-button{
+.plus-button {
     width: 30px;
     height: 30px;
     display: flex;
@@ -62,138 +64,146 @@ html {
     border: unset;
     background-color: unset;
     border-radius: 30px;
-    &:hover{
+
+    &:hover {
         cursor: pointer;
         background-color: #ECEEFE;
     }
 }
 
-.padding-5-10-5-0{
+.padding-5-10-5-0 {
     padding: 5px 10px 5px 0px;
-};
+}
 
-.menu-header-container{
+;
+
+.menu-header-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.channel-container{
+.channel-container {
     display: flex;
     flex-direction: column;
     gap: 25px;
 }
 
-.dm-container{
+.dm-container {
     display: flex;
     flex-direction: column;
     gap: 25px;
 }
 
-.channel-header-container{
+.channel-header-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
 
 }
 
-.dm-header-container{
+.dm-header-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.channel-header{
+.channel-header {
     display: flex;
     padding: 5px 10px 5px 0px;
     gap: 15px;
-    &:hover{
+
+    &:hover {
         cursor: pointer;
         color: #535AF1;
     }
 }
 
-.dm-header{
+.dm-header {
     display: flex;
     padding: 5px 10px 5px 0px;
     gap: 15px;
-    &:hover{
+
+    &:hover {
         cursor: pointer;
         color: #535AF1;
     }
 }
 
-.logo-cat-container{
+.logo-cat-container {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.workspace-logo{
+.workspace-logo {
     width: 60px;
     height: 60px;
 }
 
-.added-channels{
+.added-channels {
     display: flex;
     flex-direction: column;
     padding-left: 25px;
     gap: 13px;
 }
 
-.add-channel{
+.add-channel {
     display: flex;
     flex-direction: column;
     padding-left: 25px;
     gap: 13px;
 }
 
-.channel-name{
+.channel-name {
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 4px 20px;
     border-radius: 30px;
-    &:hover{
+
+    &:hover {
         cursor: pointer;
         background-color: #ECEEFE;
         color: #535AF1;
     }
 }
 
-.add-channel-header{
+.add-channel-header {
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 4px 20px;
     border-radius: 30px;
-    &:hover{
+
+    &:hover {
         cursor: pointer;
         color: #535AF1;
     }
 }
 
-.user-container{
+.user-container {
     display: flex;
     flex-direction: column;
     gap: 13px;
     padding-left: 25px;
 }
 
-.user{
+.user {
     display: flex;
     align-items: center;
     gap: 15px;
     padding: 4px 20px;
     position: relative;
     border-radius: 30px;
-    &:hover{
+
+    &:hover {
         cursor: pointer;
         background-color: #ECEEFE;
     }
 }
 
-.user-avatar{
+.user-avatar {
     height: 50px;
     width: 50px;
     border-radius: 30px;
@@ -201,7 +211,7 @@ html {
     position: absolute;
 }
 
-.avatar-container{
+.avatar-container {
     height: 50px;
     width: 50px;
 }
@@ -223,7 +233,7 @@ html {
     font-size: 10px;
 }
 
-.online-point{
+.online-point {
     border-radius: 50%;
     width: 14px;
     height: 14px;
@@ -235,7 +245,7 @@ html {
     position: absolute;
 }
 
-.offline-point{
+.offline-point {
     border-radius: 50%;
     width: 14px;
     height: 14px;
@@ -247,15 +257,15 @@ html {
     position: absolute;
 }
 
-.rotateArrow{
+.rotateArrow {
     transform: rotate(-90deg);
 }
 
-.rotate-text{
+.rotate-text {
     vertical-align: bottom;
 }
 
-.menu-toggle-button{
+.menu-toggle-button {
     display: inline-flex;
     align-items: center;
     justify-content: space-evenly;
@@ -269,10 +279,32 @@ html {
     border: unset;
     border-radius: 0px 0px 30px 30px;
     background-color: #FFFFFF;
-    
     box-shadow: 0px 4px 7px 4px rgba(0, 0, 0, 0.2);
-    &:hover{
+
+    &:hover {
         cursor: pointer;
         color: #535AF1;
     }
 }
+
+.edit-icon {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    z-index: 111;
+
+    &:hover {
+        filter: contrast(0.6);
+    }
+}
+
+/* global.scss oder your-component.component.scss */
+.full-screen-dialog .mat-dialog-container {
+    padding: 0 !important;
+    border-radius: 0 !important;
+    height: 100vh;
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 100vh;
+    overflow: hidden;
+  }

@@ -88,15 +88,31 @@
     border-radius: 100px;
 }
 
+.mobile-new-chat-user-avatar{
+    width: 88px;
+    height: 88px;
+}
+
 .new-chat-info-container{
-    position: absolute;
-    top: 544px;
-    left: 45px;
+    //position: absolute;
+    //top: 544px;
+    //left: 45px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
     width: 90%;
+    height: 100%;
+    justify-content: flex-end;
+    margin-left: 45px;
+}
+
+.mobile-new-chat-info-container{
+    margin: 0;
+    padding: 0px 16px;
 }
 
 .info{
-    position: absolute;
+    //position: absolute;
     top: 124px;
     color: #686868;
 
@@ -481,7 +497,7 @@
     position: absolute;
     bottom: 20px;
     min-height: 145px;
-    width: 90%;
+    width: calc(100% - 90px);
     border-radius: 20px;
     padding: 20px;
     gap: 8px;
@@ -563,6 +579,10 @@
     }
 }
 
+.mobile-custom-input{
+    width: calc(100% - 32px);
+}
+
 .add-reaction {
     display: flex;
     align-items: center;
@@ -587,8 +607,58 @@
     .add-icon:hover,
     .add-emoji:hover,
     .add-mail:hover {
+        cursor: pointer;
         transform: scale(1.2);
         background: rgba(236, 238, 254, 1);
+    }
+
+    .audio-container{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+    }
+
+    .add-audio:hover{
+        transform: scale(1.2);
+        cursor: pointer;
+        background: none;
+    }
+
+    .letters{
+        font-family: "Nunito";
+        font-weight: bold;
+        color: #686868;
+        font-size: 17px;
+    }
+
+    .record-container {
+        background-image: linear-gradient(-45deg, #ff8f80, #ffd1d1);
+        background-size: 400% 400%;
+        animation: gradient 1s ease infinite;
+    }
+    
+    @keyframes gradient {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    .scale{
+        animation: scale 1s ease-in-out infinite;
+    }
+
+    @keyframes scale {
+        0% {transform: scale(1.0);}
+        50%{transform: scale(1.3);}
+        100%{transform: scale(1.0);}
     }
 
     .add-icon:hover {
@@ -754,7 +824,7 @@ display: flex;
     margin: 0;
     border: unset;
     border-radius: unset;
-    height: calc(100vh - 82px);
+    height: calc(100vh - 77px);
 }
 
 .mobile-channel-content{

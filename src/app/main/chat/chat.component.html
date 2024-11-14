@@ -5,7 +5,7 @@
                 <img class="user-avatar" [src]="getAvatarForUser(user.name)" alt="">
                 <div [ngClass]="{'offline-point': !user.online}" class="online-point"></div>
             </div>
-            <span class="header1">{{ user.name }}
+            <span class="header1" [ngClass]="this.sharedService.isMobile? 'header2':'header1'">{{ user.name }}
                 @if (user.name === currentUser?.name) {
                     (Du)
                 }
@@ -13,7 +13,27 @@
         </div>
     </div>
     <div class="channel-content" #chatContainer [ngClass]="this.sharedService.isMobile? 'mobile-channel-content':'channel-content'">
+    <!-- Wenn keine Nachrichten vorhanden sind -->
+    <div class="new-chat-info-container" *ngIf="chatService.chatIsEmpty"  [ngClass]="this.sharedService.isMobile ? 'mobile-new-chat-info-container' : 'new-chat-info-container'">
+        <div class="new-chat-user-avatar-container">
+            <img class="new-chat-user-avatar" [src]="getAvatarForUser(user.name)" alt="" [ngClass]="this.sharedService.isMobile ? 'mobile-new-chat-user-avatar' : 'new-chat-user-avatar'">
+            <span class="header1" [ngClass]="this.sharedService.isMobile? 'header2':'header1'">{{ user.name }}
+                @if (user.name === currentUser?.name) {
+                    (Du)
+                }
+            </span>
+        </div>
 
+        @if (user.name === currentUser?.name) {
+            <span class="info header6"><b>Dieser Raum ist nur für dich da.</b> Mache dir Notizen, liste deine To-dos auf oder 
+                bewahre Links und Dateien griffbereit auf.
+                Du kannst hier auch gerne Dinge mit dir selbst besprechen.
+            </span>
+        } @else {
+            <span class="info header6">Diese Unterhaltung findet nur zwischen <span class="name-colored">&#64;{{ user.name }}</span> und dir statt.</span>
+        }
+
+    </div>
         <!-- Gruppierte Nachrichten anzeigen -->
         <div *ngFor="let group of chatService.groupedMessages | keyvalue; let i = index">
             <div style="position: relative;">
@@ -45,7 +65,7 @@
                                                     <span>{{message.fileName}}</span>
                                                     <img *ngIf="message.fileType == 'image/jpeg' || message.fileType == 'image/png'" class="preview-img" [src]="message.fileDownloadUrl" alt="">
 
-                                                    <object *ngIf="message.fileType == 'application/pdf'" [data]="message.safeUrl" type="application/pdf" width="60%" height="100%">
+                                                    <object *ngIf="message.fileType == 'application/pdf'" [data]="message.safeFileUrl" type="application/pdf" width="60%" height="100%">
                                                         Dein Browser unterstützt keine PDF-Anzeige
                                                     </object>
 
@@ -53,6 +73,12 @@
                                                     <button  class="open-file-button"
                                                         (click)="downloadFile(message.fileDownloadUrl, message.fileName)">Anhang
                                                         öffnen</button>
+                                                </div>
+                                                <div *ngIf="message.audioDownloadUrl">
+                                                    <audio controls>
+                                                        <source [src]="message.audioDownloadUrl" type="audio/mpeg" />
+                                                            Your browser does not support the audio element.
+                                                    </audio>
                                                 </div>
                                             </div>
 
@@ -267,7 +293,7 @@
 
                                                     <img *ngIf="message.fileType == 'image/jpeg' || message.fileType == 'image/png'" class="preview-img" [src]="message.fileDownloadUrl" alt="">
 
-                                                    <object *ngIf="message.fileType == 'application/pdf'" [data]="message.safeUrl" type="application/pdf" width="60%" height="100%">
+                                                    <object *ngIf="message.fileType == 'application/pdf'" [data]="message.safeFileUrl" type="application/pdf" width="60%" height="100%">
                                                         Dein Browser unterstützt keine PDF-Anzeige
                                                     </object>
 
@@ -276,6 +302,12 @@
                                                     <button class="open-file-button" (click)="downloadFile(message.fileDownloadUrl, message.fileName)">
                                                         Anhang öffnen
                                                     </button>
+                                                </div>
+                                                <div *ngIf="message.audioDownloadUrl">
+                                                    <audio controls>
+                                                        <source [src]="message.audioDownloadUrl" type="audio/mpeg" />
+                                                            Your browser does not support the audio element.
+                                                    </audio>
                                                 </div>
                                             </div>
 
@@ -455,7 +487,7 @@
 
                                                 <img *ngIf="message.fileType == 'image/jpeg' || message.fileType == 'image/png'" class="preview-img" [src]="message.fileDownloadUrl" alt="">
 
-                                                <object *ngIf="message.fileType == 'application/pdf'" [data]="message.safeUrl" type="application/pdf" width="60%" height="100%">
+                                                <object *ngIf="message.fileType == 'application/pdf'" [data]="message.safeFileUrl" type="application/pdf" width="60%" height="100%">
                                                     Dein Browser unterstützt keine PDF-Anzeige
                                                 </object>
 
@@ -495,30 +527,8 @@
         </div>
     </div>
 
-    <!-- Wenn keine Nachrichten vorhanden sind -->
-    <div class="new-chat-info-container" *ngIf="chatService.chatIsEmpty">
-        <div class="new-chat-user-avatar-container">
-            <img class="new-chat-user-avatar" [src]="getAvatarForUser(user.name)" alt="">
-            <span class="header1">{{ user.name }}
-                @if (user.name === currentUser?.name) {
-                    (Du)
-                }
-            </span>
-        </div>
-
-        @if (user.name === currentUser?.name) {
-            <span class="info header6"><b>Dieser Raum ist nur für dich da.</b> Mache dir Notizen, liste deine To-dos auf oder 
-                bewahre Links und Dateien griffbereit auf.
-                Du kannst hier auch gerne Dinge mit dir selbst besprechen.
-            </span>
-        } @else {
-            <span class="info header6">Diese Unterhaltung findet nur zwischen <span class="name-colored">&#64;{{ user.name }}</span> und dir statt.</span>
-        }
-
-    </div>
-
     <!-- Nachrichteneingabe -->
-    <div class="custom-input">
+    <div class="custom-input" [ngClass]="this.sharedService.isMobile ? 'mobile-custom-input' : 'custom-input'">
 
         
         <textarea contenteditable="true" placeholder="Nachricht an {{ user.name }}" class="text-area" [formControl]="directMessage"></textarea>
@@ -538,7 +548,7 @@
 
             <img *ngIf="this.selectedFileType == 'image/jpeg' || this.selectedFileType  == 'image/png'" style="height: 60px; width: 40%;object-fit: contain;" [src]="fileDownloadUrl" alt="">
 
-            <iframe *ngIf="this.selectedFileType == 'application/pdf' && safeUrl" [src]="this.safeUrl" type="application/pdf" width="40%" height="60px">
+            <iframe *ngIf="this.selectedFileType == 'application/pdf' && safeFileUrl" [src]="this.safeFileUrl" type="application/pdf" width="40%" height="60px">
                 Dein Browser unterstützt keine PDF-Anzeige
             </iframe>
 
@@ -559,6 +569,15 @@
 
         </div>
         }
+        @if(this.audioDownloadUrl){
+            <!-- Audio-Player anzeigen, falls eine Audiodatei vorhanden ist -->
+            <div>
+                <audio controls>
+                    <source [src]="this.audioDownloadUrl" type="audio/mpeg" />
+                        Your browser does not support the audio element.
+                </audio>
+            </div>
+        }
 
         <div class="add-reaction">
             <div class="reactions">
@@ -569,6 +588,16 @@
                     </label>
 
                     <input style="display: none;" id="file-upload" type="file" (change)="onFileSelected($event)" />
+                </div>
+
+                <div class="audio-container">
+
+                    <div (mousedown)="startRecording()" (mouseup)="stopRecording()" class="audio-button">
+                        <img [ngClass]="this.recordingAudio ? 'scale' : 'add-audio'" class="add-audio" [src]="this.recordingAudio ? './assets/icons/microphone_recording.png' : './assets/icons/microphone.png'" alt="">
+                    </div>
+                    <div *ngIf="recordingAudio" class="record-container">
+                        <span class="letters">Halte zum Aufnehmen {{displayTime}}</span>
+                    </div>
                 </div>
 
 
@@ -600,8 +629,9 @@
             <button (click)="sendDirectMessage(); 
             selectedFile = null; 
             this.selectedFileName = ''; 
-            this.fileDownloadUrl=''" 
-            [disabled]="directMessage.invalid && !selectedFile">
+            this.fileDownloadUrl='';
+            this.audioDownloadUrl=''"
+            [disabled]="directMessage.invalid && !selectedFile && !this.safeAudioUrl">
                 <img src="./assets/icons/Send icon.png">
             </button>
         </div>
