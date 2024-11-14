@@ -126,7 +126,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
 
         // Initialisiere filteredSearchMessages mit allen Nachrichten
         this.filteredSearchMessages = chatSubject;
-        console.log('Initiale gefilterte Nachrichten:', this.filteredSearchMessages);
       }
     });
 
@@ -173,12 +172,9 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
         );
       })
     })).filter(group => group.messages.length > 0);
-  
-    console.log('Gefilterte Nachrichten:', this.filteredSearchMessages);
   }
 
   resetFilteredMessages() {
-    // Setze filteredSearchMessages zurück auf alle Nachrichten
     const groupedMessagesArray = Object.keys(this.chatService.groupedMessages).map(date => ({
       date,
       messages: this.chatService.groupedMessages[date]
