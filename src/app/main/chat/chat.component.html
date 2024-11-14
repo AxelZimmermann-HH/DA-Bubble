@@ -35,15 +35,17 @@
 
     </div>
         <!-- Gruppierte Nachrichten anzeigen -->
-        <div *ngFor="let group of chatService.groupedMessages | keyvalue; let i = index">
+        <!-- <div *ngFor="let group of chatService.groupedMessages | keyvalue; let i = index"> -->
+        <div *ngFor="let group of filteredSearchMessages; let i = index">
             <div style="position: relative;">
                 <hr class="separator-line">
-                <button class="day-time-btn header3">{{ isToday(group.value[0].timestamp) ? 'Heute' :
-                    group.value[0].dayDateMonth }}</button>
+                <button class="day-time-btn header3">{{ isToday(group.messages[0].timestamp) ? 'Heute' :
+                    group.messages[0].dayDateMonth }}</button>
             </div>
 
             <div *ngIf="!chatService.chatIsEmpty">
-                <div *ngFor="let message of group.value; let j = index">
+                 <div *ngFor="let message of group.messages; let j = index"> 
+                
                     <!-- Nachricht des anderen Benutzers -->
                     <div *ngIf="message.senderId == user.userId && user.userId !== currentUser.userId">
                         <table class="chat-table">

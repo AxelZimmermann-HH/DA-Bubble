@@ -143,9 +143,50 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
         });
       }
     });
+
+    this.subscribeToSearch();
   }
 
+  subscribeToSearch() {
+    this.sharedService.searchTerm$.subscribe((term) => {
+      if (term.length >= 3) {
+        this.filterMessages(term);
+      } else {
+        this.resetFilteredMessages();
+      }
+    });
+  }
+
+  filterMessages(term: string) {
+    const groupedMessagesArray = Object.keys(this.chatService.groupedMessages).map(date => ({
+      date,
+      messages: this.chatService.groupedMessages[date]
+    }));
   
+    this.filteredSearchMessages = groupedMessagesArray.map(group => ({
+      ...group,
+      messages: group.messages.filter((message: any) => {
+        const senderName = this.userService.getUserNameById(message.senderId);
+        return (
+          (message.text && message.text.toLowerCase().includes(term.toLowerCase())) ||
+          (senderName && senderName.toLowerCase().includes(term.toLowerCase()))
+        );
+      })
+    })).filter(group => group.messages.length > 0);
+  
+    console.log('Gefilterte Nachrichten:', this.filteredSearchMessages);
+  }
+
+  resetFilteredMessages() {
+    // Setze filteredSearchMessages zurück auf alle Nachrichten
+    const groupedMessagesArray = Object.keys(this.chatService.groupedMessages).map(date => ({
+      date,
+      messages: this.chatService.groupedMessages[date]
+    }));
+    this.filteredSearchMessages = groupedMessagesArray;
+  }
+
+
   async sendDirectMessage() {
     const newDm = this.directMessage.value!;
     const fileDownloadUrl = this.fileDownloadUrl;

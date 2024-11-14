@@ -170,6 +170,10 @@ export class UserService {
     return user ? user.userId : undefined;
 }
 
+getUserNameById(userId: string): string | undefined {
+  const user = this.userData.find((user: User) => user.userId === userId);
+  return user ? user.name : undefined;
+}
 
   findUserByName(userName: string): User | undefined {
     return this.userData.find(user => user.name === userName);
