@@ -236,6 +236,19 @@ export class ChatService {
       groups[date].push(message);
       return groups;
     }, {});
+
+    console.log('Grouped Messages Object:', this.groupedMessages);
+
+
+    const groupedMessagesArray = Object.keys(this.groupedMessages).map(date => ({
+      date,
+      messages: this.groupedMessages[date]
+    }));
+  
+    console.log('Grouped Messages Array:', groupedMessagesArray);
+
+    // Setze groupedMessagesArray als neues Observable für chat$
+    this.chatSubject.next(groupedMessagesArray);
   };
 
 

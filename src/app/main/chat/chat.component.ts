@@ -14,6 +14,10 @@ import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { doc, Firestore, updateDoc } from '@angular/fire/firestore';
 import { ChangeDetectorRef } from '@angular/core';
 
+interface MessageGroup {
+  date: string;
+  messages: any[]; 
+}
 
 @Component({
   selector: 'app-chat',
@@ -38,6 +42,9 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
   showUsers: boolean = false;
   hasNames: boolean = false;
   selectedNames: { name: string; userId: string }[] = [];
+
+  filteredSearchMessages: MessageGroup[] = [];
+
 
 
   @ViewChild('chatContainer') chatContainer!: ElementRef;
@@ -116,6 +123,10 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
       if (chatSubject && chatSubject.length > 0) {
         this.chatService.chatIsEmpty = false;
         this.chat = chatSubject;
+
+        // Initialisiere filteredSearchMessages mit allen Nachrichten
+        this.filteredSearchMessages = chatSubject;
+        console.log('Initiale gefilterte Nachrichten:', this.filteredSearchMessages);
       }
     });
 
