@@ -17,6 +17,8 @@ import { getDownloadURL, getStorage, ref, uploadBytes } from '@angular/fire/stor
 import { AnswersService } from '../../services/answers.service';
 import { SharedService } from '../../services/shared.service';
 
+
+
 @Component({
   selector: 'app-thread',
   standalone: true,
@@ -33,7 +35,7 @@ export class ThreadComponent {
   newAnswerText: string = "";
 
   channel = new Channel();
-  channelData: Channel[] = [];
+
 
   allMessages: Message[] = [];
 
@@ -46,6 +48,8 @@ export class ThreadComponent {
   showEmojiPicker: boolean = false;
 
   taggedUser: boolean = false;
+
+  filteredSearchAnswers: Answer[] = [];
 
   @Output() threadClosed = new EventEmitter<void>();
 
@@ -61,24 +65,24 @@ export class ThreadComponent {
     private route: ActivatedRoute,
     public userService: UserService,
     public threadService: ThreadService,
-    public answersService : AnswersService,
+    public answersService: AnswersService,
     private sanitizer: DomSanitizer,
-    public sharedService :SharedService
+    public sharedService: SharedService
   ) { }
 
   ngOnInit(): void {
-    this.userService.getAllUsers()
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
     });
+    this.subscribeToSearch();
     this.getAnswers(this.message.messageId);
-
-
+    this.answersService.getAnswers(this.message.messageId, this.channel.id)
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['message'] && this.message && this.message.messageId) {
       this.getAnswers(this.message.messageId);
+      this.answersService.getAnswers(this.message.messageId, this.channel.id)
     }
 
     if (changes['selectedChannelId'] && !changes['selectedChannelId'].isFirstChange()) {
@@ -87,22 +91,36 @@ export class ThreadComponent {
     }
   }
 
-  getAnswers(messageId: string) {
-    const messageDocRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}`);
-
-    onSnapshot(messageDocRef, (docSnapshot) => {
-      if (docSnapshot.exists()) {
-        const data = docSnapshot.data();
-        this.selectedAnswers = data['answers']
-          ? data['answers'].map((a: any) => new Answer(a))
-          : [];
-
+  subscribeToSearch() {
+    this.sharedService.searchTerm$.subscribe((term) => {
+      if (term.length >= 3) {
+        this.filterAnswers(term);
       } else {
-        this.selectedAnswers = [];
+        this.resetFilteredAnswers();
       }
-    }, (error) => {
-      console.error('Fehler beim Abrufen der Antworten: ', error);
     });
+  }
+
+  filterAnswers(term: string) {
+    this.filteredSearchAnswers = this.message.answers.filter((answer: any) => {
+      const matchesUser = answer.user?.toLowerCase().includes(term.toLowerCase());
+      const matchesText = answer.text?.toLowerCase().includes(term.toLowerCase());
+
+      return matchesUser || matchesText;
+    });
+
+    console.log('Filtered answers:', this.filteredSearchAnswers);
+  }
+
+  resetFilteredAnswers() {
+    this.filteredSearchAnswers = this.message.answers;
+  }
+
+  getAnswers(messageId: string) {
+    this.answersService.getAnswers(messageId, this.selectedChannelId!)
+      .subscribe((answers: Answer[]) => {
+        this.filteredSearchAnswers = answers;
+      });
   }
 
   async addAnswer(messageId: string) {
@@ -115,22 +133,7 @@ export class ThreadComponent {
       return;
     }
 
-    let fileUrl = null;
-
-    if (this.selectedFile) {
-      const filePath = `files/${this.selectedFile.name}`;
-
-      if (filePath) {
-        const storageRef = ref(getStorage(), filePath);
-        try {
-          const snapshot = await uploadBytes(storageRef, this.selectedFile);
-          fileUrl = await getDownloadURL(snapshot.ref);
-        } catch (error) {
-          console.error('Fehler beim Hochladen der Datei:', error);
-          return;
-        }
-      }
-    }
+    const fileUrl = await this.uploadFileIfSelected();
 
     const answer = new Answer({
       text: this.newAnswerText,
@@ -141,42 +144,38 @@ export class ThreadComponent {
 
     this.selectedAnswers.push(answer);
     this.answersService.saveAnswerToFirestore(messageId, answer, this.selectedChannelId);
+
     this.getAnswers(this.message.messageId);
     this.newAnswerText = '';
     this.selectedFile = null;
   }
 
-  editMessage(message: Message) {
-    message.isEditing = true;
-    message.editedText = message.text;
+  async uploadFileIfSelected() {
+    if (!this.selectedFile) return null;
+  
+    const filePath = `files/${this.selectedFile.name}`;
+    const storageRef = ref(getStorage(), filePath);
+  
+    try {
+      const snapshot = await uploadBytes(storageRef, this.selectedFile);
+      return await getDownloadURL(snapshot.ref);
+    } catch (error) {
+      console.error('Fehler beim Hochladen der Datei:', error);
+      throw error;
+    }
   }
 
-  saveEditAnswer(answer: Answer) {
-    const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${this.message.messageId}`);
-    getDoc(messageRef).then((docSnap) => {
-      if (docSnap.exists()) {
-        const messageData = docSnap.data();
-        if (Array.isArray(messageData['answers'])) {
-          const updatedAnswers = messageData['answers'].map((a: any) => {
-            if (a.text === answer.text && a.user === answer.user) {
-              a.text = answer.editedText;
-            }
-            return a;
-          });
-          updateDoc(messageRef, { answers: updatedAnswers })
-            .then(() => {
-              answer.text = answer.editedText;
-              answer.isEditing = false;
-            })
-            .catch((error) => {
-              console.error("Fehler beim Speichern der Antwort: ", error);
-            });
-        }
-      }
-    }).catch((error) => {
-      console.error('Fehler beim Abrufen der Nachricht: ', error);
+  async saveEditAnswer(answer: Answer) {
+    const updatedAnswer = new Answer({
+      ...answer,
+      text: answer.editedText,
+      isEditing: false
     });
+
+    await this.answersService.saveEditAnswer(this.message.messageId, answer, updatedAnswer, this.selectedChannelId!);
+    this.getAnswers(this.message.messageId);
   }
+
 
   cancelEditAnswer(answer: Answer) {
     answer.isEditing = false;

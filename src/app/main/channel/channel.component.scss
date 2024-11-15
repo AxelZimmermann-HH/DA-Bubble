@@ -139,11 +139,9 @@
     overflow-y: scroll;
     height: calc(100% - 370px);
     scrollbar-width: none;
-
     .chat-table {
         width: 100%;
         border-spacing: 0;
-
         td {
             display: flex;
             align-items: center;
@@ -154,13 +152,11 @@
             position: relative;
             height: auto;
             padding: 20px 0;
-
             &:hover {
                 background-color: rgb(236, 238, 254);
                 color: black;
             }
         }
-
         .message-main {
             display: flex;
             gap: 16px;
@@ -205,7 +201,6 @@
             }
         }
     }
-
     .separator-line {
         width: auto;
         height: 0;
@@ -240,7 +235,6 @@ td:hover .reaction-hover {
         &:hover {
             cursor: pointer;
             background: #ECEEFE;
-
         }
     }
 }
@@ -327,14 +321,12 @@ td:hover .speech-bubble {
         border-radius: 40px;
         width: 30px;
     }
-
     .add-icon:hover,
     .add-emoji:hover,
     .add-mail:hover {
         transform: scale(1.2);
         background: rgba(236, 238, 254, 1);
     }
-
     .add-icon:hover {
         content: url('./../../../assets/icons/add-2.png');
     }
@@ -355,7 +347,6 @@ td:hover .speech-bubble {
         filter: contrast(0.5)
     }
 }
-
 .current-user {
     flex-direction: row-reverse;
 }
@@ -380,14 +371,12 @@ td:hover .b-radius {
     display: inline-block;
     width: 100%;
 }
-
 .edit-text-message {
     position: absolute;
     width: 100%;
     padding: 20px;
     box-sizing: border-box;
 }
-
 .button-icons-group {
     position: absolute;
     bottom: 8px;
@@ -395,7 +384,6 @@ td:hover .b-radius {
     align-items: center;
     justify-content: space-between;
     width: 100%;
-
     img {
         margin: 0 8px;
         width: 30px;
@@ -408,7 +396,6 @@ td:hover .b-radius {
             content: url('./../../../assets/icons/sentiment_satisfied-2.png');
         }
     }
-
     .button-group {
         display: flex;
         padding: 0 8px;
@@ -728,7 +715,20 @@ td:hover .b-radius {
 .channel-container-mobile {
     display: none;
 }
+@media (max-width: 1024px) {
+    .channel-header {
+        padding: 20px;
 
+        .edit-channel {
+            font-size: 18px;
+        }
+    }
+    app-thread{
+        position: absolute;
+        right: 0;
+        z-index: 9999;
+    }
+}
 @media (max-width: 768px) {
     .channel-container {
         height: calc(100vh - 90px);
@@ -749,19 +749,9 @@ td:hover .b-radius {
         padding: 20px;
         font-size: 14px;
     }
-
-    .channel-header {
-        padding: 20px;
-
-        .edit-channel {
-            font-size: 18px;
-        }
-    }
-
     .speech-bubble {
         font-size: 14px;
     }
-
     .channel-content .chat-table .message-content .time {
         font-size: 12px;
     }
@@ -769,7 +759,6 @@ td:hover .b-radius {
     .channel-content .chat-table .message-main span {
         font-size: 12px;
     }
-
     .member-preview,
     .numberofmembers {
         display: none;
@@ -778,7 +767,6 @@ td:hover .b-radius {
     .date-group {
         margin: 0 30px;
     }
-
     .avatar {
         width: 40px;
         height: 40px;
@@ -788,13 +776,15 @@ td:hover .b-radius {
         padding: 12px;
         font-size: 14px;
     }
-
     .channel-content .chat-table .message-content .label-answers {
         font-size: 12px;
         font-weight: 700;
     }
-
     .emoji-picker {
         left: 0;
     }
+    app-thread{
+        position: static;
+    }
+ 
 }

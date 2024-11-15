@@ -101,7 +101,7 @@
 
         <!-- Answer list -->
         <div class="message-main" [ngClass]="{'current-user': userService.isCurrentUser(answer.user,userId)}"
-            *ngFor="let answer of selectedAnswers">
+            *ngFor="let answer of filteredSearchAnswers">
             <img [src]="userService.getAvatarForUser(answer.user)" alt="Avatar" class="avatar">
             <div class="message-content" *ngIf="!answer.isEditing"
                 [ngClass]="{'a-flex': userService.isCurrentUser(answer.user,userId)}">

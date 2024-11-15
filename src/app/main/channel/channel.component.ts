@@ -115,6 +115,7 @@ export class ChannelComponent {
     this.subscribeToFilteredData();
 
 
+
   }
 
   ngOnChanges(): void {
@@ -123,6 +124,7 @@ export class ChannelComponent {
       this.channelService.loadChannel(this.selectedChannelId).then(() => {
         this.messagesService.getAllMessages(this.selectedChannelId, () => {
           this.filteredSearchMessages = this.messagesService.allMessages;
+          console.log('filtered messages: ', this.filteredSearchMessages);
           this.isLoading = false;
         });
       }).catch(error => {
