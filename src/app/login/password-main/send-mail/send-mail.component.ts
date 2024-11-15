@@ -1,15 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { HttpClient } from '@angular/common/http';  // Importiere HttpClient für die Verwendung in deiner Komponente
+import { HttpClient } from '@angular/common/http';
 import { Component, Output, EventEmitter } from '@angular/core';
-import { Firestore, collection, getDocs, updateDoc, query, where } from '@angular/fire/firestore';
+import { Firestore, collection, getDocs, query, where } from '@angular/fire/firestore';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../../services/user.service';
-import { User } from '../../../models/user.class';
 import { Auth, sendPasswordResetEmail } from '@angular/fire/auth';
-import { Router } from '@angular/router';  // Importiere den Router
-
-
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-send-mail',
@@ -18,6 +15,7 @@ import { Router } from '@angular/router';  // Importiere den Router
   templateUrl: './send-mail.component.html',
   styleUrl: './send-mail.component.scss'
 })
+
 export class SendMailComponent {
   @Output() switchToSignin = new EventEmitter<void>();
   @Output() switchToResetPw = new EventEmitter<void>();  // EventEmitter hinzufügen
@@ -31,44 +29,46 @@ export class SendMailComponent {
     console.log('Komponente wurde initialisiert');
   }
 
-
   validateEmail(email: string) {
     const emailPattern = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
     this.buttonEnabled = emailPattern.test(email);
     this.emailNotFound = false;
   }
 
-
   async checkEmail(email: string, event: Event) {
     event.preventDefault();
-    
-    console.log('Check wird ausgeführt');
-    try {
-      const q = query(collection(this.firestore, 'users'), where('mail', '==', email));
-      const querySnapshot = await getDocs(q);
   
-      if (!querySnapshot.empty) {
-        console.log('Benutzer gefunden');
-        
-        // Sende die E-Mail, die auf deine eigene Seite weiterleitet
-        await sendPasswordResetEmail(this.auth, email, {
-          url: 'https://dabubble-364.developerakademie.net/angular-projects/da-bubble/reset',  // URL zu deiner eigenen Seite
-          handleCodeInApp: true  // Nutzt deine App, um den Link zu verarbeiten
-        });
-        console.log('E-Mail zum Zurücksetzen des Passworts wurde gesendet.');
-
-        this.success = true;
-        setTimeout(() => {
-          this.switchToSignin.emit();
-        }, 1200);
-      } else {
-        console.log('Benutzer nicht gefunden');
-        this.emailNotFound = true;
-      }
-    } catch (error) {
-      console.error('Fehler beim Abrufen der E-Mail:', error);
+    const userExists = await this.doesUserExist(email);
+    if (userExists) {
+      await this.sendResetEmail(email);
+      this.handleSuccess();
+    } else {
+      this.handleUserNotFound();
     }
-}
+  }
+  
+  private async doesUserExist(email: string): Promise<boolean> {
+    const q = query(collection(this.firestore, 'users'), where('mail', '==', email));
+    const snapshot = await getDocs(q);
+    return !snapshot.empty;
+  }
+  
+  private async sendResetEmail(email: string): Promise<void> {
+    await sendPasswordResetEmail(this.auth, email, {
+      url: 'https://dabubble-364.developerakademie.net/angular-projects/da-bubble/reset',
+      handleCodeInApp: true
+    });
+  }
+  
+  private handleSuccess(): void {
+    this.success = true;
+    setTimeout(() => this.switchToSignin.emit(), 1200);
+  }
+  
+  private handleUserNotFound(): void {
+    console.log('Benutzer nicht gefunden');
+    this.emailNotFound = true;
+  }  
   
   getBack() {
     this.switchToSignin.emit();

@@ -18,7 +18,7 @@
             eigenes Bild auswählen
           </label>
           
-        <input id="file-upload" type="file" (change)="onFileSelected($event)" />  <!-- Datei-Upload -->
+        <input id="file-upload" type="file" (change)="onFileSelected($event)" />  
         @if (selectedFile) {
             <button class="next-button" [ngStyle]="{'background-color': '#444df2'}" (click)="uploadFile()" [disabled]="!selectedFile">Datei hochladen</button>
         }
@@ -29,7 +29,6 @@
     </div>
 
     <form #ngForm="ngForm" (ngSubmit)="onSubmit(contactForm)" #contactForm="ngForm">
-         
 
         <div class="submit-area">
 
@@ -39,7 +38,6 @@
                 [ngClass]="{'active-button': buttonEnabled}">Weiter</button>
             </div>
         </div>
-
 
     </form>
 </div>

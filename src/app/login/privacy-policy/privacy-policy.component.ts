@@ -8,11 +8,11 @@ import { Router } from '@angular/router';
   templateUrl: './privacy-policy.component.html',
   styleUrl: './privacy-policy.component.scss'
 })
+
 export class PrivacyPolicyComponent {
   constructor(private router: Router) { }
 
   getBack() {
     this.router.navigate(['/login']);
   }
-
 }

@@ -1,12 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, ViewChild, ElementRef, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-import { collection, addDoc, updateDoc, Firestore, onSnapshot, doc, getDoc, setDoc } from '@angular/fire/firestore';
+import { updateDoc, Firestore, doc, setDoc } from '@angular/fire/firestore';
 import { User } from '../../../models/user.class';
-import { Router } from '@angular/router'; 
-import { UserService } from '../../../services/user.service';  
 import { Auth, createUserWithEmailAndPassword } from '@angular/fire/auth';
-
 
 @Component({
   selector: 'app-firstpage',
@@ -16,18 +13,17 @@ import { Auth, createUserWithEmailAndPassword } from '@angular/fire/auth';
   styleUrl: './firstpage.component.scss'
 })
 export class FirstpageComponent implements OnInit {
-  @Input() user: User = new User();  // Standardwert für user, falls keiner übergeben wird
+  @Input() user: User = new User();
   @Output() switchToSignin = new EventEmitter<void>();
-  @Output() closeFirstPage = new EventEmitter<boolean>();  // EventEmitter erstellen
+  @Output() closeFirstPage = new EventEmitter<boolean>();
   @Output() openAvatarPage = new EventEmitter<boolean>();
-  @Output() userCreated = new EventEmitter<User>();  // Neuer Emitter für den erstellten Benutzer
+  @Output() userCreated = new EventEmitter<User>();
   
   ngOnInit(): void {
     if (!this.user) {
-      this.user = new User();  // Falls der User noch nicht gesetzt ist, initialisiere ihn
+      this.user = new User();
     }
   }
-  // user = new User();
   validName: boolean = true;
   validMail: boolean = true;
   checked: boolean = false;
@@ -42,11 +38,11 @@ export class FirstpageComponent implements OnInit {
       this.user.name = ''; 
       setTimeout(() => {
         this.validName = true; 
-        this.activateButton();  // Buttonstatus nach Timeout erneut prüfen
+        this.activateButton();
       }, 2000);
     } else {
       this.validName = true;
-      this.activateButton();  // Direkt nach erfolgreicher Validierung den Buttonstatus prüfen
+      this.activateButton(); 
     }
   }
 
@@ -57,27 +53,21 @@ export class FirstpageComponent implements OnInit {
       this.user.mail = ''; 
       setTimeout(() => {
         this.validMail = true; 
-        this.activateButton();  // Buttonstatus nach Timeout erneut prüfen
+        this.activateButton();
       }, 2000);
     } else {
       this.validMail = true;
-      this.activateButton();  // Direkt nach erfolgreicher Validierung den Buttonstatus prüfen
+      this.activateButton(); 
     }
   }
 
   togglePrivacy(): void {
     this.checked = !this.checked;
-    this.activateButton();  // Buttonstatus direkt nach der Checkbox-Änderung prüfen
+    this.activateButton(); 
   }
 
   activateButton(): void {
-    console.log('Valid Name:', this.validName);
-  console.log('Valid Mail:', this.validMail);
-  console.log('Password length >= 5:', this.user.password.length >= 5); // Prüfen, ob Passwort mindestens 5 Zeichen lang ist
-  console.log('Checked:', this.checked);
-    // Button aktivieren, wenn Name, Mail, Passwort valide sind und die Checkbox angeklickt ist
-    this.buttonEnabled = this.validName && this.validMail && this.user.password.length >= 5 && this.checked;
-    console.log('Button enabled:', this.buttonEnabled);  // Für Debugging-Zwecke
+    this.buttonEnabled = this.validName && this.validMail && this.user.password.length >= 6 && this.checked;
   }
 
   async onSubmit(ngForm: NgForm) {
@@ -102,43 +92,45 @@ export class FirstpageComponent implements OnInit {
       mail: this.user.mail,
       password: this.user.password
     });
-    console.log('User updated with ID: ', this.user.userId);
   }
 
   async addNewUser() {
     try {
-      // Erstelle den neuen Nutzer in Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(this.auth, this.user.mail, this.user.password);
-  
-      // Nutzer-ID aus Firebase Auth
-      const userId = userCredential.user.uid;
-  
-      // Speichere die zusätzlichen Benutzerdaten in Firestore
-      const newUser = new User({
-        name: this.user.name,
-        mail: this.user.mail,
-        password: this.user.password, // Passwort solltest du vielleicht nicht direkt speichern
-        userId: userId
-      });
-
-      const userDocRef = doc(this.firestore, 'users', userId);
-      await setDoc(userDocRef, newUser.toJson());
-  
-      console.log('User created with ID: ', userId);
+      const userId = await this.createFirebaseUser();
+      const newUser = this.createUserInstance(userId);
+      await this.saveUserToFirestore(userId, newUser);
       this.user = newUser;
     } catch (error) {
       console.error('Fehler beim Erstellen des Benutzers: ', error);
     }
   }
   
+  private async createFirebaseUser(): Promise<string> {
+    const { user } = await createUserWithEmailAndPassword(this.auth, this.user.mail, this.user.password);
+    return user.uid;
+  }
+  
+  private createUserInstance(userId: string): User {
+    return new User({
+      name: this.user.name,
+      mail: this.user.mail,
+      password: this.user.password,
+      userId: userId
+    });
+  }
+  
+  private async saveUserToFirestore(userId: string, user: User): Promise<void> {
+    const userDocRef = doc(this.firestore, 'users', userId);
+    await setDoc(userDocRef, user.toJson());
+  }
+  
   handleSuccess() {
-    this.closeFirstPage.emit(false);  // Setzt firstPage auf false in der übergeordneten Komponente
-    this.userCreated.emit(this.user);  // Benutzer übergeben
-    this.openAvatarPage.emit(true);  // Leitet zur Avatar-Seite weiter
+    this.closeFirstPage.emit(false);  
+    this.userCreated.emit(this.user);  
+    this.openAvatarPage.emit(true);  
   }
 
   getBack() {
     this.switchToSignin.emit();
   }
-
 }

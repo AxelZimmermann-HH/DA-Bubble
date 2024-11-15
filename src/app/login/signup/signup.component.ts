@@ -2,8 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Output, EventEmitter } from '@angular/core';
 import { FirstpageComponent } from './firstpage/firstpage.component';
 import { ChooseAvatarComponent } from './choose-avatar/choose-avatar.component';
-import { User } from '../../models/user.class';  // User-Klasse importieren
-
+import { User } from '../../models/user.class'; 
 
 @Component({
   selector: 'app-signup',
@@ -19,6 +18,6 @@ export class SignupComponent {
   createdUser!: User;
 
   handleSwitchToSignin() {
-    this.switchToSignin.emit();  // Event an die login-Komponente weiterleiten
+    this.switchToSignin.emit();
   }
 }

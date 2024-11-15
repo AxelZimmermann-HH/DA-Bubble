@@ -13,9 +13,7 @@
     <p>Wir empfehlen dir, die E-Mail-Adresse zu nutzen, die du bei der Arbeit verwendest.</p>
 
     <form #ngForm="ngForm" (ngSubmit)="onSubmit(contactForm)" #contactForm="ngForm">
-        
-        
-        
+         
         <div class="input">
             <img [ngStyle]="{'width': '20px'}" src="./assets/icons/login-mail.svg" alt="">
             <input 
@@ -30,8 +28,6 @@
                 (blur)="checkEmail()" />
         </div>
 
-
-
         <div class="input">
             <img [ngStyle]="{'width': '16px'}" src="./assets/icons/login-lock.svg" alt="">
             <input name="passwordInput" 
@@ -43,17 +39,12 @@
             type="password" />
         </div>
 
-
-
-
         <a (click)="goToPasswordReset()">Passwort vergessen?</a>
         <div class="divider">
             <div class="line"></div>
             <p>ODER</p>
             <div class="line"></div>
         </div>
-
-
 
         <div class="submit-area">
 
@@ -67,7 +58,6 @@
                 <button class="login-button guest" (click)="guestLogin()">Gäste-Login</button>
             </div>
         </div>
-
 
     </form>
 </div>

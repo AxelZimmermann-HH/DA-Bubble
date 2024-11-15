@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, ViewChild, ElementRef, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { collection, addDoc, updateDoc, Firestore, onSnapshot, doc, getDoc, setDoc } from '@angular/fire/firestore';
+import { updateDoc, Firestore, doc } from '@angular/fire/firestore';
 import { User } from '../../../models/user.class';
-import { getStorage, ref, uploadBytes, getDownloadURL } from '@angular/fire/storage';  // Firebase Storage imports
-
+import { getStorage, ref, uploadBytes, getDownloadURL } from '@angular/fire/storage';
 
 @Component({
   selector: 'app-choose-avatar',
@@ -14,16 +13,16 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from '@angular/fire/stor
   templateUrl: './choose-avatar.component.html',
   styleUrl: './choose-avatar.component.scss'
 })
-export class ChooseAvatarComponent {
-  @Input() user!: User;  // Empfange den User als Input
-  @Output() switchToSignin = new EventEmitter<void>();
 
-  @Output() closeAvatarPage = new EventEmitter<boolean>();  // EventEmitter erstellen
+export class ChooseAvatarComponent {
+  @Input() user!: User;  
+  @Output() switchToSignin = new EventEmitter<void>();
+  @Output() closeAvatarPage = new EventEmitter<boolean>();  
   @Output() openFirstPage = new EventEmitter<boolean>();
   
   buttonEnabled: boolean = false;
   selectedFile: File | null = null;
-  selectedFileName: string = '';  // Neuer Dateiname-String
+  selectedFileName: string = '';  
   downloadURL: string = '';
   success: boolean = false;
 
@@ -58,7 +57,7 @@ export class ChooseAvatarComponent {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       this.selectedFile = input.files[0];
-      this.selectedFileName = this.selectedFile.name;  // Dateiname speichern
+      this.selectedFileName = this.selectedFile.name;
     }
   }
 
@@ -66,20 +65,13 @@ export class ChooseAvatarComponent {
     if (!this.selectedFile) return;
 
     try {
-      // Initialisiere Firebase Storage
       const storage = getStorage();
       const storageRef = ref(storage, `avatars/${this.user.userId}`);
-
-      // Lade die Datei hoch
       const snapshot = await uploadBytes(storageRef, this.selectedFile);
-
-      // Hol die URL der hochgeladenen Datei
       const url = await getDownloadURL(snapshot.ref);
       this.downloadURL = url;
       this.selectedAvatar = url;
       this.buttonEnabled = true;  
-
-      // Speichere die URL des Bildes in Firestore
       const userDocRef = doc(this.firestore, `users/${this.user.userId}`);
       await updateDoc(userDocRef, { avatar: url });
     } catch (error) {
