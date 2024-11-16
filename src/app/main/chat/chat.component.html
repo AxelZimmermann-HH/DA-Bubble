@@ -573,12 +573,12 @@
         }
         @if(this.audioDownloadUrl){
             <!-- Audio-Player anzeigen, falls eine Audiodatei vorhanden ist -->
-            <div>
+            <div style="position: relative;">
                 <audio controls>
                     <source [src]="this.audioDownloadUrl" type="audio/mpeg" />
                         Your browser does not support the audio element.
                 </audio>
-                <img class="file-button-delete" (click)="deleteAudio(this.audioDownloadUrl); this.audioDownloadUrl = '';" 
+                <img class="audio-button-delete" (click)="deleteAudio(this.audioDownloadUrl); this.audioDownloadUrl = '';" 
                 src="./assets/icons/close.png" alt="Anhang löschen">
             </div>
         }

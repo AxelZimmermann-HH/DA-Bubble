@@ -577,6 +577,25 @@
             content: url('./../../../assets/icons/close-1.png');
         }
     }
+
+    .audio-button-delete{
+        position: absolute;
+        z-index: 1;
+        right: -10px;
+        bottom: 45px;
+        background-color: orangered;
+        width: 16px;
+        height: 16px;
+        padding: 4px;
+        border-radius: 50%;
+        box-sizing: content-box;
+        &:hover {
+            cursor: pointer;
+            content: url('./../../../assets/icons/close-1.png');
+        }
+    }
+
+
 }
 
 .mobile-custom-input{
