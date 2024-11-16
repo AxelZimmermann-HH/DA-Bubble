@@ -13,6 +13,8 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { doc, Firestore, updateDoc } from '@angular/fire/firestore';
 import { ChangeDetectorRef } from '@angular/core';
+import { AudioService } from '../../services/audio.service';
+import { FileService } from '../../services/file.service';
 
 interface MessageGroup {
   date: string;
@@ -59,7 +61,9 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     public route: ActivatedRoute,
     private sanitizer: DomSanitizer,
     public firestore: Firestore,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public audioService: AudioService,
+    public fileService: FileService,
   ) { }
 
 
@@ -142,9 +146,9 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
         });
       }
     });
-
     this.subscribeToSearch();
   }
+
 
   subscribeToSearch() {
     this.sharedService.searchTerm$.subscribe((term) => {
@@ -155,6 +159,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
       }
     });
   }
+
 
   filterMessages(term: string) {
     const groupedMessagesArray = Object.keys(this.chatService.groupedMessages).map(date => ({
@@ -174,6 +179,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     })).filter(group => group.messages.length > 0);
   }
 
+
   resetFilteredMessages() {
     const groupedMessagesArray = Object.keys(this.chatService.groupedMessages).map(date => ({
       date,
@@ -185,23 +191,21 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
 
   async sendDirectMessage() {
     const newDm = this.directMessage.value!;
-    const fileDownloadUrl = this.fileDownloadUrl;
-    const fileName = this.selectedFileName;
-    const fileType = this.selectedFileType;
-    const audioDownloadUrl = this.audioDownloadUrl;
+    const fileDownloadUrl = this.fileService.fileDownloadUrl;
+    const fileName = this.fileService.selectedFileName;
+    const fileType = this.fileService.selectedFileType;
+    const audioDownloadUrl = this.audioService.audioDownloadUrl;
   
     // Nachricht an den aktuellen Chat-Partner senden
     await this.chatService.setChatData(newDm, fileDownloadUrl, fileName, fileType, this.currentUserId, audioDownloadUrl);
-  
     this.directMessage.setValue('');
-    this.selectedFile = null;
-    this.selectedFileName = '';
-    this.fileDownloadUrl = '';
-    this.audioDownloadUrl = '';
+    this.fileService.selectedFile = null;
+    this.fileService.selectedFileName = '';
+    this.fileService.fileDownloadUrl = '';
+    this.audioService.audioDownloadUrl = '';
   
     // Nachricht an mehrere Benutzer senden
     await this.sendMessagesToMultipleUsers(newDm, fileDownloadUrl, fileName, fileType);  
-    
     this.selectedNames = [];
     this.hasNames = false;
   }
@@ -221,7 +225,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     }
   }
   
-
 
   //scrollt das Chatfenster nach unten
   scrollToBottom(): void {
@@ -274,233 +277,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
   }
 
 
-  //FILE-UPLOAD
-  selectedFile: File | null = null;
-  selectedFileName: string = '';  // Neuer Dateiname-String
-  selectedFileType: string = '';
-  fileDownloadUrl: string = '';
-
-  //Datei hinzufügen
-  onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      this.selectedFile = input.files[0];
-      this.selectedFileName = this.selectedFile.name;  // Dateiname speichern
-      this.selectedFileType = input.files[0]['type'];
-      this.uploadFile()
-    }
-  }
-
-
-  //Datei ändern
-  async onChangeFileSelected(event: Event, fileToDelete: string) {
-    this.deleteFile(fileToDelete); //Alte Datei löschen
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      this.selectedFile = input.files[0];
-      this.selectedFileName = this.selectedFile.name;  // Dateiname speichern
-      this.selectedFileType = input.files[0]['type'];
-      await this.uploadFile()
-    }
-  }
-  safeFileUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
-  safeAudioUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
-
-  //Holt sich eine sichere URL
-  async loadSafeFile(fileUrl: string, fileType:string) {
-    if (!fileUrl) {
-      console.error('Die Datei-URL ist ungültig.');
-      return;
-    }
-    if(fileType == 'image/png' || 'image/jpeg' || 'application/pdf'){
-      this.safeFileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fileUrl);
-    }
-    if(fileType == 'audio/mpeg'){
-      this.safeAudioUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fileUrl);
-    }
-  }
-
-
-  //File in den Storage hochladen
-  async uploadFile() {
-    if (!this.selectedFile) return;
-
-    try {
-      // Initialisiere Firebase Storage
-      const storage = getStorage();
-      const storageRef = ref(storage, `files/${this.selectedFileName}`);
-
-      // Lade die Datei hoch
-      const snapshot = await uploadBytes(storageRef, this.selectedFile);
-
-      // Hol die URL der hochgeladenen Datei
-      const url = await getDownloadURL(snapshot.ref);
-      this.fileDownloadUrl = url;
-
-      if (this.selectedFileType == 'application/pdf') {
-        console.log('Lade die Datei von URL:', this.fileDownloadUrl);
-        await this.loadSafeFile(this.fileDownloadUrl, this.selectedFileType)
-      }
-      if (this.selectedFileType == 'text/plain') {
-        await this.chatService.fetchTextFile(this.fileDownloadUrl)
-      }
-    } catch (error) {
-      console.error('Fehler beim Hochladen der Datei:', error);
-    }
-  }
-
-
-  //File im Browser abrufen und laden
-  downloadFile(fileDownloadUrl: string, fileName: string) {
-    // Erstellen eines unsichtbaren Links
-    const link = document.createElement('a');
-    link.href = fileDownloadUrl;
-    link.target = '_blank';
-    link.download = fileName;
-    // Anhängen des Links an das Dokument
-    document.body.appendChild(link);
-
-    // Automatisches Klicken des Links, um den Download zu starten
-    link.click();
-
-    // Entfernen des Links nach dem Download
-    document.body.removeChild(link);
-  }
-
-
-  //Datei löschen
-  deleteFile(fileName: string) {
-    // Firebase Storage initialisieren
-    const storage = getStorage();
-    const fileRef = ref(storage, '/files/' + fileName);
-
-    // Datei löschen
-    deleteObject(fileRef).then(() => {
-      console.log('Datei erfolgreich gelöscht');
-    }).catch((error) => {
-      console.error('Fehler beim Löschen der Datei:', error);
-    });
-  }
-
-  //Audio Nachricht>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-  private mediaRecorder: MediaRecorder | null = null;
-  private audioChunks: Blob[] = [];
-  private isTouchEvent = false; // Verhindert doppelte Ausführung bei Touch und Maus
-  recordingAudio: boolean = false;
-
-  async startRecording(event: MouseEvent | TouchEvent){
-    // Prüfen, ob es sich um ein Touch-Event handelt
-    if (event.type === 'touchstart') {
-      this.isTouchEvent = true;
-    }
-
-    // Verhindert Doppelereignisse (z. B. auf Touch-Laptops)
-    if (this.isTouchEvent && event.type === 'mousedown') {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    this.safeAudioUrl = '';
-    this.audioDownloadUrl = '';
-    this.recordingAudio = true;
-    this.startTimer();
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    this.mediaRecorder = new MediaRecorder(stream);
-    this.audioChunks = [];
-
-    this.mediaRecorder.ondataavailable = (event) => {
-      this.audioChunks.push(event.data);
-    };
-
-    this.mediaRecorder.start();
-  }
-  
-  stopRecording(event: MouseEvent | TouchEvent){
-    // Prüfen, ob es sich um ein Touch-Event handelt
-    if (event.type === 'touchend') {
-      this.isTouchEvent = true;
-    }
-
-    // Verhindert Doppelereignisse (z. B. auf Touch-Laptops)
-    if (this.isTouchEvent && event.type === 'mouseup') {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    this.mediaRecorder?.stop();
-    this.recordingAudio = false;
-    this.resetTimer();
-    this.mediaRecorder?.addEventListener("stop", () => {
-      const audioBlob = new Blob(this.audioChunks, { type: 'audio/mpeg' });
-      this.uploadAudio(audioBlob);
-    });
-      // Zurücksetzen für zukünftige Ereignisse
-    if (event.type === 'touchend' || event.type === 'mouseup') {
-      this.isTouchEvent = false;
-    }
-  }
-
-  private seconds: number = 0;
-  private timerInterval: any;
-
-  displayTime: string = '00:00';
-
-  startTimer(){
-
-    this.timerInterval = setInterval(() => {
-      this.seconds++;
-      this.updateDisplay();
-    }, 1000);
-  }
-  
-  stopTimer(): void {
-    clearInterval(this.timerInterval);
-    this.timerInterval = null;
-  }
-
-  resetTimer(): void {
-    this.stopTimer();
-    this.seconds = 0;
-    this.updateDisplay();
-  }
-
-  private updateDisplay(): void {
-    const minutes = Math.floor(this.seconds / 60);
-    const remainingSeconds = this.seconds % 60;
-    this.displayTime = 
-      `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
-  }
-
-  audioDownloadUrl: string = '';
-  fileType: string = '';
-
-  async uploadAudio(audioBlob: Blob) {
-    const storage = getStorage();
-    const audioRef = ref(storage, `audios/${Date.now()}.mp3`);
-
-    // Datei zu Firebase Storage hochladen
-    const snapshot = await uploadBytes(audioRef, audioBlob);
-    const url = await getDownloadURL(snapshot.ref);
-    this.audioDownloadUrl = url;
-    this.fileType = audioBlob.type;
-    await this.loadSafeFile(this.audioDownloadUrl, this.fileType)
-  }
-
-    //Audio löschen
-    deleteAudio(audioName: string) {
-      // Firebase Storage initialisieren
-      const storage = getStorage();
-      const fileRef = ref(storage, audioName);
-  
-      // Datei löschen
-      deleteObject(fileRef).then(() => {
-        console.log('Datei erfolgreich gelöscht');
-      }).catch((error) => {
-        console.error('Fehler beim Löschen der Datei:', error);
-      });
-    }
-
   //Emojis>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   showEmojis: boolean = false;
 
@@ -517,6 +293,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     this.showEmojis = false;
   }
 
+
   // @ Users 
   toggleUserList() {
     if (this.userList.length === 0) {
@@ -531,6 +308,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     }
   }
 
+
   // Klick-Event auf das gesamte Dokument
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
@@ -541,6 +319,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
       this.toggleUserList();
     }
   }
+
 
   insertName(userName: string) {
     if (this.selectedNames.some(user => user.name === userName)) {
@@ -565,23 +344,23 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     this.cdr.detectChanges();
   }
   
+
   //Reactions
   //if: wenn der aktuelle Nutzer noch nicht die angeklickte Reaktion gewählt hat, wird er dieser Reaktion hinzugefügt
   //else: wenn schon gewählt, dann wird er wieder entfernt
-
-  //isHovered:boolean = false;
   hoveredMessageId: string | null = null;  // Speichert die ID des gehoverten Elements
   hoveredReaction: string | null = null;
-
   hoveredElement: { messageId: string | null; reactionType: string | null } = {
     messageId: null,
     reactionType: null,
   };
 
+
   // Funktion, um das gehoverte Element zu setzen
   isHovered(messageId: string | null, reactionType: string | null) {
     this.hoveredElement = { messageId, reactionType };
   }
+
 
   // Funktion, um die Sichtbarkeit zu prüfen
   isBubbleVisible(messageId: string, reactionType: string): boolean {
@@ -591,11 +370,9 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     );
   }
 
+  
   async addReaction(currentUser: User, message: any, reaction: string) {
-    debugger
-    console.log(message); // Nachricht prüfen
     const currentUsers = message[reaction] || [];
-    
     const currentUserReactedAlready = currentUsers.some((user: { userId: string; }) => user.userId === this.currentUserId);
     const chatDocRef = doc(this.firestore, 'chats', message.chatId, 'messages', message.messageId);
   
@@ -610,6 +387,4 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
       });
     }
   }
-
-  
 }

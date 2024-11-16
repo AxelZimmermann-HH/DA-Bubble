@@ -73,7 +73,7 @@
 
                                                     <pre *ngIf="message.fileType == 'text/plain'" style="overflow: auto;"> <p>{{this.chatService.textContent}}</p></pre>
                                                     <button  class="open-file-button"
-                                                        (click)="downloadFile(message.fileDownloadUrl, message.fileName)">Anhang
+                                                        (click)="this.fileService.downloadFile(message.fileDownloadUrl, message.fileName)">Anhang
                                                         öffnen</button>
                                                 </div>
                                                 <div *ngIf="message.audioDownloadUrl">
@@ -301,7 +301,7 @@
 
                                                     <pre *ngIf="message.fileType == 'text/plain'" style="overflow: auto;"> <p>{{this.chatService.textContent}}</p></pre>
 
-                                                    <button class="open-file-button" (click)="downloadFile(message.fileDownloadUrl, message.fileName)">
+                                                    <button class="open-file-button" (click)="this.fileService.downloadFile(message.fileDownloadUrl, message.fileName)">
                                                         Anhang öffnen
                                                     </button>
                                                 </div>
@@ -545,40 +545,40 @@
           </div>
 
 
-        @if (selectedFile) { <!-- Datei-Anzeige -->
+        @if (this.fileService.selectedFile) { <!-- Datei-Anzeige -->
         <div class="file-upload-container">
 
-            <img *ngIf="this.selectedFileType == 'image/jpeg' || this.selectedFileType  == 'image/png'" style="height: 60px; width: 40%;object-fit: contain;" [src]="fileDownloadUrl" alt="">
+            <img *ngIf="this.fileService.selectedFileType == 'image/jpeg' || this.fileService.selectedFileType  == 'image/png'" style="height: 60px; width: 40%;object-fit: contain;" [src]="this.fileService.fileDownloadUrl" alt="">
 
-            <iframe *ngIf="this.selectedFileType == 'application/pdf' && safeFileUrl" [src]="this.safeFileUrl" type="application/pdf" width="40%" height="60px">
+            <iframe *ngIf="this.fileService.selectedFileType == 'application/pdf' && this.fileService.safeFileUrl" [src]="this.fileService.safeFileUrl" type="application/pdf" width="40%" height="60px">
                 Dein Browser unterstützt keine PDF-Anzeige
             </iframe>
 
-            <pre *ngIf="this.selectedFileType  == 'text/plain'" style="overflow: auto;"> 
+            <pre *ngIf="this.fileService.selectedFileType  == 'text/plain'" style="overflow: auto;"> 
                 <p>{{this.chatService.textContent}}</p>
             </pre>
 
-            <span> {{ selectedFileName }}</span>
+            <span> {{ this.fileService.selectedFileName }}</span>
             <label for="file-change" style="height: 24px;">
                 <img class="file-button-change" src="./assets/icons/edit.png" alt="Anhang ändern">
             </label>
 
             <input style="display: none;" id="file-change" type="file"
-            (change)="onChangeFileSelected($event, selectedFileName)" />
+            (change)="this.fileService.onChangeFileSelected($event, this.fileService.selectedFileName)" />
             
-            <img class="file-button-delete" (click)="deleteFile(selectedFileName); selectedFile = null;" 
+            <img class="file-button-delete" (click)="this.fileService.deleteFile(this.fileService.selectedFileName); this.fileService.selectedFile = null;" 
             src="./assets/icons/close.png" alt="Anhang löschen">
 
         </div>
         }
-        @if(this.audioDownloadUrl){
+        @if(this.audioService.audioDownloadUrl){
             <!-- Audio-Player anzeigen, falls eine Audiodatei vorhanden ist -->
             <div style="position: relative;">
                 <audio controls>
-                    <source [src]="this.audioDownloadUrl" type="audio/mpeg" />
+                    <source [src]="this.audioService.audioDownloadUrl" type="audio/mpeg" />
                         Your browser does not support the audio element.
                 </audio>
-                <img class="audio-button-delete" (click)="deleteAudio(this.audioDownloadUrl); this.audioDownloadUrl = '';" 
+                <img class="audio-button-delete" (click)="this.audioService.deleteAudio(this.audioService.audioDownloadUrl); this.audioService.audioDownloadUrl = '';" 
                 src="./assets/icons/close.png" alt="Anhang löschen">
             </div>
         }
@@ -591,18 +591,18 @@
                         <img src="./assets/icons/add-1.png" alt="" class="add-icon">
                     </label>
 
-                    <input style="display: none;" id="file-upload" type="file" (change)="onFileSelected($event)" />
+                    <input style="display: none;" id="file-upload" type="file" (change)="this.fileService.onFileSelectedChat($event)" />
                 </div>
 
                 <div class="audio-container">
 
                     <div 
-                    (mousedown)="startRecording($event)" (mouseup)="stopRecording($event)" 
-                    (touchstart)="startRecording($event)" (touchend)="stopRecording($event)" class="audio-button">
-                        <img [ngClass]="this.recordingAudio ? 'scale' : 'add-audio'" class="add-audio" [src]="this.recordingAudio ? './assets/icons/microphone_recording.png' : './assets/icons/microphone.png'" alt="">
+                    (mousedown)="this.audioService.startRecording($event)" (mouseup)="this.audioService.stopRecording($event)" 
+                    (touchstart)="this.audioService.startRecording($event)" (touchend)="this.audioService.stopRecording($event)" class="audio-button">
+                        <img [ngClass]="this.audioService.recordingAudio ? 'scale' : 'add-audio'" class="add-audio" [src]="this.audioService.recordingAudio ? './assets/icons/microphone_recording.png' : './assets/icons/microphone.png'" alt="">
                     </div>
-                    <div *ngIf="recordingAudio" class="record-container">
-                        <span class="letters">Halte zum Aufnehmen {{displayTime}}</span>
+                    <div *ngIf="this.audioService.recordingAudio" class="record-container">
+                        <span class="letters">Halte zum Aufnehmen {{this.audioService.displayTime}}</span>
                     </div>
                 </div>
 
@@ -633,11 +633,11 @@
             }
 
             <button (click)="sendDirectMessage(); 
-            selectedFile = null; 
-            this.selectedFileName = ''; 
-            this.fileDownloadUrl='';
-            this.audioDownloadUrl=''"
-            [disabled]="directMessage.invalid && !selectedFile && !this.safeAudioUrl">
+            this.fileService.selectedFile = null; 
+            this.fileService.selectedFileName = ''; 
+            this.fileService.fileDownloadUrl='';
+            this.audioService.audioDownloadUrl=''"
+            [disabled]="directMessage.invalid && !this.fileService.selectedFile && !this.audioService.audioDownloadUrl">
                 <img src="./assets/icons/Send icon.png">
             </button>
         </div>

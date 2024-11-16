@@ -11,10 +11,8 @@ import { SharedService } from './shared.service';
 export class ChatService {
   private userSubject = new BehaviorSubject<any>(null);
   user$ = this.userSubject.asObservable();
-
   private chatSubject = new BehaviorSubject<any>(null); // Haupt-Observable für den Chat
   chat$ = this.chatSubject.asObservable();
-
   chatId = '';
   userId = '';
   chatMessages: any[] = [];
@@ -54,7 +52,6 @@ export class ChatService {
         this.showChannel = true;
       }
     } 
-   
   }
 
 
@@ -178,7 +175,7 @@ export class ChatService {
               fileDownloadUrl: messageData['fileDownloadUrl'],
               fileName: messageData['fileName'],
               fileType: messageData['fileType'],
-              safeUrl: this.sanitizer.bypassSecurityTrustResourceUrl(messageData['fileDownloadUrl']),
+              safeFileUrl: this.sanitizer.bypassSecurityTrustResourceUrl(messageData['fileDownloadUrl']),
               reactionCelebrate: messageData['reactionCelebrate'],
               reactionCheck: messageData['reactionCheck'],
               reactionNerd: messageData['reactionNerd'],
@@ -288,7 +285,6 @@ export class ChatService {
 
   // Setze Daten für den editierten Chat
   async setEditedChatData(editedDM: string, message: any) {
-    debugger
     const chatId = message.chatId;
     const messageId = message.messageId;
     const text = editedDM;
@@ -369,8 +365,7 @@ export class ChatService {
     }
   }
 
-  //VERSION: OLIVER >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
+  //ungelesene Nachrichten
   private unreadCountMap = new Map<string, number>(); // Map für ungelesene Nachrichten pro Chat
   unreadCount$ = new BehaviorSubject<Map<string, number>>(this.unreadCountMap); // Observable für die UI
 
@@ -470,47 +465,7 @@ export class ChatService {
       this.unreadCountMap.set(chatId, 0);
       this.unreadCount$.next(this.unreadCountMap);
     });
-
   }
-
-
-
-
-
-  // VERSION: AXEL>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  //Im ChatService
-  private newMessageCountSubject = new BehaviorSubject<{ [userId: string]: number }>({});
-  newMessageCount$ = this.newMessageCountSubject.asObservable();
-
-  // Beispiel für eine modifizierte Methode im ChatService
-  async startListeningForNewMessages(currentUserId: string, lastLoginTimestamp: Date) {
-    const usersRef = collection(this.firestore, 'users');
-    const usersSnapshot = await getDocs(usersRef);
-
-    usersSnapshot.forEach(async (userDoc) => {
-      const userData = userDoc.data();
-      const userId = userDoc.id;
-
-      // Erstelle die Chat-ID basierend auf dem aktuellen Nutzer und dem Datenbank-Nutzer
-      const chatId = await this.createChatID(currentUserId, userId);
-      const messagesCollection = collection(this.firestore, `chats/${chatId}/messages`);
-
-      // Überwache die Nachrichten im Chat
-      onSnapshot(messagesCollection, (messagesSnapshot) => {
-        const newMessages = messagesSnapshot.docs.filter(doc => {
-          const messageData = doc.data();
-          const messageTimestamp = new Date(messageData["timestamp"]);
-          return messageData["senderID"] !== currentUserId && messageTimestamp > lastLoginTimestamp;
-        });
-
-        // Aktualisiere den Zähler der neuen Nachrichten für diesen Nutzer
-        const newMessageCount = newMessages.length;
-        const currentCounts = this.newMessageCountSubject.value;
-        this.newMessageCountSubject.next({ ...currentCounts, [userId]: newMessageCount });
-      });
-    });
-  }
-
 }
 
 
