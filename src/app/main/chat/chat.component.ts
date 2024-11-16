@@ -237,7 +237,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
 
   //öffnet das User Profil im Chatfenster
   openUserProfil(user: any) {
-    this.dialog.open(DialogUserProfilComponent, { data: user });
+    this.dialog.open(DialogUserProfilComponent, { data: {user: user} });
   };
 
 
