@@ -578,6 +578,8 @@
                     <source [src]="this.audioDownloadUrl" type="audio/mpeg" />
                         Your browser does not support the audio element.
                 </audio>
+                <img class="file-button-delete" (click)="deleteAudio(this.audioDownloadUrl); this.audioDownloadUrl = '';" 
+                src="./assets/icons/close.png" alt="Anhang löschen">
             </div>
         }
 
@@ -594,7 +596,9 @@
 
                 <div class="audio-container">
 
-                    <div (mousedown)="startRecording()" (mouseup)="stopRecording()" class="audio-button">
+                    <div 
+                    (mousedown)="startRecording($event)" (mouseup)="stopRecording($event)" 
+                    (touchstart)="startRecording($event)" (touchend)="stopRecording($event)" class="audio-button">
                         <img [ngClass]="this.recordingAudio ? 'scale' : 'add-audio'" class="add-audio" [src]="this.recordingAudio ? './assets/icons/microphone_recording.png' : './assets/icons/microphone.png'" alt="">
                     </div>
                     <div *ngIf="recordingAudio" class="record-container">

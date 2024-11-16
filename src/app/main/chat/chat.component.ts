@@ -386,9 +386,21 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
 
   private mediaRecorder: MediaRecorder | null = null;
   private audioChunks: Blob[] = [];
+  private isTouchEvent = false; // Verhindert doppelte Ausführung bei Touch und Maus
   recordingAudio: boolean = false;
 
-  async startRecording(){
+  async startRecording(event: MouseEvent | TouchEvent){
+    // Prüfen, ob es sich um ein Touch-Event handelt
+    if (event.type === 'touchstart') {
+      this.isTouchEvent = true;
+    }
+
+    // Verhindert Doppelereignisse (z. B. auf Touch-Laptops)
+    if (this.isTouchEvent && event.type === 'mousedown') {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
     this.safeAudioUrl = '';
     this.audioDownloadUrl = '';
     this.recordingAudio = true;
@@ -404,7 +416,18 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     this.mediaRecorder.start();
   }
   
-  stopRecording(){
+  stopRecording(event: MouseEvent | TouchEvent){
+    // Prüfen, ob es sich um ein Touch-Event handelt
+    if (event.type === 'touchend') {
+      this.isTouchEvent = true;
+    }
+
+    // Verhindert Doppelereignisse (z. B. auf Touch-Laptops)
+    if (this.isTouchEvent && event.type === 'mouseup') {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
     this.mediaRecorder?.stop();
     this.recordingAudio = false;
     this.resetTimer();
@@ -412,6 +435,10 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
       const audioBlob = new Blob(this.audioChunks, { type: 'audio/mpeg' });
       this.uploadAudio(audioBlob);
     });
+      // Zurücksetzen für zukünftige Ereignisse
+    if (event.type === 'touchend' || event.type === 'mouseup') {
+      this.isTouchEvent = false;
+    }
   }
 
   private seconds: number = 0;
@@ -458,20 +485,21 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     this.audioDownloadUrl = url;
     this.fileType = audioBlob.type;
     await this.loadSafeFile(this.audioDownloadUrl, this.fileType)
-    // URL der Audiodatei in Firestore speichern
-    //const messagesRef = collection(this.firestore, 'messages');
-    //await addDoc(messagesRef, {
-    //  audioUrl: downloadURL,
-    //  timestamp: new Date(),
-    //  // weitere Felder hinzufügen (z.B. Nutzer-ID)
-    //});
   }
 
-
-  ngOnDestroy(): void {
-    // Clear the interval to prevent memory leaks
-
-  }
+    //Audio löschen
+    deleteAudio(audioName: string) {
+      // Firebase Storage initialisieren
+      const storage = getStorage();
+      const fileRef = ref(storage, audioName);
+  
+      // Datei löschen
+      deleteObject(fileRef).then(() => {
+        console.log('Datei erfolgreich gelöscht');
+      }).catch((error) => {
+        console.error('Fehler beim Löschen der Datei:', error);
+      });
+    }
 
   //Emojis>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   showEmojis: boolean = false;
