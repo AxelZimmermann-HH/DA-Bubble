@@ -206,6 +206,17 @@ export class ChannelComponent {
 
   async sendEmail(email: string, message: string, fileUrl: string | null) {
     console.log(`E-Mail an ${email} gesendet mit Nachricht: ${message}`);
+    try {
+      const user =  this.userService.findUserByEmail(email);
+      if (!user) {
+        console.error(`Kein Benutzer mit der E-Mail-Adresse ${email} gefunden.`);
+        return;
+      }
+  
+      await this.sendDirectMessage(user.name, this.newMessageText, fileUrl);
+    } catch (error) {
+      console.error("Fehler beim Suchen des Benutzers: ", error);
+    }
   }
 
   async sendMessage() {
@@ -283,6 +294,7 @@ export class ChannelComponent {
       return null;
     }
   }
+
   async handleDirectMessageOrEmail(fileUrl: string | null) {
     const inputValue = this.inputValue.trim();
 

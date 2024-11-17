@@ -179,6 +179,10 @@ getUserNameById(userId: string): string | undefined {
     return this.userData.find(user => user.name === userName);
   }
 
+  findUserByEmail(email: string): User | undefined {
+    return this.userData.find((user: User) => user.mail.toLowerCase() === email.toLowerCase());
+  }
+
   openUserProfil(member: any) {
     this.dialog.open(DialogUserProfilComponent, {
       data: { user: member, isEditable: false } // Not editable from "Add Channel User"
