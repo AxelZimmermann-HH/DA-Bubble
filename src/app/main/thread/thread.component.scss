@@ -43,9 +43,11 @@
     height: calc(100% - 360px);
     scrollbar-width: none;
 }
-.thread-content-mobile{
-    height: calc(100% - 300px);  
+
+.thread-content-mobile {
+    height: calc(100% - 300px);
 }
+
 .message-main {
     display: flex;
     gap: 16px;
@@ -203,7 +205,7 @@
 }
 
 .speech-bubble {
-    width:auto;
+    width: auto;
     height: auto;
     padding: 15px;
     gap: 8px;
@@ -492,31 +494,37 @@
     margin: 0 20px;
 }
 
-@media (max-width: 768px) {
-    .thread-container {
-        height: calc(100vh - 90px);
-        border-radius:0;
-        position: absolute;
-        bottom: 0;
+@media (max-width:1024px) {
+    .separator .label-answers {
+        font-size: 14px;
     }
 
     .thread-container .thread-header {
         height: 45px;
-        padding:20px;
+        padding: 20px;
         font-size: 24px;
     }
-    .thread-container .thread-header img{
+}
+
+@media (max-width: 768px) {
+
+    .thread-container {
+        border-radius: 0;
+    }
+    .thread-container .thread-header{     border-radius: 0;}
+    .thread-container .thread-header img {
         width: 30px;
         height: 30px;
     }
-    .avatar{
+
+    .avatar {
         width: 40px;
         height: 40px;
     }
+
     .speech-bubble {
         font-size: 14px;
     }
-    .separator .label-answers{
-        font-size: 14px;
-    }
+
+
 }

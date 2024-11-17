@@ -35,34 +35,6 @@ export class AnswersService {
   }
 
 
-  // Fügt eine neue Antwort hinzu
-  async addAnswer(messageId: string, answer: Answer, channelId: string) {
-    const messageDocRef = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
-    try {
-      const messageDoc = await getDoc(messageDocRef);
-      if (messageDoc.exists()) {
-        await updateDoc(messageDocRef, {
-          answers: arrayUnion(answer.toJson())
-        });
-      }
-    } catch (error) {
-      console.error("Fehler beim Hinzufügen der Antwort: ", error);
-    }
-  }
-
-  async saveAnswerToFirestore(messageId: string, answer: Answer, channelId: string | null) {
-    const messageDocRef = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
-
-    try {
-      await updateDoc(messageDocRef, {
-        answers: arrayUnion(answer.toJson())
-      });
-      console.log("Antwort erfolgreich gespeichert");
-    } catch (error) {
-      console.error("Fehler beim Speichern der Antwort: ", error);
-    }
-  }
-
   editDirectAnswer(answer: Answer) {
     answer.isEditing = true;
     answer.editedText = answer.text;

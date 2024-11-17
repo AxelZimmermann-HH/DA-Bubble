@@ -2,7 +2,7 @@ import { Component, EventEmitter, HostListener, Input, Output, SimpleChanges } f
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
-import { arrayUnion, collection, doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
+import { addDoc, arrayUnion, collection, doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Answer } from '../../models/answer.class';
@@ -30,14 +30,10 @@ export class ThreadComponent {
 
   user = new User();
   userId!: string;
-  userData: User[] = [];
 
   newAnswerText: string = "";
 
   channel = new Channel();
-
-
-  allMessages: Message[] = [];
 
   showEmoji: boolean = false;
   showAnswerEmoji: boolean = false;
@@ -76,13 +72,12 @@ export class ThreadComponent {
     });
     this.subscribeToSearch();
     this.getAnswers(this.message.messageId);
-    this.answersService.getAnswers(this.message.messageId, this.channel.id)
+
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['message'] && this.message && this.message.messageId) {
       this.getAnswers(this.message.messageId);
-      this.answersService.getAnswers(this.message.messageId, this.channel.id)
     }
 
     if (changes['selectedChannelId'] && !changes['selectedChannelId'].isFirstChange()) {
@@ -102,7 +97,7 @@ export class ThreadComponent {
   }
 
   filterAnswers(term: string) {
-    this.filteredSearchAnswers = this.message.answers.filter((answer: any) => {
+    this.selectedAnswers = this.message.answers.filter((answer: any) => {
       const matchesUser = answer.user?.toLowerCase().includes(term.toLowerCase());
       const matchesText = answer.text?.toLowerCase().includes(term.toLowerCase());
 
@@ -117,14 +112,28 @@ export class ThreadComponent {
   }
 
   getAnswers(messageId: string) {
-    this.answersService.getAnswers(messageId, this.selectedChannelId!)
-      .subscribe((answers: Answer[]) => {
-        this.filteredSearchAnswers = answers;
-      });
+    const messageDocRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}`);
+
+    onSnapshot(
+      messageDocRef,
+      (docSnapshot) => {
+        if (docSnapshot.exists()) {
+          const messageData = docSnapshot.data();
+  
+          if (Array.isArray(messageData['answers'])) {
+            this.selectedAnswers = messageData['answers'].map((a: any) => new Answer(a));
+          } else {
+            this.selectedAnswers = [];
+          }
+        }
+      },
+      (error) => {
+        console.error('Fehler beim Abrufen der Antworten:', error);
+      }
+    );
   }
 
   async addAnswer(messageId: string) {
-
     if (this.newAnswerText.trim() === '' && !this.selectedFile) return;
 
     const username = this.userService.findUserNameById(this.userId);
@@ -142,20 +151,27 @@ export class ThreadComponent {
       ...(fileUrl && { fileUrl, fileType: this.selectedFile?.type, fileName: this.selectedFile?.name }),
     });
 
-    this.selectedAnswers.push(answer);
-    this.answersService.saveAnswerToFirestore(messageId, answer, this.selectedChannelId);
+    const messageDocRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}`);
+    try {
+      await updateDoc(messageDocRef, {
+        answers: arrayUnion(answer.toJson())
+      });
+    } catch (error) {
+      console.error("Fehler beim Speichern der Antwort: ", error);
+    }
 
-    this.getAnswers(this.message.messageId);
+    this.getAnswers(messageId);
     this.newAnswerText = '';
     this.selectedFile = null;
   }
 
+
   async uploadFileIfSelected() {
     if (!this.selectedFile) return null;
-  
+
     const filePath = `files/${this.selectedFile.name}`;
     const storageRef = ref(getStorage(), filePath);
-  
+
     try {
       const snapshot = await uploadBytes(storageRef, this.selectedFile);
       return await getDownloadURL(snapshot.ref);
@@ -346,7 +362,6 @@ export class ThreadComponent {
     this.selectedFile = null;
   }
 
-
   @HostListener('document:click', ['$event'])
   onClick(event: MouseEvent) {
     const searchList = document.querySelector('.searchListe');
@@ -364,15 +379,12 @@ export class ThreadComponent {
     }
   }
 
-
   selectUser(user: User) {
     this.newAnswerText += `@${user.name}`;
     this.taggedUser = false;
   }
 
-
   closeThread() {
     this.threadClosed.emit();
   }
-
 }
