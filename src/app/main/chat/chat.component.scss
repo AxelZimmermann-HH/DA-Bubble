@@ -442,6 +442,8 @@
             .bottom-container{
               display: flex;
               justify-content: space-between;
+              align-items: center;
+              gap: 32px;
             }
 
             .button-container{
@@ -729,9 +731,22 @@
 }
 
 emoji-mart{
-        position: absolute;
+        //position: absolute;
+        //z-index: 99;
         transform: translateY(-100%);
         width: 300px;
+}
+
+.add-emoji-edit{
+    display: inline-block;
+    transition: transform 0.3s ease, background 0.3s ease;
+    vertical-align: middle;
+    border-radius: 40px;
+    width: 30px;
+    &:hover{
+        cursor: pointer;
+        content: url('./../../../assets/icons/sentiment_satisfied-2.png');
+    }
 }
 
 .reaction-container{

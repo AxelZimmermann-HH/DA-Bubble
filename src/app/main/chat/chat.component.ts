@@ -281,9 +281,14 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
 
   //Emojis>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   showEmojis: boolean = false;
+  showEditEmojis: boolean = false;
 
-  toogleEmojis() {
+  toggleEmojis() {
     this.showEmojis = !this.showEmojis;
+  }
+
+  toggleEmojisEdit(){
+    this.showEditEmojis = !this.showEditEmojis;
   }
 
 
@@ -293,6 +298,13 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     const currentMessageValue = this.directMessage.value || '';
     this.directMessage.setValue(currentMessageValue + emoji);
     this.showEmojis = false;
+  }
+
+  onEmojiSelectEdit(event: any){
+    const emoji = event.emoji.native; // Das ausgewählte Emoji
+    const currentMessageValue = this.editedMessage.value || '';
+    this.editedMessage.setValue(currentMessageValue + emoji);
+    this.showEditEmojis = false;
   }
 
 
