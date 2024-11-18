@@ -19,6 +19,7 @@ import { MessagesService } from '../../services/messages.service';
 import { ChannelService } from '../../services/channel.service';
 import { FileService } from '../../services/file.service';
 import { EmojisService } from '../../services/emojis.service';
+import { DatabaseService } from '../../services/database.service';
 
 interface MessageGroup {
   date: string;
@@ -92,7 +93,7 @@ export class ChannelComponent {
     public chatService: ChatService,
     public searchService: SearchService,
     public fileService: FileService,
-
+    public dbService: DatabaseService
   ) { }
 
   ngOnInit() {
@@ -368,7 +369,7 @@ export class ChannelComponent {
     const chatExists = await this.chatService.doesChatExist(chatId);
 
     if (!chatExists) {
-      await this.chatService.createNewChat(chatId, this.userId, receiverID);
+      await this.dbService.createNewChat(chatId, this.userId, receiverID);
     }
     return chatId;
   }

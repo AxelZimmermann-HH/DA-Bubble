@@ -4,6 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 import { directMessage } from '../models/directMessage.class';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { SharedService } from './shared.service';
+import { DatabaseService } from './database.service';
 
 @Injectable({
   providedIn: 'root'
@@ -25,7 +26,7 @@ export class ChatService {
   textContent: string | null = null;
   safeUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
 
-  constructor(public firestore: Firestore, private sanitizer: DomSanitizer, public sharedService: SharedService) {
+  constructor(public firestore: Firestore, private sanitizer: DomSanitizer, public sharedService: SharedService, public dbService: DatabaseService) {
     this.showChannel = true;
     this.showChat = false;
     if(this.sharedService.isMobile){
@@ -80,7 +81,7 @@ export class ChatService {
     if (querySnapshot.empty) {
 
       //legt neuen Chat an, wenn kein Chat existiert
-      await this.createNewChat(chatId, currentUserId, userId);
+      await this.dbService.createNewChat(chatId, currentUserId, userId);
       this.chatId = chatId;
       console.log('chat nicht gefunden');
 
@@ -99,6 +100,7 @@ export class ChatService {
     this.getUserData(userId);
   };
 
+
   // Methode zum Aktualisieren der ungelesenen Nachrichten-Zähler
   updateUnreadCounts(chatId: string) {
     // Hier kannst du den Zähler für ungelesene Nachrichten zurücksetzen, da der Chat geöffnet wurde
@@ -110,22 +112,6 @@ export class ChatService {
   //erstellt eine Chat-ID aus den Nutzer ID's
   async createChatID(myUserId: string, userId: string) {
     return [myUserId, userId].sort().join('_');
-  };
-
-
-  //erstellt einen neuen Chat
-  async createNewChat(chatId: string, myUserId: string, userId: string) {
-
-    const collectionRef = "chats";
-    try {
-      const docRef = doc(this.firestore, collectionRef, chatId);
-      await setDoc(docRef, {
-        users: [myUserId, userId]
-      });
-      console.log("Chat erfolgreich hinzugefügt mit der ID:", chatId);
-    } catch (error) {
-      console.error("Fehler beim Hinzufügen des Chats: ", error);
-    };
   };
 
 
@@ -266,20 +252,8 @@ export class ChatService {
     newDirectMessage.audioDownloadUrl = audioDownloadUrl;
     const dmData = newDirectMessage.toJson();
 
-    await this.saveNewDirectMessage(dmData);
+    await this.dbService.saveNewDirectMessage(dmData, this.chatId);
     await this.getChatData(this.chatId)
-  };
-
-
-  // Neue Nachricht speichern
-  async saveNewDirectMessage(dmData: any) {
-    try {
-      console.log('Speichere neue Direktnachricht mit Daten:', dmData);
-      const docRef = await addDoc(collection(this.firestore, 'chats', this.chatId, 'messages'), dmData);
-      await updateDoc(docRef, { messageId: docRef.id });
-    } catch (error: any) {
-      console.error('Fehler beim Erstellen der Nachricht:', error);
-    }
   };
 
 
@@ -288,20 +262,7 @@ export class ChatService {
     const chatId = message.chatId;
     const messageId = message.messageId;
     const text = editedDM;
-    this.saveEditedMessage(chatId, messageId, text);
-  };
-
-
-  // Bearbeitete Nachricht speichern
-  async saveEditedMessage(chatId: string, messageId: string, text: any) {
-    try {
-      await updateDoc(doc(this.firestore, 'chats', chatId, 'messages', messageId), {
-        'text': text
-      }
-      );
-    } catch (error: any) {
-      console.error('Fehler beim Erstellen der Nachricht:', error);
-    }
+    this.dbService.saveEditedMessage(chatId, messageId, text);
   };
 
 
@@ -402,11 +363,8 @@ export class ChatService {
           } else {
             this.unreadCountMap.delete(chatId); // Entferne den Zähler, wenn keine ungelesenen Nachrichten vorhanden sind
           }
-          console.log(this.unreadCountMap)
           // Aktualisiere die Map, damit alle Abonnenten benachrichtigt werden
           this.unreadCount$.next(new Map(this.unreadCountMap));
-          console.log('ungelesen:', this.unreadCountMap)
-
         });
       });
     });
@@ -449,8 +407,6 @@ export class ChatService {
 
       snapshot.forEach((messageDoc) => {
         const messageRef = doc(this.firestore, `chats/${chatId}/messages/${messageDoc.id}`);
-
-        console.log(`Aktualisiere Nachricht mit ID: ${messageDoc.id}`);
 
         updateDoc(messageRef, { isRead: true })
           .then(() => {

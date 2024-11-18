@@ -484,7 +484,7 @@
                                             class="edit-message-container">
 
                                             <textarea class="edit-textarea" [formControl]="editedMessage"></textarea>
-                                            <div *ngIf="message.fileName" class="file-container">
+                                            <div *ngIf="message.fileName" class="edit-file-container">
                                                 <span>{{message.fileName}}</span>
 
                                                 <img *ngIf="message.fileType == 'image/jpeg' || message.fileType == 'image/png'" class="preview-img" [src]="message.fileDownloadUrl" alt="">
@@ -495,6 +495,12 @@
 
                                                 <pre *ngIf="message.fileType == 'text/plain'" style="overflow: auto;"> <p>{{this.chatService.textContent}}</p></pre>
                                             </div>
+                                            <div style="position: relative;" *ngIf="message.audioDownloadUrl">
+                                                <audio controls>
+                                                    <source [src]="message.audioDownloadUrl" type="audio/mpeg" />
+                                                        Your browser does not support the audio element.
+                                                </audio>
+                                            </div>
                                             <div class="bottom-container">
                                                 <div class="reactions">
                                                     <img src="./assets/icons/sentiment_satisfied-1.png" alt=""
@@ -502,6 +508,10 @@
                                                 </div>
 
                                                 <div class="button-container">
+                                                    <button class="delete-message-button" 
+                                                    (click)="this.dbService.deleteMessage(message.chatId, message.messageId)">
+                                                        Löschen
+                                                    </button>
                                                     <button class="cancel-button" (click)="cancelEditing()">
                                                         Abbrechen
                                                     </button>

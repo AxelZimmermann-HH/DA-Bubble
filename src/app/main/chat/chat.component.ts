@@ -15,6 +15,7 @@ import { doc, Firestore, updateDoc } from '@angular/fire/firestore';
 import { ChangeDetectorRef } from '@angular/core';
 import { AudioService } from '../../services/audio.service';
 import { FileService } from '../../services/file.service';
+import { DatabaseService } from '../../services/database.service';
 
 interface MessageGroup {
   date: string;
@@ -64,6 +65,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     private cdr: ChangeDetectorRef,
     public audioService: AudioService,
     public fileService: FileService,
+    public dbService: DatabaseService
   ) { }
 
 
@@ -217,7 +219,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
       const chatExists = await this.chatService.doesChatExist(chatId);
   
       if (!chatExists) {
-        await this.chatService.createNewChat(chatId, this.currentUserId, user.userId);
+        await this.dbService.createNewChat(chatId, this.currentUserId, user.userId);
       }
   
       await this.chatService.sendMessageToChat(chatId, newDm, fileDownloadUrl, fileName, fileType, this.currentUserId);
