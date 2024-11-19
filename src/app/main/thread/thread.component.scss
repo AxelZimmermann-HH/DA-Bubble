@@ -100,17 +100,17 @@
     padding: 0 20px;
 
     .label-answers {
-        font-size: 18px;
+        font-size: 14px;
         font-weight: 400;
         color: rgba(83, 90, 241, 1);
-        width: 30%;
+        width: 40%;
         margin: 0;
     }
 
     hr {
         border: 1px solid rgb(173, 176, 217);
         height: 0;
-        width: 70%;
+        width: 60%;
     }
 }
 
@@ -205,7 +205,7 @@
 }
 
 .speech-bubble {
-    width: auto;
+    width: -webkit-fill-available;
     height: auto;
     padding: 15px;
     gap: 8px;
@@ -222,6 +222,9 @@
 .current-user:hover .border-radius {
     background-color: rgba(121, 126, 243, 1) !important;
     color: rgba(255, 255, 255, 1);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .border-radius {
@@ -392,7 +395,8 @@
     border-radius: 30px;
     background-color: #444DF2;
     color: #FFFFFF;
-    padding: 12px 25px;
+    padding: 12px;
+    font-size: 14px;
     width: fit-content;
     text-decoration: none;
     transition: all 100ms ease-out;

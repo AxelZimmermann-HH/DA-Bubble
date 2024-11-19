@@ -83,7 +83,6 @@ export class UserService {
 
   getAvatarForUser(userName: string) {
     if (!this.userData || this.userData.length === 0) {
-    
       return './assets/avatars/avatar_1.png';
     }
 

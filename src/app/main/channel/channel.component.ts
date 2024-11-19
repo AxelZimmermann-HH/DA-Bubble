@@ -125,7 +125,6 @@ export class ChannelComponent {
       this.channelService.loadChannel(this.selectedChannelId).then(() => {
         this.messagesService.getAllMessages(this.selectedChannelId, () => {
           this.filteredSearchMessages = this.messagesService.allMessages;
-          console.log('filtered messages: ', this.filteredSearchMessages);
           this.isLoading = false;
         });
       }).catch(error => {
@@ -206,15 +205,15 @@ export class ChannelComponent {
   }
 
   async sendEmail(email: string, message: string, fileUrl: string | null) {
-    console.log(`E-Mail an ${email} gesendet mit Nachricht: ${message}`);
+
     try {
-      const user =  this.userService.findUserByEmail(email);
+      const user = this.userService.findUserByEmail(email);
       if (!user) {
         console.error(`Kein Benutzer mit der E-Mail-Adresse ${email} gefunden.`);
         return;
       }
-  
-      await this.sendDirectMessage(user.name, this.newMessageText, fileUrl);
+
+      await this.sendDirectMessage(user.name, message, fileUrl);
     } catch (error) {
       console.error("Fehler beim Suchen des Benutzers: ", error);
     }
@@ -242,7 +241,6 @@ export class ChannelComponent {
       return;
     }
 
-
     const taggedUsernames = this.extractTaggedUsernames(this.newMessageText);
 
     const userName = this.userService.findUserNameById(this.userId);
@@ -266,6 +264,8 @@ export class ChannelComponent {
     this.resetInput();
   }
 
+
+ 
   extractTaggedUsernames(message: string): string[] {
     const tagRegex = /@([A-Za-z0-9_]+)/g; // Akzeptiert auch Namen mit Leerzeichen
     const taggedUsernames = [];

@@ -27,7 +27,9 @@ export class DialogEditChannelComponent {
   userData: any = [];
   user = new User();
   isEditing = false;
+  isHovered = false;
   isEditingDescription = false;
+  isHoveredDescription = false;
   newChannelName!: string;
   newChannelDescription!: string;
 
@@ -83,10 +85,15 @@ export class DialogEditChannelComponent {
     this.isEditing = false;
   }
 
-  toggleDescriptionEdit() { this.isEditingDescription = !this.isEditingDescription;; }
+  toggleDescriptionEdit() {
+    this.isEditingDescription = !this.isEditingDescription;
+    if (this.isEditingDescription) {
+      this.newChannelDescription = this.channel.channelDescription; 
+    }
+  }
 
   saveChannelDescription() {
-    if (this.newChannelDescription.trim()) {
+    if (this.newChannelDescription && this.newChannelDescription.trim()) {
       // Update the channel description in Firestore
       const channelDocRef = doc(this.firestore, 'channels', this.channel.id);
       updateDoc(channelDocRef, { channelDescription: this.newChannelDescription })
@@ -99,6 +106,16 @@ export class DialogEditChannelComponent {
         });
     }
     this.isEditingDescription = false; // Exit edit mode
+  }
+
+  getIconSrc() {
+    return this.isEditingDescription
+      ? this.isHoveredDescription
+        ? './assets/icons/check_circle-1.png'
+        : './assets/icons/check_circle.png'
+      : this.isHoveredDescription
+      ? './assets/icons/edit-1.png'
+      : './assets/icons/edit.png';
   }
 
   openDialogAddUser() {

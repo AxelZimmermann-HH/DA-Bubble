@@ -1,5 +1,5 @@
 <div class="channel-body">
-    <div  *ngIf="channelService.selectedChannel else loadingTemplate"   [ngClass]="sharedService.isMobile && isThreadOpen ? 'channel-container-mobile' : 'channel-container' "  >
+    <div  *ngIf="channelService.selectedChannel else loadingTemplate"   [ngClass]=" 'channel-container' "  >
         <div class="channel-header">
             <button class="edit-channel"
                 (click)="this.channelService.openDialogEditChannel(channelService.selectedChannel)">

@@ -45,7 +45,7 @@ export class AddChannelUserComponent {
 
   getAllUsers() {
     const userCollection = collection(this.firestore, 'users');
-    const readUsers = onSnapshot(userCollection, (snapshot) => {
+     onSnapshot(userCollection, (snapshot) => {
       this.userData = [];
       snapshot.forEach((doc) => {
         let user = new User({ ...doc.data(), id: doc.id });
@@ -54,9 +54,7 @@ export class AddChannelUserComponent {
       console.log('current users', this.userData);
     });
   }
-
- 
-
+  
   openDialogAddUser() {
     this.dialogRef.close()
     this.dialog.open(DialogAddUserComponent, {
