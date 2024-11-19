@@ -33,15 +33,11 @@ export class MenuComponent {
   channelIcon2: string = 'workspaces.png';
   addChannelIcon = 'add_circle.png';
   addChannelIcon1 = 'add-1.png';
-
   dmIcon1 = 'arrow_drop_down.png';
   dmIcon2 = 'account_circle.png';
-
   openCloseIcon = "Hide-navigation.png";
   showMenu: boolean = true;
   openCloseButtonText = 'Workspace-Menü schließen';
-
-
   userData: any[] = [];
   filteredUsers: any[] = [];
   channelData: any[] = [];
@@ -49,17 +45,14 @@ export class MenuComponent {
   showChannel: boolean = true;
   showUser: boolean = true;
   openChatWithID: string = '';
-
   currentUserId: string = '';
   currentUser: any;
-
   userId!: string;
   selectedChannel: any = null;
   public unreadCounts = new Map<string, number>();
 
   @Output() channelSelected = new EventEmitter<any>();
   @Output() chatSelected = new EventEmitter<void>();
-
 
   async ngOnInit() {
     await this.getAllChannels('channels');
@@ -86,14 +79,15 @@ export class MenuComponent {
     // Abonniere die ungelesenen Zähler für alle Chats
     this.chatService.unreadCount$.subscribe((counts) => {
       this.unreadCounts = counts;
-      console.log(this.unreadCounts)
     });
 
   }
 
+
   createChatID(myUserId: string, userId: string) {
     return [myUserId, userId].sort().join('_');
   };
+
 
   subscribeToSearch() {
     this.sharedService.searchTerm$.subscribe((term) => {
@@ -105,6 +99,7 @@ export class MenuComponent {
     });
   }
 
+
   filterData(term: string) {
     this.filteredChannels = this.channelData.filter((channel: any) =>
       channel.channelName.toLowerCase().includes(term.toLowerCase())
@@ -113,6 +108,7 @@ export class MenuComponent {
       user.name.toLowerCase().includes(term.toLowerCase())
     );
   }
+
 
   resetFilteredData() {
     this.filteredChannels = this.channelData;
@@ -185,14 +181,12 @@ export class MenuComponent {
             mail: user['mail'],
             online: user['online'],
           };
-
         });
 
         this.filteredUsers = this.userData;
         this.filteredUsers.forEach(user => {
           user.chatId = this.createChatID(this.currentUserId, user.userId);
         });
-        console.log(this.filteredUsers)
       },
       (error) => {
         console.error('Fehler beim laden der User-Daten:', error);
@@ -269,13 +263,13 @@ export class MenuComponent {
   }
 
 
-
   //öffnet einen ausgewählten channel
   onChannelClick(channel: any) {
     this.selectedChannel = channel;
     this.channelSelected.emit(channel);
     this.selectedChannel.id = channel.id;
   }
+
 
   //Öffnet eine neue Nachricht
   onNewMessageClick() {
@@ -285,17 +279,18 @@ export class MenuComponent {
       this.channelSelected.emit(null);
     }
     this.channelSelected.emit(null);
-    console.log('shared Mobile:', this.sharedService.isMobile);
-    
   }
+
 
   trackByChannelId( channel: any): string {
     return channel.id;  // Optimiert die Performance von *ngFor
   }
 
+
   selectChat() {
     this.chatSelected.emit();
   }
+
 
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
@@ -308,61 +303,4 @@ export class MenuComponent {
     }
     return './assets/avatars/avatar_0.png';  // Default avatar when user not found
   }
-
-
-
-
-
-
-
-
-  //öffnet den PvP Chat
-  //async openDirectMessage(currentUserId:string, userId:string){
-  //  
-  //  this.chatService.chatIsEmpty = true;
-  //  this.chatService.chatMessages = []
-  //  const chatId = await this.createChatID(currentUserId, userId);
-  //  const checkIfChatExists = query(collection(this.firestore, "chats"), where(documentId(), "==", chatId));
-  //  const querySnapshot = await getDocs(checkIfChatExists);
-  //  
-  //  if (querySnapshot.empty) {
-  //
-  //    //legt neuen Chat an, wenn kein Chat existiert
-  //    await this.createNewChat(chatId, currentUserId, userId);
-  //    this.chatService.chatId = chatId;
-  //    console.log('chat nicht gefunden');
-  //
-  //  } else {
-  //
-  //    //öffnet den vorhanden Chat
-  //    querySnapshot.forEach((doc) => {
-  //      this.chatService.getChatData(chatId);
-  //      console.log('chat gefunden:', doc.id, '=>', doc.data());
-  //    });
-  //
-  //  }
-  //  this.chatService.getUserData(userId);
-  //};
-  //
-  //
-  ////erstellt eine Chat-ID aus den Nutzer ID's
-  //async createChatID(myUserId:string, userId:string){
-  //  return [myUserId, userId].sort().join('_');
-  //};
-  //
-  //
-  ////erstellt einen neuen Chat
-  //async createNewChat(chatId: string, myUserId: string, userId:string){
-  //
-  //  const collectionRef = "chats"; 
-  //  try {
-  //    const docRef = doc(this.firestore, collectionRef, chatId);
-  //    await setDoc(docRef, {
-  //      users: [myUserId, userId]
-  //    });
-  //    console.log("Chat erfolgreich hinzugefügt mit der ID:", chatId);
-  //  } catch (error) {
-  //    console.error("Fehler beim Hinzufügen des Chats: ", error);
-  //  };
-  //};
-};//
+};

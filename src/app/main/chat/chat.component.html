@@ -484,7 +484,7 @@
                                             class="edit-message-container">
 
                                             <textarea class="edit-textarea" [formControl]="editedMessage"></textarea>
-                                            <emoji-mart *ngIf="showEditEmojis" 
+                                            <emoji-mart class="chat-emoji-picker" *ngIf="showEditEmojis" 
                                                 set="google"
                                                 [emojiSize]="24"
                                                 (emojiSelect)="onEmojiSelectEdit($event)">
@@ -509,7 +509,7 @@
                                             <div class="bottom-container">  
                                                 <div>
                                                     <img src="./assets/icons/sentiment_satisfied-1.png" 
-                                                    (click)="toggleEmojisEdit()" alt="" class="add-emoji-edit">
+                                                    (click)="toggleEmojisEdit($event)" alt="" class="add-emoji-edit">
                                                 </div>
                                                 <div class="button-container">
                                                     <button class="delete-message-button" 
@@ -542,7 +542,7 @@
     <div class="custom-input" [ngClass]="this.sharedService.isMobile ? 'mobile-custom-input' : 'custom-input'">
         <textarea contenteditable="true" placeholder="Nachricht an {{ user.name }}" class="text-area" [formControl]="directMessage"></textarea>
         <div>
-            <emoji-mart *ngIf="showEmojis" 
+            <emoji-mart class="chat-emoji-picker" *ngIf="showEmojis" 
                 set="google"
                 [emojiSize]="24"
                 (emojiSelect)="onEmojiSelect($event)">
@@ -558,10 +558,12 @@
             </div>
           </div>
 
+          <span style="color: red;" *ngIf="this.fileService.fileSize">Datei ist zu groß! max. 500kB</span>
+          <span style="color: red;" *ngIf="this.fileService.fileType">Erlaubte Dateitypen: jpg, png, pdf!</span>
 
         @if (this.fileService.selectedFile) { <!-- Datei-Anzeige -->
         <div class="file-upload-container">
-
+            
             <img *ngIf="this.fileService.selectedFileType == 'image/jpeg' || this.fileService.selectedFileType  == 'image/png'" style="height: 60px; width: 40%;object-fit: contain;" [src]="this.fileService.fileDownloadUrl" alt="">
 
             <iframe *ngIf="this.fileService.selectedFileType == 'application/pdf' && this.fileService.safeFileUrl" [src]="this.fileService.safeFileUrl" type="application/pdf" width="40%" height="60px">
@@ -611,8 +613,8 @@
                 <div class="audio-container">
 
                     <div 
-                    (mousedown)="this.audioService.startRecording($event)" (mouseup)="this.audioService.stopRecording($event)" 
-                    (touchstart)="this.audioService.startRecording($event)" (touchend)="this.audioService.stopRecording($event)" class="audio-button">
+                        (mousedown)="this.audioService.startRecording($event)" (mouseup)="this.audioService.stopRecording($event)" 
+                        (touchstart)="this.audioService.startRecording($event)" (touchend)="this.audioService.stopRecording($event)" class="audio-button">
                         <img [ngClass]="this.audioService.recordingAudio ? 'scale' : 'add-audio'" class="add-audio" [src]="this.audioService.recordingAudio ? './assets/icons/microphone_recording.png' : './assets/icons/microphone.png'" alt="">
                     </div>
                     <div *ngIf="this.audioService.recordingAudio" class="record-container">
@@ -620,13 +622,8 @@
                     </div>
                 </div>
 
-
                 <div style="height: 50px; width: 1px; background-color: rgba(104, 104, 104, 1);"></div>
-                <img src="./assets/icons/sentiment_satisfied-1.png" (click)="toggleEmojis()" alt="" class="add-emoji">
-              
-                    
-
-               
+                <img src="./assets/icons/sentiment_satisfied-1.png" (click)="toggleEmojis($event)" alt="" class="add-emoji">
                 <img src="./assets/icons/alternate_email-1.png" (click)="toggleUserList()" alt="" class="add-mail">
 
             </div>

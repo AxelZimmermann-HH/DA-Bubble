@@ -84,15 +84,39 @@ export class FileService {
   selectedFileName: string = '';  // Neuer Dateiname-String
   selectedFileType: string = '';
   safeFileUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
-
+  fileSize: boolean = false;
+  fileType: boolean = false;
 
   //Datei hinzufügen
   onFileSelectedChat(event: Event) {
     const input = event.target as HTMLInputElement;
+
+    if (!input.files || input.files.length === 0) {
+      return; // Keine Datei ausgewählt
+    }
+
+    const file = input.files[0]
+    const maxSize = 500 * 1024; // 500 kB in Bytes
+    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+
     if (input.files && input.files[0]) {
-      this.selectedFile = input.files[0];
-      this.selectedFileName = this.selectedFile.name;  // Dateiname speichern
-      this.selectedFileType = input.files[0]['type'];
+      if(!allowedTypes.includes(file.type)){
+        this.fileType = true;
+        setTimeout(() => {
+          this.fileType = false;
+        }, 3000);
+        return;
+      }
+      if(file.size > maxSize){
+        this.fileSize = true;
+        setTimeout(() => {
+          this.fileSize = false;
+        }, 3000);
+        return;
+      }
+      this.selectedFile = file;
+      this.selectedFileName = file.name;  // Dateiname speichern
+      this.selectedFileType = file.type;
       this.uploadFile()
     }
   }
@@ -102,11 +126,34 @@ export class FileService {
   async onChangeFileSelected(event: Event, fileToDelete: string) {
     this.deleteFile(fileToDelete); //Alte Datei löschen
     const input = event.target as HTMLInputElement;
+
+    if (!input.files || input.files.length === 0) {
+      return; // Keine Datei ausgewählt
+    }
+
+    const file = input.files[0]
+    const maxSize = 500 * 1024; // 500 kB in Bytes
+    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+
     if (input.files && input.files[0]) {
-      this.selectedFile = input.files[0];
-      this.selectedFileName = this.selectedFile.name;  // Dateiname speichern
-      this.selectedFileType = input.files[0]['type'];
-      await this.uploadFile()
+      if(!allowedTypes.includes(file.type)){
+        this.fileType = true;
+        setTimeout(() => {
+          this.fileType = false;
+        }, 3000);
+        return;
+      }
+      if(file.size > maxSize){
+        this.fileSize = true;
+        setTimeout(() => {
+          this.fileSize = false;
+        }, 3000);
+        return;
+      }
+      this.selectedFile = file;
+      this.selectedFileName = file.name;  // Dateiname speichern
+      this.selectedFileType = file.type;
+      this.uploadFile()
     }
   }
   
@@ -128,14 +175,9 @@ export class FileService {
     if (!this.selectedFile) return;
 
     try {
-      // Initialisiere Firebase Storage
       const storage = getStorage();
       const storageRef = ref(storage, `files/${this.selectedFileName}`);
-
-      // Lade die Datei hoch
       const snapshot = await uploadBytes(storageRef, this.selectedFile);
-
-      // Hol die URL der hochgeladenen Datei
       const url = await getDownloadURL(snapshot.ref);
       this.fileDownloadUrl = url;
 
@@ -143,6 +185,7 @@ export class FileService {
         console.log('Lade die Datei von URL:', this.fileDownloadUrl);
         await this.loadSafeFile(this.fileDownloadUrl, this.selectedFileType)
       }
+
       if (this.selectedFileType == 'text/plain') {
         await this.chatService.fetchTextFile(this.fileDownloadUrl)
       }

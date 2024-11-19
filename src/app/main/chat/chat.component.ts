@@ -1,4 +1,4 @@
-import { AfterViewChecked, AfterViewInit, Component, ElementRef, ViewChild, HostListener } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, ElementRef, ViewChild, HostListener, Renderer2, OnDestroy } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
 import { CommonModule } from '@angular/common';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -29,8 +29,8 @@ interface MessageGroup {
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss']
 })
-export class ChatComponent implements AfterViewInit, AfterViewChecked {
-
+export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy {
+  private documentClickListener?: () => void;
   directMessage = new FormControl('', [Validators.required, Validators.minLength(2)]);
   editedMessage = new FormControl('', [Validators.required, Validators.minLength(2)]);
   file = new FormControl('', [Validators.required, Validators.minLength(2)]);
@@ -65,7 +65,9 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     private cdr: ChangeDetectorRef,
     public audioService: AudioService,
     public fileService: FileService,
-    public dbService: DatabaseService
+    public dbService: DatabaseService,
+    private renderer: Renderer2,
+    private elementRef: ElementRef
   ) { }
 
 
@@ -114,7 +116,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
     this.scrollToBottom();
   };
 
-
+  
   async ngOnInit() {
     // Abonniere Benutzerdaten
     this.chatService.user$.subscribe((userData) => {
@@ -149,6 +151,27 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
       }
     });
     this.subscribeToSearch();
+
+     // Listener auf das gesamte Dokument
+     this.documentClickListener = this.renderer.listen('document', 'click', (event: MouseEvent) => {
+      const emojiPicker = this.elementRef.nativeElement.querySelector('.chat-emoji-picker');
+      
+      // Prüfen, ob der Klick außerhalb des Emoji-Pickers ist
+      if (
+        (this.showEmojis || this.showEditEmojis) &&
+        emojiPicker &&
+        !emojiPicker.contains(event.target as Node)
+      ) {
+        this.closeEmojiPicker();
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    // Entfernt den Listener, um Speicherlecks zu vermeiden
+    if (this.documentClickListener) {
+      this.documentClickListener();
+    }
   }
 
 
@@ -283,11 +306,19 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked {
   showEmojis: boolean = false;
   showEditEmojis: boolean = false;
 
-  toggleEmojis() {
+  private closeEmojiPicker() {
+    this.showEmojis = false;
+    this.showEditEmojis = false;
+  }
+
+
+  toggleEmojis(event: any) {
+    event.stopPropagation();
     this.showEmojis = !this.showEmojis;
   }
 
-  toggleEmojisEdit(){
+  toggleEmojisEdit(event: any){
+    event.stopPropagation();
     this.showEditEmojis = !this.showEditEmojis;
   }
 
