@@ -616,7 +616,7 @@
                         <img [ngClass]="this.audioService.recordingAudio ? 'scale' : 'add-audio'" class="add-audio" [src]="this.audioService.recordingAudio ? './assets/icons/microphone_recording.png' : './assets/icons/microphone.png'" alt="">
                     </div>
                     <div *ngIf="this.audioService.recordingAudio" class="record-container">
-                        <span class="letters">Halte zum Aufnehmen {{this.audioService.displayTime}}</span>
+                        <span [ngClass]="this.sharedService.isMobile ? 'letters-mobile' : 'letters'" class="letters">Halte zum Aufnehmen {{this.audioService.displayTime}}</span>
                     </div>
                 </div>
 
