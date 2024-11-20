@@ -31,12 +31,13 @@
         <div class="input">
             <img [ngStyle]="{'width': '16px'}" src="./assets/icons/login-lock.svg" alt="">
             <input name="passwordInput" 
-            [(ngModel)]="user.password" 
-            required 
-            placeholder="Passwort (min. 6 Zeichen)" 
-            [placeholder]="validPassword ? 'Passwort (min. 6 Zeichen)' : 'Falsches Passwort!'"
-            [ngClass]="{'placeholder-error': !validPassword}"
-            type="password" />
+                [(ngModel)]="user.password" 
+                required 
+                placeholder="Passwort (min. 6 Zeichen)" 
+                [placeholder]="validPassword ? 'Passwort (min. 6 Zeichen)' : 'Falsches Passwort!'" 
+                [ngClass]="{'placeholder-error': !validPassword}" 
+                type="password" 
+                (blur)="checkEmail()" />
         </div>
 
         <a (click)="goToPasswordReset()">Passwort vergessen?</a>

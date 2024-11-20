@@ -25,10 +25,12 @@ export class SigninComponent {
   userCount: number = 0;
   validMail: boolean = true;
   validPassword: boolean = true;
+  checkPassword: any;
 
   constructor(public firestore: Firestore, private router: Router, private userService: UserService, private auth: Auth) {
     this.getAllUsers();
   }
+
 
   getAllUsers() {
     const userCollection = collection(this.firestore, 'users');
@@ -56,6 +58,22 @@ export class SigninComponent {
       }
   }
 
+  async test() {
+    const enteredMail = this.user.mail.trim();
+
+    if (!this.validateEmail(enteredMail)) {
+      this.handleMailError();
+      return;
+      }
+      try {
+        await this.searchEmailInDatabase(enteredMail);
+      } catch (error) {
+        this.handleMailError();
+      }
+  }
+
+  
+
   async searchEmailInDatabase(email: string) {
     const q = query(collection(this.firestore, 'users'), where('mail', '==', email));
     const querySnapshot = await getDocs(q);
@@ -79,6 +97,15 @@ export class SigninComponent {
       this.validMail = true;  
     }, 2000);
   }
+
+public handlePwError() {
+    this.user.password = '';
+    this.validPassword = false;
+    setTimeout(() => {
+        this.validPassword = true;  
+    }, 2000);
+}
+
 
   async onSubmit(ngForm: NgForm) {
     let enteredMail = this.user.mail.trim();
