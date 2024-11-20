@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { collection, doc, Firestore, onSnapshot, updateDoc } from '@angular/fire/firestore';
+import { collection, deleteDoc, doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Channel } from '../../../models/channel.class';
@@ -11,6 +11,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { SharedService } from '../../../services/shared.service';
 import { UserService } from '../../../services/user.service';
 import { DialogAddUserComponent } from '../../../dialog-add-user/dialog-add-user.component';
+import { ChannelService } from '../../../services/channel.service';
+import { ActivatedRoute } from '@angular/router';
 
 
 @Component({
@@ -24,8 +26,11 @@ export class DialogEditChannelComponent {
 
   channelData: any = [];
   channelId!: string;
+  channel!: Channel;
   userData: any = [];
   user = new User();
+  currentUser: string | undefined;
+  userId!: string;
   isEditing = false;
   isHovered = false;
   isEditingDescription = false;
@@ -33,48 +38,46 @@ export class DialogEditChannelComponent {
   newChannelName!: string;
   newChannelDescription!: string;
 
+
   constructor(
     public dialogRef: MatDialogRef<DialogEditChannelComponent>,
-    public firestore: Firestore, @Inject(MAT_DIALOG_DATA)
-    public channel: Channel,
+    public firestore: Firestore,
+    @Inject(MAT_DIALOG_DATA) public data: { channel: Channel; userId: string },
     public sharedService: SharedService,
-    public userService: UserService,
-    public dialog: MatDialog) {
+    public dialog: MatDialog,
+    public channelService: ChannelService,
+    public userService: UserService) {
 
+    this.channel = data.channel;
+    this.userId = data.userId;
 
     if (this.channel && this.channel.channelName) {
       this.newChannelName = this.channel.channelName;
     } else {
       console.warn('No channel data passed to the dialog.');
-      this.newChannelName = ''; // or handle this scenario appropriately
+      this.newChannelName = '';
     }
-    this.getAllChannels();
-    // this.user.name = 'Noah Braun';
+    this.channelService.getAllChannels();
+
   }
 
+  ngOnInit() {
+    this.currentUser = this.userService.findUserNameById(this.userId);
+    console.log('this.current-user', this.currentUser);
+
+  }
   toggleInputName() {
-    this.isEditing = true; // Start editing
+    this.isEditing = true;
   }
 
-  getAllChannels() {
-    const channelCollection = collection(this.firestore, 'channels');
-    onSnapshot(channelCollection, (snapshot) => {
-      this.channelData = [];
-      snapshot.forEach((doc) => {
-        let channel = new Channel({ ...doc.data(), id: doc.id });
-        this.channelData.push(channel);
-      });
-    });
-  }
+
   async editChannelName() {
 
-    if (this.newChannelName.trim()) {  // Only update if input is not empty
+    if (this.newChannelName.trim()) {
       if (this.newChannelName.trim()) {
-        // Update the channel description in Firestore
         const channelDocRef = doc(this.firestore, 'channels', this.channel.id);
         updateDoc(channelDocRef, { channelName: this.newChannelName })
           .then(() => {
-            console.log('Channel description updated successfully');
             this.channel.channelName = this.newChannelName
           })
           .catch((error) => {
@@ -88,13 +91,12 @@ export class DialogEditChannelComponent {
   toggleDescriptionEdit() {
     this.isEditingDescription = !this.isEditingDescription;
     if (this.isEditingDescription) {
-      this.newChannelDescription = this.channel.channelDescription; 
+      this.newChannelDescription = this.channel.channelDescription;
     }
   }
 
   saveChannelDescription() {
     if (this.newChannelDescription && this.newChannelDescription.trim()) {
-      // Update the channel description in Firestore
       const channelDocRef = doc(this.firestore, 'channels', this.channel.id);
       updateDoc(channelDocRef, { channelDescription: this.newChannelDescription })
         .then(() => {
@@ -105,7 +107,7 @@ export class DialogEditChannelComponent {
           console.error('Error updating channel description: ', error);
         });
     }
-    this.isEditingDescription = false; // Exit edit mode
+    this.isEditingDescription = false;
   }
 
   getIconSrc() {
@@ -114,8 +116,8 @@ export class DialogEditChannelComponent {
         ? './assets/icons/check_circle-1.png'
         : './assets/icons/check_circle.png'
       : this.isHoveredDescription
-      ? './assets/icons/edit-1.png'
-      : './assets/icons/edit.png';
+        ? './assets/icons/edit-1.png'
+        : './assets/icons/edit.png';
   }
 
   openDialogAddUser() {
@@ -124,5 +126,41 @@ export class DialogEditChannelComponent {
       data: { channel: this.channel, source: 'channelComponent' }
     });
   }
+
+  async leaveChannel(channelId: string) {
+    const channelDocRef = doc(this.firestore, `channels/${channelId}`);
+    try {
+      const channelSnapshot = await getDoc(channelDocRef);
+      if (channelSnapshot.exists()) {
+        const channelData = channelSnapshot.data();
+        const updatedMembers = (channelData['members'] || []).filter(
+          (member: any) => member.userId !== this.userId
+        );
+        await updateDoc(channelDocRef, { members: updatedMembers });
+        console.log(`Benutzer ${this.user} aus dem Channel entfernt.`);
+      } else {
+        console.error('Channel existiert nicht.');
+      }
+    } catch (error) {
+      console.error('Fehler beim Verlassen des Channels:', error);
+    }
+    this.dialogRef.close();
+  }
+
+  async deleteChannel(channelId: string) {
+    try {
+      if (this.channel.creatorName !== this.currentUser) return;
+      const channelDocRef = doc(this.firestore, 'channels', channelId);
+
+      await deleteDoc(channelDocRef);
+      console.log(`Channel mit ID ${channelId} wurde erfolgreich gelöscht.`);
+      this.channelService.getAllChannels();
+    } catch (error) {
+      console.error('Fehler beim Löschen des Channels', error);
+
+    }
+    this.dialogRef.close();
+  }
 }
+
 

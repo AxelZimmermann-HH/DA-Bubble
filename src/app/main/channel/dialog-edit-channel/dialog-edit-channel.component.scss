@@ -102,10 +102,17 @@
         font-weight: 700;
         align-self: flex-end;
         border: unset;
-        padding: 20px;
+        padding: 12px;
 
         &:hover {
             background-color: rgba(68, 77, 242, 0.7);
+            cursor: pointer;
+        }
+    }
+    .delete-btn{
+        background-color: rgb(255, 0, 0);
+        &:hover {
+            background-color:  rgba(255, 0, 0, 0.5);
             cursor: pointer;
         }
     }

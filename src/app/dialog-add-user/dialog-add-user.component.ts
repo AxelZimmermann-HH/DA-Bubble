@@ -85,30 +85,6 @@ export class DialogAddUserComponent {
     }
   }
 
-
-  // async addMember(user: User) {
-  //   if (user) {
-  //     const channelRef = doc(this.firestore, 'channels', this.channel.id);
-  //     try {
-  //       const currentMembers = this.channel.members || [];
-  //       const isMemberAlready = currentMembers.some(member => member.userId === user.userId);
-  //       if (isMemberAlready) {
-  //         this.dialogRef.close(false);
-  //         return;
-  //       }
-  //       const updatedMembers = [...currentMembers, user.toJson()];
-
-  //       await updateDoc(channelRef, { members: updatedMembers });
-
-  //       this.dialogRef.close(true);
-
-
-  //     } catch (error) {
-  //       console.error('Fehler beim Hinzufügen des Mitglieds:', error);
-  //     }
-  //   }
-  // }
-
   async addMember() {
     
     const channelRef = doc(this.firestore, 'channels', this.channel.id);

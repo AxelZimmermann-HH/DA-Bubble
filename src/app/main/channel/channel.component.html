@@ -2,20 +2,21 @@
     <div  *ngIf="channelService.selectedChannel else loadingTemplate"   [ngClass]=" 'channel-container' "  >
         <div class="channel-header">
             <button class="edit-channel"
-                (click)="this.channelService.openDialogEditChannel(channelService.selectedChannel)">
+                (click)="openDialogEditChannel(channelService.selectedChannel)">
                 <p># {{channelService.selectedChannel.channelName}}</p>
                 <img src="./assets/icons/keyboard_arrow_down_1.png" alt="">
             </button>
             <div class="add-members">
                 <div class="member-preview" (click)="channelService.openUsersList(selectedChannelId!)">
-                    <img *ngFor="let member of channelService.selectedChannel.members"
+                    <img *ngFor="let member of channelService.selectedChannel.members.slice(0, 3) "
                         [src]="userService.getAvatarForUser(member.name)" alt="" class="avatar">
+                        <img  src="./assets/icons/add.png" alt="" style="margin: -20px;">
                 </div>
                 <p *ngIf="channelService.selectedChannel.members.length>0" class="numberofmembers">
                     {{channelService.selectedChannel.members.length}}
                 </p>
                 <button class="addUserBtn" (click)="channelService.openDialogAddUser()">
-                    <img src="./assets/icons/person_add.png" alt="">
+                    <img src="./assets/icons/person_add.png" alt="" >
                 </button>
             </div>
         </div>
@@ -147,7 +148,7 @@
         </div>
 
         <div class="custom-input">
-            <textarea placeholder="Nachricht an #{{channelService.selectedChannel.channelName}}" class="text-area"
+            <textarea #messageInput placeholder="Nachricht an #{{channelService.selectedChannel.channelName}}" class="text-area"
                 [(ngModel)]="newMessageText"></textarea>
 
             <!-- Vorschau der ausgewählten Datei -->

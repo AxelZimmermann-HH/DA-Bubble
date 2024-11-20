@@ -86,7 +86,7 @@ export class UserService {
       return './assets/avatars/avatar_1.png';
     }
 
-    const user = this.userData.find((u) => u.name === userName);
+    const user = this.userData.find((u:User) => u.name === userName);
     if (user) {
       return this.isNumber(user.avatar)
         ? `./assets/avatars/avatar_${user.avatar}.png`

@@ -14,7 +14,6 @@
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-
 }
 
 .profil-header {
@@ -147,8 +146,10 @@
 }
 
 .edit-profil {
+    top: 50%;
     right: 0;
-    transform: translate(50%, -50%);
+    left: unset;
+    transform: translateY(-50%);
     border-radius: 30px 0 30px 30px;
 }
 
@@ -158,11 +159,7 @@
         padding: 20px;
         height: auto;
     }
-
-    .edit-profil {
-        transform: translate(-50%, -50%);
-    }
-
+    
     .profilImg {
         width: 150px;
         height: 150px;

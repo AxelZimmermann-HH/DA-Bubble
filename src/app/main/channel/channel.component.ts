@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
@@ -20,6 +20,7 @@ import { ChannelService } from '../../services/channel.service';
 import { FileService } from '../../services/file.service';
 import { EmojisService } from '../../services/emojis.service';
 import { DatabaseService } from '../../services/database.service';
+import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-channel.component';
 
 interface MessageGroup {
   date: string;
@@ -68,7 +69,6 @@ export class ChannelComponent {
 
   taggedUser: boolean = false;
 
-
   emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   showEmojiPicker: boolean = false;
@@ -77,7 +77,8 @@ export class ChannelComponent {
   @Input() selectedChannelId: string | null = null;
   @Output() chatSelected = new EventEmitter<void>();
 
-
+  @ViewChild('messageInput') messageInput: any;
+  
   isThreadOpen: boolean = false;
   selectedMessage = new Message();
   selectedAnswers: Answer[] = [];
@@ -100,23 +101,17 @@ export class ChannelComponent {
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
     });
-
     this.userService.getAllUsers().then(() => {
       this.userService.findUserNameById(this.userId);
     });
-
     this.subscribeToSearch();
     this.channelService.getAllChannels();
 
     this.messagesService.getAllMessages('channelId', () => {
       this.filteredSearchMessages = this.messagesService.allMessages;
     });
-
-
     this.subscribeToFilteredData();
-
-
-
+   
   }
 
   ngOnChanges(): void {
@@ -126,6 +121,7 @@ export class ChannelComponent {
         this.messagesService.getAllMessages(this.selectedChannelId, () => {
           this.filteredSearchMessages = this.messagesService.allMessages;
           this.isLoading = false;
+          this.focusInputField()
         });
       }).catch(error => {
         console.error('Fehler beim Laden des Channels:', error);
@@ -142,6 +138,12 @@ export class ChannelComponent {
     this.messagesService.allMessages = [];
     this.isLoading = false;
   }
+  
+  focusInputField() {
+    if (this.messageInput) {
+      this.messageInput.nativeElement.focus(); // Fokus auf das Textarea setzen
+    }
+  }
 
   subscribeToFilteredData() {
     this.searchService.filteredData$.subscribe(data => {
@@ -151,6 +153,20 @@ export class ChannelComponent {
       this.showAutocomplete = data.showAutocomplete;
     });
   }
+
+  openDialogEditChannel(channel: Channel) {
+    if (channel && this.userId) {
+      this.dialog.open(DialogEditChannelComponent, {
+        data: {
+          channel: channel,
+          userId: this.userId,
+        },
+      });
+    } else {
+      console.error('Cannot open dialog: Channel or userId is missing.');
+    }
+  }
+
 
   ///////////////////////////search from header/////////////////////////////////
   subscribeToSearch() {
@@ -263,7 +279,6 @@ export class ChannelComponent {
 
     this.resetInput();
   }
-
 
  
   extractTaggedUsernames(message: string): string[] {

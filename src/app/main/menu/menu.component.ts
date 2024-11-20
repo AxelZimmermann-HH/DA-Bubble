@@ -21,9 +21,9 @@ export class MenuComponent {
   constructor(
     public firestore: Firestore,
     public route: ActivatedRoute,
-    public dialog: MatDialog, 
-    public sharedService: SharedService, 
-    public chatService: ChatService, 
+    public dialog: MatDialog,
+    public sharedService: SharedService,
+    public chatService: ChatService,
     public userService: UserService,
     private breakpointObserver: BreakpointObserver
   ) { }
@@ -68,13 +68,13 @@ export class MenuComponent {
         this.chatService.initializeUnreadCounts(this.currentUserId); // Verschiebe hierher
       }
     });
+    console.log('channel data :', this.filteredChannels);
 
 
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
       this.currentUserId = this.userId;
     });
-
 
     // Abonniere die ungelesenen Zähler für alle Chats
     this.chatService.unreadCount$.subscribe((counts) => {
@@ -141,11 +141,19 @@ export class MenuComponent {
             id: doc.id,
             channelName: channel['channelName'],
             tagIcon: channel['tagIcon'],
+            members: channel['members'] || [],
           };
 
         });
+      
         Standardmäßig:
-        this.filteredChannels = this.channelData;
+        // this.filteredChannels = this.channelData; 
+        this.filteredChannels = this.channelData.filter(channel => {
+          return channel.members.some((member: any) => member.userId === this.currentUserId);
+        }
+        //können wir auch channel ersteller hinzufügen..
+      );
+
       },
       (error) => {
         console.error('Fehler beim laden der Channel-Daten:', error);
@@ -254,8 +262,8 @@ export class MenuComponent {
 
     const dialogConfig = {
       width: isMobile ? '100vw' : '600px',
-      height: isMobile ? '100vh' : 'auto', 
-      maxWidth: '100vw',                 
+      height: isMobile ? '100vh' : 'auto',
+      maxWidth: '100vw',
       panelClass: isMobile ? 'full-screen-dialog' : '', // Mobile CSS-Klasse
       data: { userId: this.userId }        // Weitergabe von Daten an den Dialog
     };
@@ -273,16 +281,16 @@ export class MenuComponent {
 
   //Öffnet eine neue Nachricht
   onNewMessageClick() {
-    if (this.chatService.showChat){
+    if (this.chatService.showChat) {
       this.chatService.showChat = false;
-      this.chatService.showChannel=true
+      this.chatService.showChannel = true
       this.channelSelected.emit(null);
     }
     this.channelSelected.emit(null);
   }
 
 
-  trackByChannelId( channel: any): string {
+  trackByChannelId(channel: any): string {
     return channel.id;  // Optimiert die Performance von *ngFor
   }
 

@@ -27,7 +27,8 @@
             <p>{{ channel.channelName }}</p>
         </div>
     </div>
-    <div class="channel-description" [ngClass]="{ 'editing': isEditingDescription , 'isMobile' : sharedService.isMobile}">
+    <div class="channel-description"
+        [ngClass]="{ 'editing': isEditingDescription , 'isMobile' : sharedService.isMobile}">
         <div class="d-flex">
             <div>Beschreibung</div>
             <button class="editBtn" (click)="isEditingDescription ? saveChannelDescription() : toggleDescriptionEdit()">
@@ -42,12 +43,12 @@
         </div>
         <textarea *ngIf="isEditingDescription" class="edit-textarea" placeholder="Beschreibung eingeben"
             [(ngModel)]="newChannelDescription" (keydown.enter)="saveChannelDescription()"></textarea>
-    
+
         <p *ngIf="!isEditingDescription" class="edit-description">
             {{ channel.channelDescription }}
         </p>
         <hr class="separate-line">
-    
+
         <div style="display: flex;flex-direction: column;gap: 18px;">Erstellt von
             <div class="userName">{{channel.creatorName}}</div>
         </div>
@@ -70,6 +71,15 @@
             hinzufügen</div>
 
     </div>
-    <button class="close-channel" [ngClass]="sharedService.isMobile ? 'isMobile close-channel' : 'close-channel'"
-        (click)="dialogRef.close()">Channel verlassen</button>
+    <div style="display: flex;gap: 8px;align-items: center;justify-content: flex-end;">
+        <button [ngClass]="sharedService.isMobile ? 'isMobile close-channel' : 'close-channel'"
+            (click)="leaveChannel(channel.id)">Channel verlassen
+        </button>
+        <button (click)="deleteChannel(channel.id)" *ngIf="channel.creatorName === this.currentUser"
+            [ngClass]="sharedService.isMobile ? 'isMobile close-channel delete-btn' : 'close-channel delete-btn'">Channel
+            löschen
+
+        </button>
+    </div>
+
 </div>
