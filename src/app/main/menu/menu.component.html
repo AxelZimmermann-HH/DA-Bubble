@@ -1,7 +1,7 @@
 <button class="menu-toggle-button" *ngIf="!this.sharedService.isMobile" (click)="openCloseMenu()"
     (mouseover)="setHoverIcon()" (mouseleave)="setUnhoverIcon()">
     <span class="rotate-text header4">{{openCloseButtonText}}</span>
-    <img style="transform: rotate(90deg);" src="\assets\icons\{{openCloseIcon}}" alt="">
+    <img style="transform: rotate(90deg);" src="assets\icons\{{openCloseIcon}}" alt="">
 </button>
 
 <div class="menu-container gap-25" *ngIf="showMenu"
@@ -9,14 +9,14 @@
 
     <div class="menu-header-container">
         <div class="flex-align-center gap-15">
-            <img class="workspace_logo" src="\assets\icons\workspace_logo.png" alt="">
+            <img class="workspace_logo" src="assets\icons\workspace_logo.png" alt="">
             <span class="header1">Devspace</span>
         </div>
         <button class="new-message-button" (mouseover)="newDmIcon = 'edit_square-1.png'"
             (mouseleave)="newDmIcon = 'edit_square.png'" (click)="onNewMessageClick()" *ngIf="!sharedService.isMobile">
-            <img [src]="'/assets/icons/' + newDmIcon" alt="New Message Icon">
+            <img [src]="'assets/icons/' + newDmIcon" alt="New Message Icon">
         </button>
-        <img src="/assets/icons/edit-icon.png" alt="Edit Icon" *ngIf="sharedService.isMobile"
+        <img src="assets/icons/edit-icon.png" alt="Edit Icon" *ngIf="sharedService.isMobile"
             (click)="onNewMessageClick()" class="edit-icon">
     </div>
 
@@ -26,15 +26,15 @@
             <div class="channel-header" (click)="openCloseDiv('showChannel')"
                 (mouseover)="channelIcon1 ='arrow_drop_down-1.png'; channelIcon2 = 'workspaces-1.png'"
                 (mouseleave)="channelIcon1 ='arrow_drop_down.png'; channelIcon2 = 'workspaces.png'">
-                <img [ngClass]="{'rotateArrow': !showChannel}" src="\assets\icons\{{channelIcon1}}" alt="">
+                <img [ngClass]="{'rotateArrow': !showChannel}" src="assets\icons\{{channelIcon1}}" alt="">
                 <div class="logo-cat-container">
-                    <img src="\assets\icons\{{channelIcon2}}" alt="">
+                    <img src="assets\icons\{{channelIcon2}}" alt="">
                     <span class="header2">Channels</span>
                 </div>
             </div>
             <button class="plus-button" (click)="openDialogAddChannel()" (mouseover)="addChannelIcon1 = 'add-2.png'"
                 (mouseleave)="addChannelIcon1 = 'add-1.png'">
-                <img src="\assets\icons\{{addChannelIcon1}}" alt="">
+                <img src="assets\icons\{{addChannelIcon1}}" alt="">
             </button>
         </div>
 
@@ -51,7 +51,7 @@
         <div class="add-channel" *ngIf="showChannel">
             <div class="add-channel-header" (click)="openDialogAddChannel()"
                 (mouseover)="addChannelIcon = 'add_circle-1.png'" (mouseleave)="addChannelIcon = 'add_circle.png'">
-                <img src="\assets\icons\{{addChannelIcon}}" alt="">
+                <img src="assets\icons\{{addChannelIcon}}" alt="">
                 <span class="header3">Channel hinzufügen</span>
             </div>
         </div>
@@ -64,9 +64,9 @@
             <div class="dm-header" (click)="openCloseDiv('showUser')"
                 (mouseover)="dmIcon1 ='arrow_drop_down-1.png'; dmIcon2 = 'account_circle-1.png'"
                 (mouseleave)="dmIcon1 ='arrow_drop_down.png'; dmIcon2 = 'account_circle.png'">
-                <img [ngClass]="{'rotateArrow': !showUser}" src="\assets\icons\{{dmIcon1}}" alt="">
+                <img [ngClass]="{'rotateArrow': !showUser}" src="assets\icons\{{dmIcon1}}" alt="">
                 <div class="logo-cat-container">
-                    <img src="\assets\icons\{{dmIcon2}}" alt="">
+                    <img src="assets\icons\{{dmIcon2}}" alt="">
                     <span class="header2">Direktnachrichten</span>
                 </div>
             </div>
