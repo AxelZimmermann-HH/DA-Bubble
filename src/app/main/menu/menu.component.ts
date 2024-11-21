@@ -75,14 +75,11 @@ export class MenuComponent {
     });
     this.userService.getAllUsers().then(() => {
       this.currentUser = this.userService.findUserNameById(this.userId);
-      console.log('current user', this.currentUser);
     });
     // Abonniere die ungelesenen Zähler für alle Chats
     this.chatService.unreadCount$.subscribe((counts) => {
       this.unreadCounts = counts;
     });
-
-
   }
 
 
@@ -145,7 +142,7 @@ export class MenuComponent {
             creatorName: channel['creatorName'],
             tagIcon: channel['tagIcon'],
             members: channel['members'] || [],
-           
+
           };
 
         });
@@ -153,12 +150,10 @@ export class MenuComponent {
         Standardmäßig:
         // this.filteredChannels = this.channelData;  
         this.filteredChannels = this.channelData.filter(channel => {
-          console.log('channel', channel.creatorName, this.currentUser, channel.channelName);
-          console.log('Members:', channel.members);
-          console.log('Channel Data:', this.channelData);
-          return this.channelData.some((member: any) => 
-            member.userId === this.currentUserId ||  
-            channel.creatorName.trim() === this.currentUser.trim());
+          return channel.members.some((member: any) =>
+            member.userId === this.currentUserId ||
+            member.name === this.currentUser ||
+            channel.creatorName === this.currentUser);
         }
         );
       },

@@ -7,6 +7,7 @@ import { User } from '../models/user.class';
 import { ChannelService } from '../services/channel.service';
 import { ChatService } from '../services/chat.service';
 import { CommonModule } from '@angular/common';
+import { DialogAddUserComponent } from '../dialog-add-user/dialog-add-user.component';
 
 
 
@@ -71,11 +72,13 @@ export class DialogAddChannelComponent {
   async createNewChannel() {
     const enteredName = this.channelName.value?.trim();
     if (!enteredName || await this.checkChannelExists(enteredName)) return;
-  
+
+
     this.setChannelData(enteredName);
     await this.saveNewChannel(this.channel.toJson());
     this.channelCreated.emit(this.channel);
     this.resetAndCloseDialog();
+    this.dialog.open(DialogAddUserComponent, { data: { channel: this.channel, source: 'createNewChannel' } });
   }
 
   setChannelData(channelName: string) {
