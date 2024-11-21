@@ -68,18 +68,20 @@ export class MenuComponent {
         this.chatService.initializeUnreadCounts(this.currentUserId); // Verschiebe hierher
       }
     });
-    console.log('channel data :', this.filteredChannels);
-
 
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
       this.currentUserId = this.userId;
     });
-
+    this.userService.getAllUsers().then(() => {
+      this.currentUser = this.userService.findUserNameById(this.userId);
+      console.log('current user', this.currentUser);
+    });
     // Abonniere die ungelesenen Zähler für alle Chats
     this.chatService.unreadCount$.subscribe((counts) => {
       this.unreadCounts = counts;
     });
+
 
   }
 
@@ -140,20 +142,25 @@ export class MenuComponent {
           return {
             id: doc.id,
             channelName: channel['channelName'],
+            creatorName: channel['creatorName'],
             tagIcon: channel['tagIcon'],
             members: channel['members'] || [],
+           
           };
 
         });
-      
-        Standardmäßig:
-        // this.filteredChannels = this.channelData; 
-        this.filteredChannels = this.channelData.filter(channel => {
-          return channel.members.some((member: any) => member.userId === this.currentUserId);
-        }
-        //können wir auch channel ersteller hinzufügen..
-      );
 
+        Standardmäßig:
+        // this.filteredChannels = this.channelData;  
+        this.filteredChannels = this.channelData.filter(channel => {
+          console.log('channel', channel.creatorName, this.currentUser, channel.channelName);
+          console.log('Members:', channel.members);
+          console.log('Channel Data:', this.channelData);
+          return this.channelData.some((member: any) => 
+            member.userId === this.currentUserId ||  
+            channel.creatorName.trim() === this.currentUser.trim());
+        }
+        );
       },
       (error) => {
         console.error('Fehler beim laden der Channel-Daten:', error);
@@ -255,7 +262,6 @@ export class MenuComponent {
     }
   };
 
-
   //öffnet den Channel hinzufügen Dialog
   openDialogAddChannel() {
     const isMobile = this.breakpointObserver.isMatched('(max-width: 600px)');
@@ -267,9 +273,11 @@ export class MenuComponent {
       panelClass: isMobile ? 'full-screen-dialog' : '', // Mobile CSS-Klasse
       data: { userId: this.userId }        // Weitergabe von Daten an den Dialog
     };
-    this.dialog.open(DialogAddChannelComponent, dialogConfig);
+    const dialogRef = this.dialog.open(DialogAddChannelComponent, dialogConfig);
+    dialogRef.componentInstance.channelCreated.subscribe((channel: any) => {
+      this.onChannelClick(channel);
+    });
   }
-
 
   //öffnet einen ausgewählten channel
   onChannelClick(channel: any) {
@@ -277,7 +285,6 @@ export class MenuComponent {
     this.channelSelected.emit(channel);
     this.selectedChannel.id = channel.id;
   }
-
 
   //Öffnet eine neue Nachricht
   onNewMessageClick() {

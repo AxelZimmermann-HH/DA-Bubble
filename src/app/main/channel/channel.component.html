@@ -10,7 +10,7 @@
                 <div class="member-preview" (click)="channelService.openUsersList(selectedChannelId!)">
                     <img *ngFor="let member of channelService.selectedChannel.members.slice(0, 3) "
                         [src]="userService.getAvatarForUser(member.name)" alt="" class="avatar">
-                        <img  src="./assets/icons/add.png" alt="" style="margin: -20px;">
+                        <img *ngIf="channelService.selectedChannel.members.length >3"  src="./assets/icons/add.png" alt="" style="margin: -20px;">
                 </div>
                 <p *ngIf="channelService.selectedChannel.members.length>0" class="numberofmembers">
                     {{channelService.selectedChannel.members.length}}

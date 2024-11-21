@@ -1,28 +1,32 @@
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { addDoc, collection, doc, Firestore, onSnapshot, setDoc } from '@angular/fire/firestore';
+import { addDoc, collection, doc, Firestore, getDocs, onSnapshot, query, setDoc, where } from '@angular/fire/firestore';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Channel } from '../models/channel.class';
 import { User } from '../models/user.class';
-import { DialogAddUserComponent } from '../dialog-add-user/dialog-add-user.component';
 import { ChannelService } from '../services/channel.service';
+import { ChatService } from '../services/chat.service';
+import { CommonModule } from '@angular/common';
 
 
 
 @Component({
   selector: 'app-dialog-add-channel',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule],
+  imports: [FormsModule, ReactiveFormsModule, CommonModule],
   templateUrl: './dialog-add-channel.component.html',
   styleUrl: './dialog-add-channel.component.scss'
 })
 
 export class DialogAddChannelComponent {
 
-  constructor(public dialogRef: MatDialogRef<DialogAddChannelComponent>,
+  constructor(
+    public dialogRef: MatDialogRef<DialogAddChannelComponent>,
     public dialog: MatDialog, public firestore: Firestore,
     @Inject(MAT_DIALOG_DATA) public data: { userId: string },
-    public channelService: ChannelService) { }
+    public channelService: ChannelService,
+    public chatService: ChatService) { }
+
   closeButtonIcon = 'close.png'
 
   channelName = new FormControl('', [Validators.required, Validators.minLength(2)]);
@@ -34,7 +38,9 @@ export class DialogAddChannelComponent {
   creatorName!: string;
   userData: any = [];
 
+  channelExists: boolean = false;
 
+  @Output() channelCreated = new EventEmitter<any>();
 
   ngOnInit() {
     this.getAllUsers().then(() => {
@@ -62,23 +68,27 @@ export class DialogAddChannelComponent {
     });
   }
 
-  createNewChannel() {
-    this.channel.channelName = this.channelName.value!;
+  async createNewChannel() {
+    const enteredName = this.channelName.value?.trim();
+    if (!enteredName || await this.checkChannelExists(enteredName)) return;
+  
+    this.setChannelData(enteredName);
+    await this.saveNewChannel(this.channel.toJson());
+    this.channelCreated.emit(this.channel);
+    this.resetAndCloseDialog();
+  }
+
+  setChannelData(channelName: string) {
+    this.channel.channelName = channelName;
     this.channel.channelDescription = this.channelDescription.value!;
     this.channel.tagIcon = 'tag.png';
-    this.channel.creatorName = this.creatorName;  // Setze den Ersteller des Channels
+    this.channel.creatorName = this.creatorName;
+  }
 
-    const channelData = this.channel.toJson();
-
-    this.saveNewChannel(channelData).then((result: any) => {
-      this.channelName.setValue('');
-      this.channelDescription.setValue('');
-      this.dialogRef.close();
-      this.dialog.open(DialogAddUserComponent, { data: { channel: this.channel, source: 'createNewChannel' } })
-      this.channelService.selectedChannel = this.channel;
-
-   
-    });
+  resetAndCloseDialog() {
+    this.channelName.setValue('');
+    this.channelDescription.setValue('');
+    this.dialogRef.close();
   }
 
   async saveNewChannel(channelData: any) {
@@ -94,5 +104,22 @@ export class DialogAddChannelComponent {
     this.channel.id = id;
     channelData = this.channel.toJson();
     await setDoc(doc(this.firestore, "channels", id), channelData)
+  }
+
+  async checkChannelExists(channelName: string) {
+    const channelsCollection = collection(this.firestore, 'channels');
+    const q = query(channelsCollection, where('channelName', '==', channelName));
+    const querySnapshot = await getDocs(q);
+    return !querySnapshot.empty;
+
+  }
+
+  async validateChannelName() {
+    const enteredName = this.channelName.value?.trim();
+    if (!enteredName) {
+      this.channelExists = false;
+      return;
+    }
+    this.channelExists = await this.checkChannelExists(enteredName);
   }
 }

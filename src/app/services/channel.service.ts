@@ -16,6 +16,9 @@ import { ActivatedRoute } from '@angular/router';
     providedIn: 'root'
 })
 export class ChannelService {
+    emit(channel: Channel) {
+      throw new Error('Method not implemented.');
+    }
 
     selectedChannel: Channel | any;
     userData: User[] = [];
