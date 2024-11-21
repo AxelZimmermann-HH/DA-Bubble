@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { collection, deleteDoc, doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
+import { deleteDoc, doc, Firestore, getDoc, updateDoc } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Channel } from '../../../models/channel.class';
@@ -12,7 +12,6 @@ import { SharedService } from '../../../services/shared.service';
 import { UserService } from '../../../services/user.service';
 import { DialogAddUserComponent } from '../../../dialog-add-user/dialog-add-user.component';
 import { ChannelService } from '../../../services/channel.service';
-import { ActivatedRoute } from '@angular/router';
 
 
 @Component({
@@ -38,7 +37,6 @@ export class DialogEditChannelComponent {
   newChannelName!: string;
   newChannelDescription!: string;
 
-
   constructor(
     public dialogRef: MatDialogRef<DialogEditChannelComponent>,
     public firestore: Firestore,
@@ -53,26 +51,20 @@ export class DialogEditChannelComponent {
 
     if (this.channel && this.channel.channelName) {
       this.newChannelName = this.channel.channelName;
-    } else {
-      console.warn('No channel data passed to the dialog.');
-      this.newChannelName = '';
-    }
+    } 
     this.channelService.getAllChannels();
 
   }
 
   ngOnInit() {
     this.currentUser = this.userService.findUserNameById(this.userId);
-    console.log('this.current-user', this.currentUser);
-
   }
+  
   toggleInputName() {
     this.isEditing = true;
   }
 
-
   async editChannelName() {
-
     if (this.newChannelName.trim()) {
       if (this.newChannelName.trim()) {
         const channelDocRef = doc(this.firestore, 'channels', this.channel.id);
@@ -100,7 +92,6 @@ export class DialogEditChannelComponent {
       const channelDocRef = doc(this.firestore, 'channels', this.channel.id);
       updateDoc(channelDocRef, { channelDescription: this.newChannelDescription })
         .then(() => {
-          console.log('Channel description updated successfully');
           this.channel.channelDescription = this.newChannelDescription
         })
         .catch((error) => {
@@ -137,10 +128,7 @@ export class DialogEditChannelComponent {
           (member: any) => member.userId !== this.userId
         );
         await updateDoc(channelDocRef, { members: updatedMembers });
-        console.log(`Benutzer ${this.user} aus dem Channel entfernt.`);
-      } else {
-        console.error('Channel existiert nicht.');
-      }
+      } 
     } catch (error) {
       console.error('Fehler beim Verlassen des Channels:', error);
     }
@@ -151,13 +139,10 @@ export class DialogEditChannelComponent {
     try {
       if (this.channel.creatorName !== this.currentUser) return;
       const channelDocRef = doc(this.firestore, 'channels', channelId);
-
       await deleteDoc(channelDocRef);
-      console.log(`Channel mit ID ${channelId} wurde erfolgreich gelöscht.`);
       this.channelService.getAllChannels();
     } catch (error) {
       console.error('Fehler beim Löschen des Channels', error);
-
     }
     this.dialogRef.close();
   }

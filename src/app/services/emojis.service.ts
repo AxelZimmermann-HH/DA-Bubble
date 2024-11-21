@@ -24,7 +24,6 @@ export class EmojisService {
         };
         return emojiMap[emoji] || '';
     }
-
     toggleUserEmoji(message: Message, emoji: string, userId: string, channelId:string|null) {
         const emojiData = message.emojis.find((e: EmojiData) => e.emoji === emoji);
 
@@ -40,14 +39,12 @@ export class EmojisService {
         }
         this.updateEmojisInFirebase(message, channelId);
     }
-
     updateEmojisInFirebase(message: Message, channelId:string|null) {
         const messageRef = doc(this.firestore, `channels/${channelId}/messages/${message.messageId}`);
         updateDoc(messageRef, {
             emojis: message.emojis 
         });
-    }
-  
+    } 
     getEmojiReactionText(emojiData: EmojiData, userID:string) {
         const currentUserId = userID;
         const userNames = emojiData.userIds.map(userId => this.userService.findUserNameById(userId));
@@ -65,7 +62,6 @@ export class EmojisService {
         }
         return userNames.length > 0 ? userNames.join(", ") : "Keine Reaktionen";
       }
-
       toggleEmojiReaction(message: Message, emojiData: EmojiData, userID:string, selectedChannelId:string|null) {
         const currentUserId = userID;
         const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
@@ -76,7 +72,7 @@ export class EmojisService {
         } else {
           emojiData.userIds.push(currentUserId);
         }
-    
+  
         this.updateEmojisInFirebase(message, selectedChannelId);
       }
 }

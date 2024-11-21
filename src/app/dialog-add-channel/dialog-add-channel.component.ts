@@ -8,6 +8,7 @@ import { ChannelService } from '../services/channel.service';
 import { ChatService } from '../services/chat.service';
 import { CommonModule } from '@angular/common';
 import { DialogAddUserComponent } from '../dialog-add-user/dialog-add-user.component';
+import { UserService } from '../services/user.service';
 
 
 
@@ -26,7 +27,8 @@ export class DialogAddChannelComponent {
     public dialog: MatDialog, public firestore: Firestore,
     @Inject(MAT_DIALOG_DATA) public data: { userId: string },
     public channelService: ChannelService,
-    public chatService: ChatService) { }
+    public chatService: ChatService,
+    public userService: UserService) { }
 
   closeButtonIcon = 'close.png'
 
@@ -44,36 +46,14 @@ export class DialogAddChannelComponent {
   @Output() channelCreated = new EventEmitter<any>();
 
   ngOnInit() {
-    this.getAllUsers().then(() => {
-      this.creatorName = this.findUserNameById(this.data.userId);
-    });
-  }
-
-  findUserNameById(userId: string) {
-    const user = this.userData.find((user: User) => user.userId === userId);
-    return user ? user.name : undefined;
-  }
-
-  getAllUsers(): Promise<void> {
-    return new Promise((resolve) => {
-      const userCollection = collection(this.firestore, 'users');
-      onSnapshot(userCollection, (snapshot) => {
-        this.userData = [];
-        snapshot.forEach((doc) => {
-          let user = new User({ ...doc.data(), id: doc.id });
-          this.userData.push(user);
-        });
-        this.creatorName = this.findUserNameById(this.data.userId);
-        resolve();
-      });
+    this.userService.getAllUsers().then(() => {
+      this.creatorName = this.userService.findUserNameById(this.data.userId);
     });
   }
 
   async createNewChannel() {
     const enteredName = this.channelName.value?.trim();
     if (!enteredName || await this.checkChannelExists(enteredName)) return;
-
-
     this.setChannelData(enteredName);
     await this.saveNewChannel(this.channel.toJson());
     this.channelCreated.emit(this.channel);
@@ -114,7 +94,6 @@ export class DialogAddChannelComponent {
     const q = query(channelsCollection, where('channelName', '==', channelName));
     const querySnapshot = await getDocs(q);
     return !querySnapshot.empty;
-
   }
 
   async validateChannelName() {

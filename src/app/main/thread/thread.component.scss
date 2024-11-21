@@ -114,9 +114,6 @@
     }
 }
 
-
-//input
-
 .custom-input {
     height: auto;
     width: 80%;
@@ -511,11 +508,14 @@
 }
 
 @media (max-width: 768px) {
-
     .thread-container {
         border-radius: 0;
     }
-    .thread-container .thread-header{     border-radius: 0;}
+
+    .thread-container .thread-header {
+        border-radius: 0;
+    }
+
     .thread-container .thread-header img {
         width: 30px;
         height: 30px;
@@ -529,6 +529,4 @@
     .speech-bubble {
         font-size: 14px;
     }
-
-
 }

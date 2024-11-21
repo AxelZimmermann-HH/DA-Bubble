@@ -1,5 +1,5 @@
 <div class="channel-body">
-    <div  *ngIf="channelService.selectedChannel else loadingTemplate"   [ngClass]=" 'channel-container' "  >
+    <div  *ngIf="channelService.selectedChannel else loadingTemplate"   class="channel-container"  >
         <div class="channel-header">
             <button class="edit-channel"
                 (click)="openDialogEditChannel(channelService.selectedChannel)">
@@ -25,7 +25,6 @@
                 <tr>
                     <td style="height: 50px;"></td>
                 </tr>
-
                 <ng-container *ngFor="let group of filteredSearchMessages"> 
                     <tr>
                         <td colspan="2">
@@ -35,7 +34,6 @@
                             </div>
                         </td>
                     </tr>
-
                     <tr *ngFor="let message of group.messages" style="height: auto;">
                         <td [ngClass]="{'current-user':userService.isCurrentUser(message.user, userId)}">
                             <div class="message-main"
@@ -52,12 +50,9 @@
                                         <div class="speech-bubble-content">
                                             {{ message.text }}
                                             <div *ngIf="message.fileUrl" class="fileUrl">
-
                                                 <!-- Image Preview -->
                                                 <div *ngIf="message.fileType.startsWith('image/')">
-                                                    <img [src]="fileService.getSafeUrl(message.fileUrl)"
-                                                        alt="Image Preview"
-                                                        >
+                                                    <img [src]="fileService.getSafeUrl(message.fileUrl)" alt="Image Preview">
                                                 </div>
                                                 <!-- PDF Preview -->
                                                 <div *ngIf="message.fileType === 'application/pdf'">
@@ -150,7 +145,6 @@
         <div class="custom-input">
             <textarea #messageInput placeholder="Nachricht an #{{channelService.selectedChannel.channelName}}" class="text-area"
                 [(ngModel)]="newMessageText"></textarea>
-
             <!-- Vorschau der ausgewählten Datei -->
             <div *ngIf="fileService.selectedFile" class="selectedFileStyle">
                 <!-- Datei-Vorschau für Bilder -->
@@ -158,19 +152,16 @@
                     class="file-preview">
                     <img [src]="fileService.fileUrl" alt="Image Preview" class="image-preview">       
                 </div>
-
                 <!-- Datei-Vorschau für PDFs -->
                 <div *ngIf="fileService.selectedFile.type === 'application/pdf' && fileService.fileUrl"
                     class="file-preview">
                     <iframe [src]="fileService.fileUrl" width="200" height="200" style="border: none;"></iframe>
                 </div>
-
                 <!-- Anzeige für andere Dateitypen -->
                 <div *ngIf="!fileService.fileUrl || (!fileService.selectedFile.type.startsWith('image/') && fileService.selectedFile.type !== 'application/pdf')"
                     class="file-preview" >
                     <p>{{ fileService.selectedFile.name }}</p>
                 </div>
-
                 <!-- Schließen-Button für Datei-Vorschau -->
                 <img src="./../../../assets/icons/close.png" alt="Close" class="close-icon"
                     (click)="fileService.closePreview()" style="cursor: pointer;">
@@ -186,7 +177,6 @@
                     </li>
                 </ul>
             </div>
-
             <!-- Datei hochladen und Emoji hinzufügen -->
             <div class="add-reaction">
                 <div class="reactions">
@@ -204,7 +194,6 @@
                 </div>
                 <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"
                     class="emoji-picker"></emoji-mart>
-
                 <!-- Nachricht senden -->
                 <img src="./assets/icons/Send icon.png" (click)="sendMessage()" class="send-icon">
 
@@ -238,7 +227,6 @@
                     </ul>
                 </div>
             </div>
-
             <div class="custom-input">
                 <textarea placeholder="Starte eine neue Nachricht" class="text-area"
                     [(ngModel)]="newMessageText" placeholder="Nachricht eingeben"></textarea>
@@ -249,13 +237,11 @@
                         class="file-preview" >
                         <img [src]="fileService.fileUrl" alt="Image Preview" class="image-preview">
                     </div>
-
                     <!-- Datei-Vorschau für PDFs -->
                     <div *ngIf="fileService.selectedFile.type === 'application/pdf' && fileService.fileUrl"
                         class="file-preview" >
                         <iframe [src]="fileService.fileUrl" width="200" height="200" style="border: none;"></iframe>
                     </div>
-
                     <!-- Anzeige für andere Dateitypen -->
                     <div *ngIf="!fileService.fileUrl || (!fileService.selectedFile.type.startsWith('image/') && fileService.selectedFile.type !== 'application/pdf')"
                         class="file-preview">
@@ -266,7 +252,6 @@
                     <img src="./../../../assets/icons/close.png" alt="Close" class="close-icon"
                         (click)="fileService.closePreview()" style="cursor: pointer;">
                 </div>
-
                 <div *ngIf="taggedUser" class="tagged-user-list">
                     <ul class="searchListe">
                         <li *ngFor="let user of userService.userData">
@@ -277,7 +262,6 @@
                         </li>
                     </ul>
                 </div>
-
                 <div class="add-reaction">
                     <div class="reactions">
                         <img src="./assets/icons/add-1.png" alt="Datei hinzufügen" class="add-icon"
@@ -292,13 +276,11 @@
                     </div>
                     <img src="./assets/icons/Send icon.png" (click)="sendMessage()" class="send-icon">
                 </div>
-
                 <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"
                     class="emoji-picker"></emoji-mart>
             </div>
         </div>
     </ng-template>
-
     <app-thread *ngIf="isThreadOpen" [selectedChannelId]="selectedChannelId"
         [channelName]="channelService.selectedChannel?.channelName" [message]="selectedMessage"
         [selectedAnswers]="selectedAnswers" (threadClosed)="onThreadClosed()">

@@ -2,7 +2,7 @@ import { Component, EventEmitter, HostListener, Input, Output, SimpleChanges } f
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
-import { addDoc, arrayUnion, collection, doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
+import { arrayUnion,doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Answer } from '../../models/answer.class';
@@ -165,7 +165,6 @@ export class ThreadComponent {
     this.selectedFile = null;
   }
 
-
   async uploadFileIfSelected() {
     if (!this.selectedFile) return null;
 
@@ -191,7 +190,6 @@ export class ThreadComponent {
     await this.answersService.saveEditAnswer(this.message.messageId, answer, updatedAnswer, this.selectedChannelId!);
     this.getAnswers(this.message.messageId);
   }
-
 
   cancelEditAnswer(answer: Answer) {
     answer.isEditing = false;
@@ -222,6 +220,7 @@ export class ThreadComponent {
       emojis: message.emojis
     });
   }
+
   toggleUserEmoji(message: Message, emoji: string, userId: string) {
     const emojiData = message.emojis.find((e: EmojiData) => e.emoji === emoji);
 

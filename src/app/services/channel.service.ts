@@ -16,9 +16,6 @@ import { ActivatedRoute } from '@angular/router';
     providedIn: 'root'
 })
 export class ChannelService {
-    emit(channel: Channel) {
-      throw new Error('Method not implemented.');
-    }
 
     selectedChannel: Channel | any;
     userData: User[] = [];
@@ -39,10 +36,7 @@ export class ChannelService {
         public userService: UserService,
         public sharedService: SharedService,
 
-    ) {
-     
-    }
-
+    ) { }
 
     async loadChannel(id: string) {
         const channelDocRef = doc(this.firestore, `channels/${id}`);
@@ -74,6 +68,7 @@ export class ChannelService {
             }
         }
     }
+
     getAllChannels() {
         const channelCollection = collection(this.firestore, 'channels');
         onSnapshot(channelCollection, (snapshot) => {
@@ -112,6 +107,17 @@ export class ChannelService {
             });
         }
     }
-
-
+    getChannelMembers(channelId:string) {
+        const channelRef = doc(this.firestore, 'channels', channelId);
+        onSnapshot(channelRef, (doc) => {
+          if (doc.exists()) {
+            this.channel.members = doc.data()?.['members'] || [];
+            console.log('Aktualisierte Mitglied Liste', this.channel.members);
+            this.updateChannelMembers();
+          }
+          else {
+            console.log('channel-Dokument existiert nicht ');
+          }
+        })
+      }
 }

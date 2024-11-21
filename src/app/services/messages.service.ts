@@ -8,8 +8,6 @@ import { collection, Firestore, onSnapshot, orderBy, query } from '@angular/fire
 export class MessagesService {
     allMessages: any[] = [];
     message = new Message();
-
-
     constructor(public firestore: Firestore) { }
 
     getAllMessages(channelId:string|null, callback: () => void) {
@@ -17,7 +15,6 @@ export class MessagesService {
             collection(this.firestore, `channels/${channelId}/messages`),
             orderBy('timestamp', 'asc')
         );
-
         this.allMessages = [];
         onSnapshot(messagesQuery, (snapshot) => {
             const messagesData = snapshot.docs.map(doc => {
@@ -51,5 +48,4 @@ export class MessagesService {
             callback()
         });
     }
-
 }

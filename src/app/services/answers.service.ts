@@ -1,7 +1,6 @@
-import { Injectable, Input } from '@angular/core';
-import { arrayUnion, doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
+import { Injectable } from '@angular/core';
+import {  doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
 import { Answer } from '../models/answer.class';
-import { Observable } from 'rxjs';
 
 
 @Injectable({
@@ -12,28 +11,29 @@ export class AnswersService {
   answer = new Answer();
   allAnswers: any = [];
 
-  @Input() selectedChannelId: string | null = null;
-
   constructor(public firestore: Firestore) { }
 
-  getAnswers(messageId: string, channelId: string) {
+  getAnswers(messageId: string, channelId: string|null, selectedAnswers: Answer[]) {
     const messageDocRef = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
-    return new Observable<Answer[]>(observer => {
-      onSnapshot(messageDocRef, (docSnapshot) => {
-        if (docSnapshot.exists()) {
-          const data = docSnapshot.data();
-          const answers = data['answers'] ? data['answers'].map((a: any) => new Answer(a)) : [];
-          observer.next(answers);
-        } else {
-          observer.next([]);
-        }
-      }, (error) => {
-        console.error("Fehler beim Abrufen der Antworten:", error);
-        observer.error(error); // Fehlerbehandlung hinzufügen
-      });
-    });
-  }
 
+    onSnapshot(
+      messageDocRef,
+      (docSnapshot) => {
+        if (docSnapshot.exists()) {
+          const messageData = docSnapshot.data();
+
+          if (Array.isArray(messageData['answers'])) {
+            selectedAnswers = messageData['answers'].map((a: any) => new Answer(a));
+          } else {
+            selectedAnswers = [];
+          }
+        }
+      },
+      (error) => {
+        console.error('Fehler beim Abrufen der Antworten:', error);
+      }
+    );
+  }
 
   editDirectAnswer(answer: Answer) {
     answer.isEditing = true;

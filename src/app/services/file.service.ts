@@ -78,8 +78,7 @@ export class FileService {
     this.fileUrl = null;
     this.selectedFile = null;
   }
-
-
+  
   //CHAT-FILE-UPLOAD
   selectedFileName: string = '';  // Neuer Dateiname-String
   selectedFileType: string = '';

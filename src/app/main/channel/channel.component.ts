@@ -78,7 +78,7 @@ export class ChannelComponent {
   @Output() chatSelected = new EventEmitter<void>();
 
   @ViewChild('messageInput') messageInput: any;
-  
+
   isThreadOpen: boolean = false;
   selectedMessage = new Message();
   selectedAnswers: Answer[] = [];
@@ -111,7 +111,7 @@ export class ChannelComponent {
       this.filteredSearchMessages = this.messagesService.allMessages;
     });
     this.subscribeToFilteredData();
-   
+
   }
 
   ngOnChanges(): void {
@@ -138,7 +138,7 @@ export class ChannelComponent {
     this.messagesService.allMessages = [];
     this.isLoading = false;
   }
-  
+
   focusInputField() {
     if (this.messageInput) {
       this.messageInput.nativeElement.focus(); // Fokus auf das Textarea setzen
@@ -167,8 +167,6 @@ export class ChannelComponent {
     }
   }
 
-
-  ///////////////////////////search from header/////////////////////////////////
   subscribeToSearch() {
     this.sharedService.searchTerm$.subscribe((term) => {
       if (term.length >= 3) {
@@ -188,15 +186,11 @@ export class ChannelComponent {
           (message.text && message.text.toLowerCase().includes(term.toLowerCase()))
         )
       }))
-
       .filter(group => group.messages.length > 0);
   }
-
   resetFilteredMessages() {
     this.filteredSearchMessages = this.messagesService.allMessages;
   }
-  //////////////////////////////////////////////////////////////////////////////
-
 
   onInput(event: Event): void {
     const target = event.target as HTMLInputElement;
@@ -221,14 +215,12 @@ export class ChannelComponent {
   }
 
   async sendEmail(email: string, message: string, fileUrl: string | null) {
-
     try {
       const user = this.userService.findUserByEmail(email);
       if (!user) {
         console.error(`Kein Benutzer mit der E-Mail-Adresse ${email} gefunden.`);
         return;
       }
-
       await this.sendDirectMessage(user.name, message, fileUrl);
     } catch (error) {
       console.error("Fehler beim Suchen des Benutzers: ", error);
@@ -238,24 +230,7 @@ export class ChannelComponent {
   async sendMessage() {
     if (this.newMessageText.trim() === '' && !this.fileService.selectedFile) return;
 
-    if (this.isEditingOnMobile && this.editingMessageId) {
-      const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${this.editingMessageId}`);
-      await updateDoc(messageRef, { text: this.newMessageText })
-        .then(() => {
-          const message = this.messagesService.allMessages.find(m => m.messageId === this.editingMessageId);
-          if (message) {
-            message.text = this.newMessageText;
-            message.isEditing = false;
-          }
-          this.isEditingOnMobile = false;
-          this.editingMessageId = null;
-          this.newMessageText = '';
-        })
-        .catch((error) => {
-          console.error("Fehler beim Speichern der Nachricht: ", error);
-        });
-      return;
-    }
+    await this.updateMessage();
 
     const taggedUsernames = this.extractTaggedUsernames(this.newMessageText);
 
@@ -280,25 +255,42 @@ export class ChannelComponent {
     this.resetInput();
   }
 
- 
+  async updateMessage() {
+    if (this.isEditingOnMobile && this.editingMessageId) {
+      const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${this.editingMessageId}`);
+      await updateDoc(messageRef, { text: this.newMessageText })
+        .then(() => {
+          const message = this.messagesService.allMessages.find(m => m.messageId === this.editingMessageId);
+          if (message) {
+            message.text = this.newMessageText;
+            message.isEditing = false;
+          }
+          this.isEditingOnMobile = false;
+          this.editingMessageId = null;
+          this.newMessageText = '';
+        })
+        .catch((error) => {
+          console.error("Fehler beim Speichern der Nachricht: ", error);
+        });
+      return;
+    }
+  }
+
   extractTaggedUsernames(message: string): string[] {
-    const tagRegex = /@([A-Za-z0-9_]+)/g; // Akzeptiert auch Namen mit Leerzeichen
+    const tagRegex = /@([A-Za-z0-9_]+)/g; 
     const taggedUsernames = [];
     let match;
 
     while ((match = tagRegex.exec(message)) !== null) {
-      taggedUsernames.push(match[1].trim());  // Den getaggten Namen hinzufügen
+      taggedUsernames.push(match[1].trim()); 
     }
-
     return taggedUsernames;
   }
 
   async uploadFile(): Promise<string | null> {
     if (!this.fileService.selectedFile) return null;
-
     const filePath = `files/${this.fileService.selectedFile.name}`;
     const storageRef = ref(getStorage(), filePath);
-
     try {
       const snapshot = await uploadBytes(storageRef, this.fileService.selectedFile);
       const fileUrl = await getDownloadURL(snapshot.ref);
@@ -313,7 +305,6 @@ export class ChannelComponent {
 
   async handleDirectMessageOrEmail(fileUrl: string | null) {
     const inputValue = this.inputValue.trim();
-
     if (this.emailPattern.test(inputValue)) {
       await this.sendEmail(inputValue, this.newMessageText, fileUrl);
     } else if (inputValue.startsWith('@')) {
@@ -339,7 +330,6 @@ export class ChannelComponent {
 
   async sendChannelMessage(channelId: string | null, message: string, fileUrl: string | null) {
     if (message.trim() === '' && !fileUrl) return;
-
     const messageData = {
       text: message,
       user: this.userService.findUserNameById(this.userId),
@@ -348,7 +338,6 @@ export class ChannelComponent {
       answers: [],
       ...(fileUrl && { fileUrl, fileType: this.fileService.selectedFile?.type, fileName: this.fileService.selectedFile?.name })
     };
-
     try {
       await addDoc(collection(this.firestore, `channels/${channelId}/messages`), messageData);
       this.newMessageText = '';
@@ -362,27 +351,19 @@ export class ChannelComponent {
     if (!messageText.trim() && !fileUrl) {
       return;
     }
-
     const receiverID = this.userService.getUserIdByname(recipientName);
     if (!receiverID) {
       return;
     }
-
     const chatId = await this.initializeChat(receiverID);
     if (!chatId) return;
-
-
     await this.sendChatMessage(chatId, messageText, fileUrl);
-
     this.resetInputFields();
   }
 
-
   async initializeChat(receiverID: string) {
     const chatId = await this.chatService.createChatID(this.userId, receiverID);
-
     const chatExists = await this.chatService.doesChatExist(chatId);
-
     if (!chatExists) {
       await this.dbService.createNewChat(chatId, this.userId, receiverID);
     }
@@ -390,11 +371,9 @@ export class ChannelComponent {
   }
 
   async sendChatMessage(chatId: string, messageText: string, fileUrl: string | null) {
-
     const fileName = this.fileService.selectedFile ? this.fileService.selectedFile.name : '';
     const fileType = this.fileService.selectedFile ? this.fileService.selectedFile.type : '';
     const finalFileUrl = fileUrl || this.fileService.fileDownloadUrl;
-
     try {
       await this.chatService.sendMessageToChat(
         chatId,
@@ -435,18 +414,15 @@ export class ChannelComponent {
     event.stopPropagation();
     this.showEmojiPicker = !this.showEmojiPicker
   }
-
   toggleEditEmojiPicker(event: MouseEvent) {
     event.stopPropagation();
     this.showEditEmojiPicker = !this.showEditEmojiPicker
   }
-
   addEmojiToNewMessage(event: any) {
     const emoji = event.emoji.native; // Das ausgewählte Emoji
     this.newMessageText += emoji
     this.showEmojiPicker = false;
   }
-
   addEmojiToEditMessage(event: any, message: Message) {
     const emoji = event.emoji.native;
     if (message.isEditing) {
@@ -454,7 +430,7 @@ export class ChannelComponent {
       this.showEditEmojiPicker = false;
     }
   }
-
+  
   editDirectMessage(message: Message) {
     if (!this.sharedService.isMobile) {
       message.isEditing = true;
@@ -465,7 +441,6 @@ export class ChannelComponent {
       this.editingMessageId = message.messageId;
     }
   }
-
 
   cancelMessageEdit(message: Message) {
     message.isEditing = false;

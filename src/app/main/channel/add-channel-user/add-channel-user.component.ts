@@ -34,26 +34,14 @@ export class AddChannelUserComponent {
     public dialog: MatDialog,
     @Inject(MAT_DIALOG_DATA) public data: any,
   ) {
-    this.getAllUsers();
+    this.userService.getAllUsers();
     this.channel = new Channel(data.channel);
     this.route.params.subscribe(params => {
       const currentUser = params['userId'];
       console.log('Aktuelle userId:', currentUser);
     });
 
-  }
-
-  getAllUsers() {
-    const userCollection = collection(this.firestore, 'users');
-     onSnapshot(userCollection, (snapshot) => {
-      this.userData = [];
-      snapshot.forEach((doc) => {
-        let user = new User({ ...doc.data(), id: doc.id });
-        this.userData.push(user);
-      });
-      console.log('current users', this.userData);
-    });
-  }
+  } 
   
   openDialogAddUser() {
     this.dialogRef.close()
@@ -62,15 +50,5 @@ export class AddChannelUserComponent {
     });
   }
 
-  getAvatarForUser(userName: string) {
-    const user = this.userData.find((u: { name: string; }) => u.name === userName);
-    if (user) {
-      if (this.userService.isNumber(user.avatar)) {
-        return './assets/avatars/avatar_' + user.avatar + '.png';  // Local asset avatar
-      } else {
-        return user.avatar;  // External URL avatar
-      }
-    }
-    return './assets/avatars/avatar_0.png';  // Default avatar when user not found
-  }
+
 }

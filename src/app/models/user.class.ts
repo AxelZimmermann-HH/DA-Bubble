@@ -8,7 +8,7 @@ export class User {
     
 
     constructor(obj?:any){
-        this.avatar = obj && obj.avatar !== undefined ? obj.avatar : '';  // Sicherstellen, dass avatar einen gültigen Wert hat
+        this.avatar = obj && obj.avatar !== undefined ? obj.avatar : '';
         this.mail = obj && obj.mail !== undefined ? obj.mail : '';
         this.name = obj && obj.name !== undefined ? obj.name : '';
         this.online = obj && obj.online !== undefined ? obj.online : false;

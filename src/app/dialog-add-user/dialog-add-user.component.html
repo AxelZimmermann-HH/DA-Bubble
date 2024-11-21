@@ -10,14 +10,14 @@
 
    <div [ngClass]="sharedService.isMobile ? 'm-20 custom-dropdown' : 'custom-dropdown'">
     <div class="dropdown-selected" (click)="toggleDropdown()" [ngClass]="{'selected-user': selectedUser}">
-      <img *ngIf="selectedUser" [src]="getAvatarForUser(selectedUser.name)" alt="" class="slectedUserImg">
+      <img *ngIf="selectedUser" [src]="userService.getAvatarForUser(selectedUser.name)" alt="" class="slectedUserImg">
       <span>{{ selectedUser ? selectedUser.name : 'Name eingeben' }}</span>
       <img src="./assets/icons/close.png" alt="" *ngIf="selectedUser" (click)="removeSelectedUser($event)" class="closeBtn">
     </div>
 
     <ul *ngIf="dropdownOpen" class="dropdown-options">
-      <li (click)="selectUser(user)" class="usersList" *ngFor="let user of userData">
-        <img [src]="getAvatarForUser(user.name)" alt="">
+      <li (click)="selectUser(user)" class="usersList" *ngFor="let user of userService.userData">
+        <img [src]="userService.getAvatarForUser(user.name)" alt="">
         {{ user.name }}
       </li>
     </ul>
@@ -47,14 +47,14 @@
 
   <div *ngIf="selectedOption === 'user'" [ngClass]="sharedService.isMobile ? 'm-20 custom-dropdown' : 'custom-dropdown'">
     <div class="dropdown-selected" (click)="toggleDropdown()" [ngClass]="{'selected-user': selectedUser}">
-      <img *ngIf="selectedUser" [src]="getAvatarForUser(selectedUser.name)" alt="" class="slectedUserImg">
+      <img *ngIf="selectedUser" [src]="userService.getAvatarForUser(selectedUser.name)" alt="" class="slectedUserImg">
       <span>{{ selectedUser ? selectedUser.name : 'Name eingeben' }}</span>
       <img src="./assets/icons/close.png" alt="" *ngIf="selectedUser" (click)="removeSelectedUser($event)" class="closeBtn">
     </div>
 
     <ul *ngIf="dropdownOpen" class="dropdown-options">
-      <li (click)="selectUser(user)" class="usersList" *ngFor="let user of userData">
-        <img [src]="getAvatarForUser(user.name)" alt="">
+      <li (click)="selectUser(user)" class="usersList" *ngFor="let user of userService.userData">
+        <img [src]="userService.getAvatarForUser(user.name)" alt="">
         {{ user.name }}
       </li>
     </ul>
