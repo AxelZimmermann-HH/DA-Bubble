@@ -38,4 +38,29 @@ export class SharedService {
   }
 
 
+  // Timestamp generieren
+  async getTimeStamp() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+  };
+
+
+  // Formatiertes Datum generieren
+  async getFormattedDate(): Promise<string> {
+    const now = new Date();
+    const daysOfWeek = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+    const months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+    const dayOfWeek = daysOfWeek[now.getDay()];
+    const day = now.getDate();
+    const month = months[now.getMonth()];
+
+    return `${dayOfWeek}, ${day}. ${month}`;
+  }
 }

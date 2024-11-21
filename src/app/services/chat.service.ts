@@ -25,6 +25,10 @@ export class ChatService {
   showMenu = true;
   textContent: string | null = null;
   safeUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
+  currentUserId: string = ''; // ID des aktuell eingeloggten Benutzers
+  currentOpenChatId: string | null = null; // Aktuell geöffneter Chat
+  private unreadCountMap = new Map<string, number>(); // Map für ungelesene Nachrichten pro Chat
+  unreadCount$ = new BehaviorSubject<Map<string, number>>(this.unreadCountMap); // Observable für die UI
 
   constructor(public firestore: Firestore, private sanitizer: DomSanitizer, public sharedService: SharedService, public dbService: DatabaseService) {
     this.showChannel = true;
@@ -57,7 +61,6 @@ export class ChatService {
 
 
   onChatSelected() {
-    console.log('Chat selected in MainComponent');
     this.showChannel = false;
     this.showChat = true;
     if(this.sharedService.isMobile){
@@ -65,10 +68,12 @@ export class ChatService {
     }
   }
 
+
   changeToMobile(){
     this.showMenu = false;
     this.sharedService.goBackHeader = true;
   }
+
 
   //öffnet den privaten Chat
   async openDirectMessage(currentUserId: string, userId: string) {
@@ -79,22 +84,13 @@ export class ChatService {
     const querySnapshot = await getDocs(checkIfChatExists);
 
     if (querySnapshot.empty) {
-
-      //legt neuen Chat an, wenn kein Chat existiert
       await this.dbService.createNewChat(chatId, currentUserId, userId);
       this.chatId = chatId;
-      console.log('chat nicht gefunden');
-
     } else {
-
-      //öffnet den vorhanden Chat
       querySnapshot.forEach((doc) => {
         this.getChatData(chatId);
-
-        console.log('chat gefunden:', doc.id, '=>', doc.data());
       });
       await this.markMessagesAsRead(chatId);
-      // Aktualisiere den Zähler für ungelesene Nachrichten
       this.updateUnreadCounts(chatId);
     }
     this.getUserData(userId);
@@ -103,9 +99,8 @@ export class ChatService {
 
   // Methode zum Aktualisieren der ungelesenen Nachrichten-Zähler
   updateUnreadCounts(chatId: string) {
-    // Hier kannst du den Zähler für ungelesene Nachrichten zurücksetzen, da der Chat geöffnet wurde
     this.unreadCountMap.set(chatId, 0);
-    this.unreadCount$.next(new Map(this.unreadCountMap)); // Benachrichtige die UI
+    this.unreadCount$.next(new Map(this.unreadCountMap));
   }
 
 
@@ -171,16 +166,11 @@ export class ChatService {
             };
 
             this.chatMessages.push(chatData);
-            if (chatData.fileType == 'text/plain') {
-              this.textContent = '';
-              this.fetchTextFile(chatData.fileDownloadUrl)
-            }
           });
 
           // Sortiere nach Timestamp und gruppiere nach Datum
           this.chatMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
           this.groupMessagesByDate();
-          console.log(this.groupedMessages)
           // Setze das Observable mit den gruppierten Nachrichten
           this.chatSubject.next(this.groupedMessages);
           this.chatIsEmpty = this.chatMessages.length === 0;
@@ -188,26 +178,6 @@ export class ChatService {
       }
     });
   };
-
-
-  // Dateiinhalt als Text laden
-  async fetchTextFile(url: string) {
-
-    fetch(url)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Fehler beim Laden der Datei');
-        }
-        return response.text();  // Dateiinhalt als Text lesen
-      })
-      .then(text => {
-        this.textContent = text;  // Inhalt im Template anzeigen
-      })
-      .catch(error => {
-        console.error('Fehler beim Lesen der Textdatei:', error);
-        this.textContent = 'Fehler beim Laden der Textdatei.';
-      });
-  }
 
 
   // Nachrichten nach Datum gruppieren
@@ -221,17 +191,10 @@ export class ChatService {
       return groups;
     }, {});
 
-    console.log('Grouped Messages Object:', this.groupedMessages);
-
-
     const groupedMessagesArray = Object.keys(this.groupedMessages).map(date => ({
       date,
       messages: this.groupedMessages[date]
     }));
-  
-    console.log('Grouped Messages Array:', groupedMessagesArray);
-
-    // Setze groupedMessagesArray als neues Observable für chat$
     this.chatSubject.next(groupedMessagesArray);
   };
 
@@ -239,23 +202,27 @@ export class ChatService {
   // Nachricht senden
   async setChatData(newDm: string, fileDownloadUrl: string, selectedFileName: string, fileType: string, currentUserId: string, audioDownloadUrl:string) {
     const newDirectMessage = new directMessage();
+    await this.setChatTime(newDirectMessage)
     newDirectMessage.chatId = this.chatId;
     newDirectMessage.senderId = currentUserId;
     newDirectMessage.receiverId = this.userId;
     newDirectMessage.text = newDm;
-    newDirectMessage.timestamp = await this.getTimeStamp();
-    newDirectMessage.time = newDirectMessage.timestamp.split('T')[1].slice(0, 5);
-    newDirectMessage.dayDateMonth = await this.getFormattedDate();
     newDirectMessage.fileName = selectedFileName;
     newDirectMessage.fileDownloadUrl = fileDownloadUrl;
     newDirectMessage.fileType = fileType;
     newDirectMessage.audioDownloadUrl = audioDownloadUrl;
     const dmData = newDirectMessage.toJson();
-
     await this.dbService.saveNewDirectMessage(dmData, this.chatId);
     await this.getChatData(this.chatId)
   };
 
+
+  async setChatTime(newDirectMessage: directMessage){
+    newDirectMessage.timestamp = await this.sharedService.getTimeStamp();
+    newDirectMessage.time = newDirectMessage.timestamp.split('T')[1].slice(0, 5);
+    newDirectMessage.dayDateMonth = await this.sharedService.getFormattedDate();
+    return newDirectMessage.timestamp, newDirectMessage.time, newDirectMessage.dayDateMonth;
+  }
 
   // Setze Daten für den editierten Chat
   async setEditedChatData(editedDM: string, message: any) {
@@ -266,40 +233,11 @@ export class ChatService {
   };
 
 
-  // Timestamp generieren
-  async getTimeStamp() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-
-    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-  };
-
-
-  // Formatiertes Datum generieren
-  async getFormattedDate(): Promise<string> {
-    const now = new Date();
-    const daysOfWeek = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
-    const months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
-    const dayOfWeek = daysOfWeek[now.getDay()];
-    const day = now.getDate();
-    const month = months[now.getMonth()];
-
-    return `${dayOfWeek}, ${day}. ${month}`;
-  }
-
   async doesChatExist(chatId: string): Promise<boolean> {
     const checkIfChatExists = query(collection(this.firestore, "chats"), where(documentId(), "==", chatId));
     const querySnapshot = await getDocs(checkIfChatExists);
     return !querySnapshot.empty;
   }
-
-  currentUserId: string = ''; // ID des aktuell eingeloggten Benutzers
-  currentOpenChatId: string | null = null; // Aktuell geöffneter Chat
 
 
   // Senden der Nachricht an mehrere User
@@ -309,9 +247,7 @@ export class ChatService {
     newDirectMessage.senderId = currentUserId;
     newDirectMessage.receiverId = this.userId;
     newDirectMessage.text = newDm;
-    newDirectMessage.timestamp = await this.getTimeStamp();
-    newDirectMessage.time = newDirectMessage.timestamp.split('T')[1].slice(0, 5);
-    newDirectMessage.dayDateMonth = await this.getFormattedDate();
+    await this.setChatTime(newDirectMessage)
     if (fileDownloadUrl) newDirectMessage.fileDownloadUrl = fileDownloadUrl;
     if (fileName) newDirectMessage.fileName = fileName;
     if (fileType) newDirectMessage.fileType = fileType;
@@ -320,25 +256,20 @@ export class ChatService {
 
     try {
       await addDoc(collection(this.firestore, 'chats', chatId, 'messages'), dmData);
-      console.log(`Nachricht erfolgreich im Chat ${chatId} gespeichert`);
     } catch (error: any) {
       console.error('Fehler beim Erstellen der Nachricht:', error);
     }
   }
 
   //ungelesene Nachrichten
-  private unreadCountMap = new Map<string, number>(); // Map für ungelesene Nachrichten pro Chat
-  unreadCount$ = new BehaviorSubject<Map<string, number>>(this.unreadCountMap); // Observable für die UI
+
 
   // Initialisiere die Abfrage, um alle ungelesenen Nachrichten zu überwachen
   initializeUnreadCounts(currentUserId: string) {
     const chatsCollection = collection(this.firestore, 'chats');
 
     // Abfrage aller Chats für den aktuellen Benutzer
-    const userChatsQuery = query(
-      chatsCollection,
-      where('users', 'array-contains', currentUserId) // Angenommen, `participants` ist ein Array mit den Benutzer-IDs
-    );
+    const userChatsQuery = query(chatsCollection,where('users', 'array-contains', currentUserId));
 
     // Hole alle Chats des Benutzers
     onSnapshot(userChatsQuery, (snapshot) => {
@@ -357,7 +288,6 @@ export class ChatService {
         // Abonniere die ungelesenen Nachrichten in diesem Chat
         onSnapshot(unreadMessagesQuery, (messageSnapshot) => {
           const unreadCount = messageSnapshot.size; // Anzahl der ungelesenen Nachrichten
-          console.log(unreadCount)
           if (unreadCount > 0) {
             this.unreadCountMap.set(chatId, unreadCount);
           } else {
@@ -398,30 +328,17 @@ export class ChatService {
     );
 
     onSnapshot(unreadMessagesQuery, (snapshot) => {
-      // Prüfen, ob Nachrichten gefunden wurden
-      if (snapshot.empty) {
-        console.log(`Keine ungelesenen Nachrichten gefunden für chatId: ${chatId}`);
-      } else {
-        console.log(`Gefundene Nachrichten: ${snapshot.size}`);
-      }
-
       snapshot.forEach((messageDoc) => {
         const messageRef = doc(this.firestore, `chats/${chatId}/messages/${messageDoc.id}`);
 
         updateDoc(messageRef, { isRead: true })
-          .then(() => {
-            console.log(`Nachricht ${messageDoc.id} erfolgreich als gelesen markiert.`);
-          })
           .catch((error) => {
             console.error(`Fehler beim Aktualisieren von Nachricht ${messageDoc.id}:`, error);
           });
       });
-
       // Zähler zurücksetzen, nachdem alle Nachrichten als gelesen markiert wurden
       this.unreadCountMap.set(chatId, 0);
       this.unreadCount$.next(this.unreadCountMap);
     });
   }
 }
-
-

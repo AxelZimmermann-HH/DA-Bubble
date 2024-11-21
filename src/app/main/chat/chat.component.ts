@@ -1,4 +1,4 @@
-import { AfterViewChecked, AfterViewInit, Component, ElementRef, ViewChild, HostListener, Renderer2, OnDestroy } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, ElementRef, ViewChild, HostListener, Renderer2, OnDestroy, viewChild } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
 import { CommonModule } from '@angular/common';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -134,7 +134,9 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
 
         // Initialisiere filteredSearchMessages mit allen Nachrichten
         this.filteredSearchMessages = chatSubject;
+        
       }
+      this.focusInputField();
     });
 
   
@@ -246,7 +248,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
       }
   
       await this.chatService.sendMessageToChat(chatId, newDm, fileDownloadUrl, fileName, fileType, this.currentUserId);
-      console.log('Nachricht gesendet an:', user.name);
     }
   }
   
@@ -324,13 +325,13 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
 
 
   onEmojiSelect(event: any) {
-    console.log('gewähltes emojii:', event)
     const emoji = event.emoji.native; // Das ausgewählte Emoji
     const currentMessageValue = this.directMessage.value || '';
     this.directMessage.setValue(currentMessageValue + emoji);
     this.showEmojis = false;
   }
 
+  
   onEmojiSelectEdit(event: any){
     const emoji = event.emoji.native; // Das ausgewählte Emoji
     const currentMessageValue = this.editedMessage.value || '';
@@ -430,6 +431,14 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
       await updateDoc(chatDocRef, {
         [reaction]: updatedUsers  
       });
+    }
+  }
+
+  @ViewChild('customInput') customInput: any;
+
+  focusInputField() {
+    if (this.customInput) {
+      this.customInput.nativeElement.focus();
     }
   }
 }

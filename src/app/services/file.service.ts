@@ -14,10 +14,16 @@ export class FileService {
   fileUrl: SafeResourceUrl | null = null;
   selectedFile: File | null = null;
   fileDownloadUrl: string = '';
+  selectedFileName: string = '';  // Neuer Dateiname-String
+  selectedFileType: string = '';
+  safeFileUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
+  fileSize: boolean = false;
+  fileType: boolean = false;
 
   constructor(
     private sanitizer: DomSanitizer,
     private chatService: ChatService) { }
+
 
   extractFileName(fileUrl: string): string {
     if (!fileUrl) return '';
@@ -29,6 +35,7 @@ export class FileService {
     const fileName = lastPart.split('?')[0];
     return fileName;
   }
+
 
   removeFile(message: Message) {
     if (message.fileUrl) {
@@ -47,6 +54,7 @@ export class FileService {
     }
   }
 
+
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
     if (file) {
@@ -60,24 +68,30 @@ export class FileService {
     }
   }
 
+
   setFileUrl(file: File) {
     this.selectedFile = file;
     const objectUrl = URL.createObjectURL(file);
     this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
   }
 
+
   getSafeUrl(url: string) {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
+
 
   getFileNameFromUrl(fileUrl: string): string {
     return fileUrl.split('/').pop() || 'Datei';
   }
 
+
   closePreview() {
     this.fileUrl = null;
     this.selectedFile = null;
   }
+
+
   async uploadFiles(): Promise<string | null> {
     if (!this.selectedFile) return null;
     const filePath = `files/${this.selectedFile.name}`;
@@ -93,45 +107,24 @@ export class FileService {
       return null;
     }
   }
-  //CHAT-FILE-UPLOAD
-  selectedFileName: string = '';  // Neuer Dateiname-String
-  selectedFileType: string = '';
-  safeFileUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
-  fileSize: boolean = false;
-  fileType: boolean = false;
 
+  //CHAT-FILE-UPLOAD
   //Datei hinzufügen
   onFileSelectedChat(event: Event) {
     const input = event.target as HTMLInputElement;
-
     if (!input.files || input.files.length === 0) {
       return; // Keine Datei ausgewählt
     }
-
-    const file = input.files[0]
-    const maxSize = 500 * 1024; // 500 kB in Bytes
-    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-
-    if (input.files && input.files[0]) {
-      if(!allowedTypes.includes(file.type)){
-        this.fileType = true;
-        setTimeout(() => {
-          this.fileType = false;
-        }, 3000);
-        return;
-      }
-      if(file.size > maxSize){
-        this.fileSize = true;
-        setTimeout(() => {
-          this.fileSize = false;
-        }, 3000);
-        return;
-      }
-      this.selectedFile = file;
-      this.selectedFileName = file.name;  // Dateiname speichern
-      this.selectedFileType = file.type;
-      this.uploadFile()
+    const file = input.files[0];
+    if(!this.isFileTypeAllowed(file)){
+      this.showFileTypeInfo();
+      return;
     }
+    if(!this.isFileSizeAllowed(file)){
+      this.showFileSizeInfo();
+      return;
+    }
+    this.processSelectedFile(file);
   }
 
 
@@ -139,35 +132,55 @@ export class FileService {
   async onChangeFileSelected(event: Event, fileToDelete: string) {
     this.deleteFile(fileToDelete); //Alte Datei löschen
     const input = event.target as HTMLInputElement;
-
     if (!input.files || input.files.length === 0) {
       return; // Keine Datei ausgewählt
     }
-
-    const file = input.files[0]
-    const maxSize = 500 * 1024; // 500 kB in Bytes
-    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-
-    if (input.files && input.files[0]) {
-      if(!allowedTypes.includes(file.type)){
-        this.fileType = true;
-        setTimeout(() => {
-          this.fileType = false;
-        }, 3000);
-        return;
-      }
-      if(file.size > maxSize){
-        this.fileSize = true;
-        setTimeout(() => {
-          this.fileSize = false;
-        }, 3000);
-        return;
-      }
-      this.selectedFile = file;
-      this.selectedFileName = file.name;  // Dateiname speichern
-      this.selectedFileType = file.type;
-      this.uploadFile()
+    const file = input.files[0];
+    if(!this.isFileTypeAllowed(file)){
+      this.showFileTypeInfo();
+      return;
     }
+    if(!this.isFileSizeAllowed(file)){
+      this.showFileSizeInfo();
+      return;
+    }
+    this.processSelectedFile(file);
+  }
+
+
+  isFileTypeAllowed(file: File): boolean {
+    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    return allowedTypes.includes(file.type);
+  }
+
+
+  isFileSizeAllowed(file: File): boolean {
+    const maxSize = 500 * 1024; // 500 kB in Bytes
+    return file.size <= maxSize;
+  }
+
+
+  showFileTypeInfo(){
+    this.fileType = true;
+    setTimeout(() => {
+      this.fileType = false;
+    }, 3000);
+  }
+
+
+  showFileSizeInfo(){
+    this.fileSize = true;
+    setTimeout(() => {
+      this.fileSize = false;
+    }, 3000);
+  }
+
+
+  processSelectedFile(file: File) {
+    this.selectedFile = file;
+    this.selectedFileName = file.name; // Dateiname speichern
+    this.selectedFileType = file.type;
+    this.uploadFile(); // Datei hochladen
   }
   
 
@@ -193,46 +206,38 @@ export class FileService {
       const snapshot = await uploadBytes(storageRef, this.selectedFile);
       const url = await getDownloadURL(snapshot.ref);
       this.fileDownloadUrl = url;
-
-      if (this.selectedFileType == 'application/pdf') {
-        console.log('Lade die Datei von URL:', this.fileDownloadUrl);
-        await this.loadSafeFile(this.fileDownloadUrl, this.selectedFileType)
-      }
-
-      if (this.selectedFileType == 'text/plain') {
-        await this.chatService.fetchTextFile(this.fileDownloadUrl)
-      }
+      this.loadPdfPreview();
     } catch (error) {
       console.error('Fehler beim Hochladen der Datei:', error);
     }
   }
 
 
+  async loadPdfPreview(){
+    if (this.selectedFileType == 'application/pdf') {
+      console.log('Lade die Datei von URL:', this.fileDownloadUrl);
+      await this.loadSafeFile(this.fileDownloadUrl, this.selectedFileType)
+    }
+  }
+
+
   //File im Browser abrufen und laden
   downloadFile(fileDownloadUrl: string, fileName: string) {
-    // Erstellen eines unsichtbaren Links
     const link = document.createElement('a');
     link.href = fileDownloadUrl;
     link.target = '_blank';
     link.download = fileName;
-    // Anhängen des Links an das Dokument
     document.body.appendChild(link);
-
-    // Automatisches Klicken des Links, um den Download zu starten
     link.click();
-
-    // Entfernen des Links nach dem Download
     document.body.removeChild(link);
   }
 
 
   //Datei löschen
   deleteFile(fileName: string) {
-    // Firebase Storage initialisieren
     const storage = getStorage();
     const fileRef = ref(storage, '/files/' + fileName);
 
-    // Datei löschen
     deleteObject(fileRef).then(() => {
       console.log('Datei erfolgreich gelöscht');
     }).catch((error) => {

@@ -71,10 +71,10 @@
                                                         Dein Browser unterstützt keine PDF-Anzeige
                                                     </object>
 
-                                                    <pre *ngIf="message.fileType == 'text/plain'" style="overflow: auto;"> <p>{{this.chatService.textContent}}</p></pre>
                                                     <button  class="open-file-button"
-                                                        (click)="this.fileService.downloadFile(message.fileDownloadUrl, message.fileName)">Anhang
-                                                        öffnen</button>
+                                                        (click)="this.fileService.downloadFile(message.fileDownloadUrl, message.fileName)">
+                                                        Anhang öffnen
+                                                    </button>
                                                 </div>
                                                 <div *ngIf="message.audioDownloadUrl">
                                                     <audio controls>
@@ -299,8 +299,6 @@
                                                         Dein Browser unterstützt keine PDF-Anzeige
                                                     </object>
 
-                                                    <pre *ngIf="message.fileType == 'text/plain'" style="overflow: auto;"> <p>{{this.chatService.textContent}}</p></pre>
-
                                                     <button class="open-file-button" (click)="this.fileService.downloadFile(message.fileDownloadUrl, message.fileName)">
                                                         Anhang öffnen
                                                     </button>
@@ -497,8 +495,6 @@
                                                 <object *ngIf="message.fileType == 'application/pdf'" [data]="message.safeFileUrl" type="application/pdf" width="60%" height="100%">
                                                     Dein Browser unterstützt keine PDF-Anzeige
                                                 </object>
-
-                                                <pre *ngIf="message.fileType == 'text/plain'" style="overflow: auto;"> <p>{{this.chatService.textContent}}</p></pre>
                                             </div>
                                             <div style="position: relative;" *ngIf="message.audioDownloadUrl">
                                                 <audio controls>
@@ -540,7 +536,7 @@
     </div>
     <!-- Nachrichteneingabe -->
     <div class="custom-input" [ngClass]="this.sharedService.isMobile ? 'mobile-custom-input' : 'custom-input'">
-        <textarea contenteditable="true" placeholder="Nachricht an {{ user.name }}" class="text-area" [formControl]="directMessage"></textarea>
+        <textarea #customInput contenteditable="true" placeholder="Nachricht an {{ user.name }}" class="text-area" [formControl]="directMessage"></textarea>
         <div>
             <emoji-mart class="chat-emoji-picker" *ngIf="showEmojis" 
                 set="google"
@@ -569,10 +565,6 @@
             <iframe *ngIf="this.fileService.selectedFileType == 'application/pdf' && this.fileService.safeFileUrl" [src]="this.fileService.safeFileUrl" type="application/pdf" width="40%" height="60px">
                 Dein Browser unterstützt keine PDF-Anzeige
             </iframe>
-
-            <pre *ngIf="this.fileService.selectedFileType  == 'text/plain'" style="overflow: auto;"> 
-                <p>{{this.chatService.textContent}}</p>
-            </pre>
 
             <span> {{ this.fileService.selectedFileName }}</span>
             <label for="file-change" style="height: 24px;">
