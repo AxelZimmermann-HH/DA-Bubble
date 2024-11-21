@@ -78,7 +78,21 @@ export class FileService {
     this.fileUrl = null;
     this.selectedFile = null;
   }
-  
+  async uploadFiles(): Promise<string | null> {
+    if (!this.selectedFile) return null;
+    const filePath = `files/${this.selectedFile.name}`;
+    const storageRef = ref(getStorage(), filePath);
+    try {
+      const snapshot = await uploadBytes(storageRef, this.selectedFile);
+      const fileUrl = await getDownloadURL(snapshot.ref);
+
+      this.fileDownloadUrl = fileUrl;
+      return fileUrl;
+    } catch (error) {
+      console.error('Fehler beim Hochladen der Datei:', error);
+      return null;
+    }
+  }
   //CHAT-FILE-UPLOAD
   selectedFileName: string = '';  // Neuer Dateiname-String
   selectedFileType: string = '';

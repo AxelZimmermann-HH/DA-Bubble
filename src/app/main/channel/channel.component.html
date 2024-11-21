@@ -107,9 +107,9 @@
                                         <img src="./assets/icons/sentiment_satisfied-1.png" alt=""
                                             (click)="toggleEditEmojiPicker($event)">
                                         <div class="button-group">
-                                            <button (click)="cancelMessageEdit(message)"
+                                            <button (click)="messagesService.cancelMessageEdit(message)"
                                                 class="cancelBtn">Abbrechen</button>
-                                            <button (click)="saveMessageEdit(message)"
+                                            <button (click)="messagesService.saveMessageEdit(message, this.selectedChannelId)"
                                                 class="saveBtn">Speichern</button>
                                         </div>
                                     </div>

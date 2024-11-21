@@ -111,7 +111,6 @@ export class ChannelComponent {
       this.filteredSearchMessages = this.messagesService.allMessages;
     });
     this.subscribeToFilteredData();
-
   }
 
   ngOnChanges(): void {
@@ -141,7 +140,7 @@ export class ChannelComponent {
 
   focusInputField() {
     if (this.messageInput) {
-      this.messageInput.nativeElement.focus(); // Fokus auf das Textarea setzen
+      this.messageInput.nativeElement.focus();
     }
   }
 
@@ -217,11 +216,8 @@ export class ChannelComponent {
   async sendEmail(email: string, message: string, fileUrl: string | null) {
     try {
       const user = this.userService.findUserByEmail(email);
-      if (!user) {
-        console.error(`Kein Benutzer mit der E-Mail-Adresse ${email} gefunden.`);
-        return;
-      }
-      await this.sendDirectMessage(user.name, message, fileUrl);
+      if (!user) return;
+      await this.messagesService.sendDirectMessage(user.name, message, fileUrl, this.userId);
     } catch (error) {
       console.error("Fehler beim Suchen des Benutzers: ", error);
     }
@@ -237,19 +233,15 @@ export class ChannelComponent {
     const userName = this.userService.findUserNameById(this.userId);
     if (!userName) return;
 
-    const fileUrl = await this.uploadFile();
-
+    const fileUrl = await this.fileService.uploadFiles();
     if (!fileUrl && !this.newMessageText.trim()) return;
-
-
     if (this.channelService.selectedChannel) {
-      await this.sendChannelMessage(this.selectedChannelId, this.newMessageText, fileUrl);
+      await this.messagesService.sendChannelMessage(this.selectedChannelId, this.newMessageText, fileUrl, this.userId);
     } else {
       await this.handleDirectMessageOrEmail(fileUrl);
     }
-
     for (const username of taggedUsernames) {
-      await this.sendDirectMessage(username, this.newMessageText, fileUrl);
+      await this.messagesService.sendDirectMessage(username, this.newMessageText, fileUrl, this.userId);
     }
 
     this.resetInput();
@@ -257,66 +249,22 @@ export class ChannelComponent {
 
   async updateMessage() {
     if (this.isEditingOnMobile && this.editingMessageId) {
-      const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${this.editingMessageId}`);
-      await updateDoc(messageRef, { text: this.newMessageText })
-        .then(() => {
-          const message = this.messagesService.allMessages.find(m => m.messageId === this.editingMessageId);
-          if (message) {
-            message.text = this.newMessageText;
-            message.isEditing = false;
-          }
-          this.isEditingOnMobile = false;
-          this.editingMessageId = null;
-          this.newMessageText = '';
-        })
-        .catch((error) => {
-          console.error("Fehler beim Speichern der Nachricht: ", error);
-        });
-      return;
+      await this.messagesService.updateMessages(this.selectedChannelId, this.selectedMessage.messageId, this.newMessageText)
+      this.isEditingOnMobile = false;
+      this.editingMessageId = null;
+      this.newMessageText = '';
     }
   }
 
   extractTaggedUsernames(message: string): string[] {
-    const tagRegex = /@([A-Za-z0-9_]+)/g; 
+    const tagRegex = /@([A-Za-z0-9_]+)/g;
     const taggedUsernames = [];
     let match;
 
     while ((match = tagRegex.exec(message)) !== null) {
-      taggedUsernames.push(match[1].trim()); 
+      taggedUsernames.push(match[1].trim());
     }
     return taggedUsernames;
-  }
-
-  async uploadFile(): Promise<string | null> {
-    if (!this.fileService.selectedFile) return null;
-    const filePath = `files/${this.fileService.selectedFile.name}`;
-    const storageRef = ref(getStorage(), filePath);
-    try {
-      const snapshot = await uploadBytes(storageRef, this.fileService.selectedFile);
-      const fileUrl = await getDownloadURL(snapshot.ref);
-
-      this.fileService.fileDownloadUrl = fileUrl;
-      return fileUrl;
-    } catch (error) {
-      console.error('Fehler beim Hochladen der Datei:', error);
-      return null;
-    }
-  }
-
-  async handleDirectMessageOrEmail(fileUrl: string | null) {
-    const inputValue = this.inputValue.trim();
-    if (this.emailPattern.test(inputValue)) {
-      await this.sendEmail(inputValue, this.newMessageText, fileUrl);
-    } else if (inputValue.startsWith('@')) {
-      const userName = inputValue.slice(1).trim();
-      await this.sendDirectMessage(userName, this.newMessageText, fileUrl);
-    } else if (inputValue.startsWith('#')) {
-      const channelName = inputValue.slice(1).trim();
-      const channelId = this.channelService.getChannelIdByName(channelName);
-      if (channelId) {
-        await this.sendChannelMessage(channelId, this.newMessageText, fileUrl);
-      }
-    }
   }
 
   resetInput() {
@@ -328,71 +276,21 @@ export class ChannelComponent {
     this.editingMessageId = null;
   }
 
-  async sendChannelMessage(channelId: string | null, message: string, fileUrl: string | null) {
-    if (message.trim() === '' && !fileUrl) return;
-    const messageData = {
-      text: message,
-      user: this.userService.findUserNameById(this.userId),
-      timestamp: Timestamp.now(),
-      fullDate: new Date().toDateString(),
-      answers: [],
-      ...(fileUrl && { fileUrl, fileType: this.fileService.selectedFile?.type, fileName: this.fileService.selectedFile?.name })
-    };
-    try {
-      await addDoc(collection(this.firestore, `channels/${channelId}/messages`), messageData);
-      this.newMessageText = '';
-      this.fileService.selectedFile = null;
-    } catch (error) {
-      console.error('Fehler beim Senden der Nachricht an den Channel:', error);
+  async handleDirectMessageOrEmail(fileUrl: string | null) {
+    const inputValue = this.inputValue.trim();
+    if (this.emailPattern.test(inputValue)) {
+      await this.sendEmail(inputValue, this.newMessageText, fileUrl);
+    } else if (inputValue.startsWith('@')) {
+      const userName = inputValue.slice(1).trim();
+      await this.messagesService.sendDirectMessage(userName, this.newMessageText, fileUrl, this.userId);
+    } else if (inputValue.startsWith('#')) {
+      const channelName = inputValue.slice(1).trim();
+      const channelId = this.channelService.getChannelIdByName(channelName);
+      if (channelId) {
+        await this.messagesService.sendChannelMessage(channelId, this.newMessageText, fileUrl, this.userId);
+      }
     }
   }
-
-  async sendDirectMessage(recipientName: string, messageText: string, fileUrl: string | null) {
-    if (!messageText.trim() && !fileUrl) {
-      return;
-    }
-    const receiverID = this.userService.getUserIdByname(recipientName);
-    if (!receiverID) {
-      return;
-    }
-    const chatId = await this.initializeChat(receiverID);
-    if (!chatId) return;
-    await this.sendChatMessage(chatId, messageText, fileUrl);
-    this.resetInputFields();
-  }
-
-  async initializeChat(receiverID: string) {
-    const chatId = await this.chatService.createChatID(this.userId, receiverID);
-    const chatExists = await this.chatService.doesChatExist(chatId);
-    if (!chatExists) {
-      await this.dbService.createNewChat(chatId, this.userId, receiverID);
-    }
-    return chatId;
-  }
-
-  async sendChatMessage(chatId: string, messageText: string, fileUrl: string | null) {
-    const fileName = this.fileService.selectedFile ? this.fileService.selectedFile.name : '';
-    const fileType = this.fileService.selectedFile ? this.fileService.selectedFile.type : '';
-    const finalFileUrl = fileUrl || this.fileService.fileDownloadUrl;
-    try {
-      await this.chatService.sendMessageToChat(
-        chatId,
-        messageText,
-        finalFileUrl,
-        fileName,
-        fileType,
-        this.userId
-      );
-    } catch (error) {
-      console.error('Fehler beim Senden der Nachricht:', error);
-    }
-  }
-
-  resetInputFields() {
-    this.fileService.selectedFile = null;
-    this.fileService.fileDownloadUrl = '';
-  }
-
   onThreadClosed() {
     this.isThreadOpen = false;
   }
@@ -430,7 +328,22 @@ export class ChannelComponent {
       this.showEditEmojiPicker = false;
     }
   }
-  
+
+  @HostListener('document:click', ['$event'])
+  onClick(event: MouseEvent) {
+    const searchList = document.querySelector('.searchListe');
+    const taggedUserDiv = document.querySelector('.tagged-user-list');
+    const emojiPicker = document.querySelector('.emoji-picker');
+    if (this.taggedUser && searchList && taggedUserDiv &&
+      !searchList.contains(event.target as Node) && !taggedUserDiv.contains(event.target as Node)) {
+      this.taggedUser = false;
+    }
+    if ((this.showEmojiPicker || this.showEditEmojiPicker) && emojiPicker && !emojiPicker.contains(event.target as Node)) {
+      this.showEmojiPicker = false;
+      this.showEditEmojiPicker = false;
+    }
+  }
+
   editDirectMessage(message: Message) {
     if (!this.sharedService.isMobile) {
       message.isEditing = true;
@@ -441,40 +354,6 @@ export class ChannelComponent {
       this.editingMessageId = message.messageId;
     }
   }
-
-  cancelMessageEdit(message: Message) {
-    message.isEditing = false;
-    message.editedText = message.text;
-  }
-  saveMessageEdit(message: Message) {
-    const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${message.messageId}`);
-    updateDoc(messageRef, { text: message.editedText })
-      .then(() => {
-        message.text = message.editedText;  // Lokale Aktualisierung
-        message.isEditing = false;
-      })
-      .catch((error) => {
-        console.error("Fehler beim Speichern der Nachricht: ", error);
-      });
-  }
-
-  @HostListener('document:click', ['$event'])
-  onClick(event: MouseEvent) {
-    const searchList = document.querySelector('.searchListe');
-    const taggedUserDiv = document.querySelector('.tagged-user-list');
-    const emojiPicker = document.querySelector('.emoji-picker');
-
-    if (this.taggedUser && searchList && taggedUserDiv &&
-      !searchList.contains(event.target as Node) && !taggedUserDiv.contains(event.target as Node)) {
-      this.taggedUser = false;
-    }
-
-    if ((this.showEmojiPicker || this.showEditEmojiPicker) && emojiPicker && !emojiPicker.contains(event.target as Node)) {
-      this.showEmojiPicker = false;
-      this.showEditEmojiPicker = false;
-    }
-  }
-
   selectUser(user: User) {
     this.newMessageText += `@${user.name}`;
     this.taggedUser = false;
