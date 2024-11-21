@@ -1,4 +1,4 @@
-import { AfterViewChecked, AfterViewInit, Component, ElementRef, ViewChild, HostListener, Renderer2, OnDestroy, viewChild } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, ElementRef, ViewChild, HostListener, Renderer2, OnDestroy } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
 import { CommonModule } from '@angular/common';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -7,15 +7,14 @@ import { DialogUserProfilComponent } from '../dialog-user-profil/dialog-user-pro
 import { User } from '../../models/user.class';
 import { UserService } from '../../services/user.service';
 import { SharedService } from '../../services/shared.service';
-import { ActivatedRoute, Route } from '@angular/router';
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject, StorageReference, getMetadata } from '@angular/fire/storage';  // Firebase Storage imports
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { ActivatedRoute } from '@angular/router';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
-import { doc, Firestore, updateDoc } from '@angular/fire/firestore';
+import { Firestore } from '@angular/fire/firestore';
 import { ChangeDetectorRef } from '@angular/core';
 import { AudioService } from '../../services/audio.service';
 import { FileService } from '../../services/file.service';
 import { DatabaseService } from '../../services/database.service';
+import { ReactionService } from '../../services/reaction.service';
 
 interface MessageGroup {
   date: string;
@@ -29,30 +28,26 @@ interface MessageGroup {
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss']
 })
+
 export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy {
   private documentClickListener?: () => void;
   directMessage = new FormControl('', [Validators.required, Validators.minLength(2)]);
   editedMessage = new FormControl('', [Validators.required, Validators.minLength(2)]);
   file = new FormControl('', [Validators.required, Validators.minLength(2)]);
-
   editingMessageId: string | null = null;
   currentUser: any | string;
   currentUserId: string = '';
   user = new User();
   chat: any;
   userList: User[] = [];
-
   showUsers: boolean = false;
   hasNames: boolean = false;
   selectedNames: { name: string; userId: string }[] = [];
-
   filteredSearchMessages: MessageGroup[] = [];
-
-
 
   @ViewChild('chatContainer') chatContainer!: ElementRef;
   @ViewChild('nameContainerRef', { static: false }) nameContainerRef!: ElementRef;
-
+  @ViewChild('customInput') customInput: any;
 
   constructor(
     public chatService: ChatService,
@@ -60,14 +55,14 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     public userService: UserService,
     public sharedService: SharedService, 
     public route: ActivatedRoute,
-    private sanitizer: DomSanitizer,
     public firestore: Firestore,
     private cdr: ChangeDetectorRef,
     public audioService: AudioService,
     public fileService: FileService,
     public dbService: DatabaseService,
     private renderer: Renderer2,
-    private elementRef: ElementRef
+    private elementRef: ElementRef,
+    public reactionService: ReactionService
   ) { }
 
 
@@ -75,19 +70,18 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     if (!this.user || !this.user.name) {
       return './assets/avatars/avatar_0.png'; 
     }
-  
-    // Eigener User im Chat
+
     if (userName.trim().toLowerCase() === this.currentUser.name.trim().toLowerCase()) {
       return this.getCurrentUserAvatar();
     }
   
-    // Anderer User
     if (userName.trim().toLowerCase() === this.user.name.trim().toLowerCase()) {
       return this.getChatPartnerAvatar();
     }
 
     return './assets/avatars/avatar_0.png'; 
   }
+
 
   private getCurrentUserAvatar(): string {
     if (this.userService.isNumber(this.currentUser.avatar)) {
@@ -97,6 +91,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     }
   }
 
+
   private getChatPartnerAvatar(): string {
     if (this.userService.isNumber(this.user.avatar)) {
       return './assets/avatars/avatar_' + String(this.user.avatar) + '.png';  // Typkonvertierung zu string
@@ -104,6 +99,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
       return String(this.user.avatar);  // Typkonvertierung zu string
     }
   }
+
 
   // Scrollen direkt nach dem Initialisieren der View
   ngAfterViewInit() {
@@ -223,20 +219,22 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     const fileType = this.fileService.selectedFileType;
     const audioDownloadUrl = this.audioService.audioDownloadUrl;
   
-    // Nachricht an den aktuellen Chat-Partner senden
     await this.chatService.setChatData(newDm, fileDownloadUrl, fileName, fileType, this.currentUserId, audioDownloadUrl);
-    this.directMessage.setValue('');
-    this.fileService.selectedFile = null;
-    this.fileService.selectedFileName = '';
-    this.fileService.fileDownloadUrl = '';
-    this.audioService.audioDownloadUrl = '';
-  
-    // Nachricht an mehrere Benutzer senden
+    await this.resetDirectMessage();
     await this.sendMessagesToMultipleUsers(newDm, fileDownloadUrl, fileName, fileType);  
     this.selectedNames = [];
     this.hasNames = false;
   }
   
+
+  async resetDirectMessage(){
+    this.directMessage.setValue('');
+    this.fileService.selectedFile = null;
+    this.fileService.selectedFileName = '';
+    this.fileService.fileDownloadUrl = '';
+    this.audioService.audioDownloadUrl = '';
+  }
+
 
   async sendMessagesToMultipleUsers(newDm: string, fileDownloadUrl: string, fileName: string, fileType: string) {
     for (const user of this.selectedNames) {
@@ -331,7 +329,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     this.showEmojis = false;
   }
 
-  
+
   onEmojiSelectEdit(event: any){
     const emoji = event.emoji.native; // Das ausgewählte Emoji
     const currentMessageValue = this.editedMessage.value || '';
@@ -390,51 +388,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     this.cdr.detectChanges();
   }
   
-
-  //Reactions
-  //if: wenn der aktuelle Nutzer noch nicht die angeklickte Reaktion gewählt hat, wird er dieser Reaktion hinzugefügt
-  //else: wenn schon gewählt, dann wird er wieder entfernt
-  hoveredMessageId: string | null = null;  // Speichert die ID des gehoverten Elements
-  hoveredReaction: string | null = null;
-  hoveredElement: { messageId: string | null; reactionType: string | null } = {
-    messageId: null,
-    reactionType: null,
-  };
-
-
-  // Funktion, um das gehoverte Element zu setzen
-  isHovered(messageId: string | null, reactionType: string | null) {
-    this.hoveredElement = { messageId, reactionType };
-  }
-
-
-  // Funktion, um die Sichtbarkeit zu prüfen
-  isBubbleVisible(messageId: string, reactionType: string): boolean {
-    return (
-      this.hoveredElement.messageId === messageId &&
-      this.hoveredElement.reactionType === reactionType
-    );
-  }
-
-  
-  async addReaction(currentUser: User, message: any, reaction: string) {
-    const currentUsers = message[reaction] || [];
-    const currentUserReactedAlready = currentUsers.some((user: { userId: string; }) => user.userId === this.currentUserId);
-    const chatDocRef = doc(this.firestore, 'chats', message.chatId, 'messages', message.messageId);
-  
-    if (!currentUserReactedAlready) {
-      await updateDoc(chatDocRef, {
-        [reaction]: [...currentUsers, currentUser.toJson()]  // Sicherstellen, dass user im richtigen Format ist
-      });
-    } else {
-      const updatedUsers = currentUsers.filter((user: User) => user.userId !== this.currentUserId);
-      await updateDoc(chatDocRef, {
-        [reaction]: updatedUsers  
-      });
-    }
-  }
-
-  @ViewChild('customInput') customInput: any;
 
   focusInputField() {
     if (this.customInput) {

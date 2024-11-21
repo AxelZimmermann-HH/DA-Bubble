@@ -87,17 +87,17 @@
                                             <div class="reaction-container">
                                                 <div *ngIf="message.reactionNerd && message.reactionNerd.length > 0" style="position: relative;">
                                                     <button class="reaction-button" 
-                                                    (click)="this.addReaction(currentUser, message, 'reactionNerd')"
-                                                    (mouseenter)="isHovered(message.messageId, 'reactionNerd')" 
-                                                    (mouseleave)="isHovered(null, null)">
+                                                    (click)="this.reactionService.addReaction(currentUser, message, 'reactionNerd')"
+                                                    (mouseenter)="this.reactionService.isHovered(message.messageId, 'reactionNerd')" 
+                                                    (mouseleave)="this.reactionService.isHovered(null, null)">
                                                         <img src="./assets/icons/emoji _nerd face_.png" alt="">
                                                         <span>{{message.reactionNerd.length}}</span>
                                                     </button>
     
                                                     <div class="reaction-bubble" 
                                                     [ngClass]="{ 
-                                                        'visible': isBubbleVisible(message.messageId, 'reactionNerd'), 
-                                                        'hidden': !isBubbleVisible(message.messageId, 'reactionNerd') 
+                                                        'visible': this.reactionService.isBubbleVisible(message.messageId, 'reactionNerd'), 
+                                                        'hidden': !this.reactionService.isBubbleVisible(message.messageId, 'reactionNerd') 
                                                       }">
                                                             <img src="./assets/icons/emoji _nerd face_.png" alt="">
                                                             @for (user of message.reactionNerd; track $index) {
@@ -126,17 +126,17 @@
 
                                                 <div *ngIf="message.reactionCelebrate && message.reactionCelebrate.length > 0" style="position: relative;">
                                                     <button class="reaction-button" 
-                                                    (click)="this.addReaction(currentUser, message, 'reactionCelebrate')"
-                                                    (mouseenter)="isHovered(message.messageId, 'reactionCelebrate')" 
-                                                    (mouseleave)="isHovered(null, null)">
+                                                    (click)="this.reactionService.addReaction(currentUser, message, 'reactionCelebrate')"
+                                                    (mouseenter)="this.reactionService.isHovered(message.messageId, 'reactionCelebrate')" 
+                                                    (mouseleave)="this.reactionService.isHovered(null, null)">
                                                         <img src="./assets/icons/emoji _person raising both hands in celebration_.png" alt="">
                                                         <span>{{message.reactionCelebrate.length}}</span>
                                                     </button>
     
                                                     <div class="reaction-bubble" 
                                                     [ngClass]="{ 
-                                                        'visible': isBubbleVisible(message.messageId, 'reactionCelebrate'), 
-                                                        'hidden': !isBubbleVisible(message.messageId, 'reactionCelebrate') 
+                                                        'visible': this.reactionService.isBubbleVisible(message.messageId, 'reactionCelebrate'), 
+                                                        'hidden': !this.reactionService.isBubbleVisible(message.messageId, 'reactionCelebrate') 
                                                       }">
                                                             <img src="./assets/icons/emoji _person raising both hands in celebration_.png" alt="">
                                                             
@@ -166,17 +166,17 @@
 
                                                 <div *ngIf="message.reactionCheck && message.reactionCheck.length > 0" style="position: relative;">
                                                     <button class="reaction-button" 
-                                                    (click)="this.addReaction(currentUser, message, 'reactionCheck')"
-                                                    (mouseenter)="isHovered(message.messageId, 'reactionCheck')" 
-                                                    (mouseleave)="isHovered(null, null)">
+                                                    (click)="this.reactionService.addReaction(currentUser, message, 'reactionCheck')"
+                                                    (mouseenter)="this.reactionService.isHovered(message.messageId, 'reactionCheck')" 
+                                                    (mouseleave)="this.reactionService.isHovered(null, null)">
                                                         <img src="./assets/icons/emoji _white heavy check mark_.png" alt="">
                                                         <span>{{message.reactionCheck.length}}</span>
                                                     </button>
     
                                                     <div class="reaction-bubble"                                                   
                                                     [ngClass]="{ 
-                                                        'visible': isBubbleVisible(message.messageId, 'reactionCheck'), 
-                                                        'hidden': !isBubbleVisible(message.messageId, 'reactionCheck') 
+                                                        'visible': this.reactionService.isBubbleVisible(message.messageId, 'reactionCheck'), 
+                                                        'hidden': !this.reactionService.isBubbleVisible(message.messageId, 'reactionCheck') 
                                                       }">
                                                             <img src="./assets/icons/emoji _person raising both hands in celebration_.png" alt="">
                                                             
@@ -206,17 +206,17 @@
 
                                                 <div *ngIf="message.reactionRocket && message.reactionRocket.length > 0" style="position: relative;">
                                                     <button class="reaction-button" 
-                                                    (click)="this.addReaction(currentUser, message, 'reactionRocket')"
-                                                    (mouseenter)="isHovered(message.messageId, 'reactionRocket')" 
-                                                    (mouseleave)="isHovered(null, null)">
+                                                    (click)="this.reactionService.addReaction(currentUser, message, 'reactionRocket')"
+                                                    (mouseenter)="this.reactionService.isHovered(message.messageId, 'reactionRocket')" 
+                                                    (mouseleave)="this.reactionService.isHovered(null, null)">
                                                         <img src="./assets/icons/emoji _rocket_.png" alt="">
                                                         <span>{{message.reactionRocket.length}}</span>
                                                     </button>
     
                                                     <div class="reaction-bubble"                                                         
                                                     [ngClass]="{ 
-                                                        'visible': isBubbleVisible(message.messageId, 'reactionRocket'), 
-                                                        'hidden': !isBubbleVisible(message.messageId, 'reactionRocket') 
+                                                        'visible': this.reactionService.isBubbleVisible(message.messageId, 'reactionRocket'), 
+                                                        'hidden': !this.reactionService.isBubbleVisible(message.messageId, 'reactionRocket') 
                                                       }">
                                                             <img src="./assets/icons/emoji _rocket_.png" alt="">
                                                             
@@ -253,10 +253,10 @@
                                     </div>
                                     <div class="reaction-hover">
                                         <div>
-                                            <img (click)="this.addReaction(currentUser, message, 'reactionNerd')" src="./assets/icons/emoji _nerd face_.png" alt="">
-                                            <img (click)="this.addReaction(currentUser, message, 'reactionCelebrate')" src="./assets/icons/emoji _person raising both hands in celebration_.png"alt="">
-                                            <img (click)="this.addReaction(currentUser, message, 'reactionCheck')" src="./assets/icons/emoji _white heavy check mark_.png" alt="">
-                                            <img (click)="this.addReaction(currentUser, message, 'reactionRocket')" src="./assets/icons/emoji _rocket_.png" alt="">
+                                            <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionNerd')" src="./assets/icons/emoji _nerd face_.png" alt="">
+                                            <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionCelebrate')" src="./assets/icons/emoji _person raising both hands in celebration_.png"alt="">
+                                            <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionCheck')" src="./assets/icons/emoji _white heavy check mark_.png" alt="">
+                                            <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionRocket')" src="./assets/icons/emoji _rocket_.png" alt="">
                                             <img src="./assets/icons/add_reaction.png" alt="">
                                             <img src="./assets/icons/comment.png" alt="">
                                         </div>
@@ -273,10 +273,10 @@
                             <tr>
                                 <td>
                                     <div class="reaction-hover" *ngIf="editingMessageId !== message.messageId">
-                                        <img (click)="this.addReaction(currentUser, message, 'reactionNerd')" src="./assets/icons/emoji _nerd face_.png" alt="">
-                                        <img (click)="this.addReaction(currentUser, message, 'reactionCelebrate')" src="./assets/icons/emoji _person raising both hands in celebration_.png"alt="">
-                                        <img (click)="this.addReaction(currentUser, message, 'reactionCheck')" src="./assets/icons/emoji _white heavy check mark_.png" alt="">
-                                        <img (click)="this.addReaction(currentUser, message, 'reactionRocket')" src="./assets/icons/emoji _rocket_.png" alt="">
+                                        <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionNerd')" src="./assets/icons/emoji _nerd face_.png" alt="">
+                                        <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionCelebrate')" src="./assets/icons/emoji _person raising both hands in celebration_.png"alt="">
+                                        <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionCheck')" src="./assets/icons/emoji _white heavy check mark_.png" alt="">
+                                        <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionRocket')" src="./assets/icons/emoji _rocket_.png" alt="">
 
                                         <img src="./assets/icons/more_vert.png" alt=""
                                             (click)="editDirectMessage(message)">
@@ -314,17 +314,17 @@
                                             <div class="reaction-container">
                                                 <div *ngIf="message.reactionNerd && message.reactionNerd.length > 0" style="position: relative;">
                                                     <button class="reaction-button" 
-                                                    (click)="this.addReaction(currentUser, message, 'reactionNerd')"
-                                                    (mouseenter)="isHovered(message.messageId, 'reactionNerd')" 
-                                                    (mouseleave)="isHovered(null, null)">
+                                                    (click)="this.reactionService.addReaction(currentUser, message, 'reactionNerd')"
+                                                    (mouseenter)="this.reactionService.isHovered(message.messageId, 'reactionNerd')" 
+                                                    (mouseleave)="this.reactionService.isHovered(null, null)">
                                                         <img src="./assets/icons/emoji _nerd face_.png" alt="">
                                                         <span>{{message.reactionNerd.length}}</span>
                                                     </button>
     
                                                     <div class="reaction-bubble"                                                        
                                                     [ngClass]="{ 
-                                                        'visible': isBubbleVisible(message.messageId, 'reactionNerd'), 
-                                                        'hidden': !isBubbleVisible(message.messageId, 'reactionNerd') 
+                                                        'visible': this.reactionService.isBubbleVisible(message.messageId, 'reactionNerd'), 
+                                                        'hidden': !this.reactionService.isBubbleVisible(message.messageId, 'reactionNerd') 
                                                       }">
                                                             <img src="./assets/icons/emoji _nerd face_.png" alt="">
                                                             @for (user of message.reactionNerd; track $index) {
@@ -353,17 +353,17 @@
 
                                                 <div *ngIf="message.reactionCelebrate && message.reactionCelebrate.length > 0" style="position: relative;">
                                                     <button class="reaction-button" 
-                                                    (click)="this.addReaction(currentUser, message, 'reactionCelebrate')"
-                                                    (mouseenter)="isHovered(message.messageId, 'reactionCelebrate')" 
-                                                    (mouseleave)="isHovered(null, null)">
+                                                    (click)="this.reactionService.addReaction(currentUser, message, 'reactionCelebrate')"
+                                                    (mouseenter)="this.reactionService.isHovered(message.messageId, 'reactionCelebrate')" 
+                                                    (mouseleave)="this.reactionService.isHovered(null, null)">
                                                         <img src="./assets/icons/emoji _person raising both hands in celebration_.png" alt="">
                                                         <span>{{message.reactionCelebrate.length}}</span>
                                                     </button>
     
                                                     <div class="reaction-bubble"
                                                     [ngClass]="{ 
-                                                        'visible': isBubbleVisible(message.messageId, 'reactionCelebrate'), 
-                                                        'hidden': !isBubbleVisible(message.messageId, 'reactionCelebrate') 
+                                                        'visible': this.reactionService.isBubbleVisible(message.messageId, 'reactionCelebrate'), 
+                                                        'hidden': !this.reactionService.isBubbleVisible(message.messageId, 'reactionCelebrate') 
                                                       }">
                                                             <img src="./assets/icons/emoji _person raising both hands in celebration_.png" alt="">
                                                             
@@ -393,17 +393,17 @@
 
                                                 <div *ngIf="message.reactionCheck && message.reactionCheck.length > 0" style="position: relative;">
                                                     <button class="reaction-button" 
-                                                    (click)="this.addReaction(currentUser, message, 'reactionCheck')"
-                                                    (mouseenter)="isHovered(message.messageId, 'reactionCheck')" 
-                                                    (mouseleave)="isHovered(null, null)">
+                                                    (click)="this.reactionService.addReaction(currentUser, message, 'reactionCheck')"
+                                                    (mouseenter)="this.reactionService.isHovered(message.messageId, 'reactionCheck')" 
+                                                    (mouseleave)="this.reactionService.isHovered(null, null)">
                                                         <img src="./assets/icons/emoji _white heavy check mark_.png" alt="">
                                                         <span>{{message.reactionCheck.length}}</span>
                                                     </button>
     
                                                     <div class="reaction-bubble"
                                                     [ngClass]="{ 
-                                                        'visible': isBubbleVisible(message.messageId, 'reactionCheck'), 
-                                                        'hidden': !isBubbleVisible(message.messageId, 'reactionCheck') 
+                                                        'visible': this.reactionService.isBubbleVisible(message.messageId, 'reactionCheck'), 
+                                                        'hidden': !this.reactionService.isBubbleVisible(message.messageId, 'reactionCheck') 
                                                       }">
                                                             <img src="./assets/icons/emoji _white heavy check mark_.png" alt="">
                                                             
@@ -433,17 +433,17 @@
 
                                                 <div *ngIf="message.reactionRocket && message.reactionRocket.length > 0" style="position: relative;">
                                                     <button class="reaction-button" 
-                                                    (click)="this.addReaction(currentUser, message, 'reactionRocket')"
-                                                    (mouseenter)="isHovered(message.messageId, 'reactionRocket')" 
-                                                    (mouseleave)="isHovered(null, null)">
+                                                    (click)="this.reactionService.addReaction(currentUser, message, 'reactionRocket')"
+                                                    (mouseenter)="this.reactionService.isHovered(message.messageId, 'reactionRocket')" 
+                                                    (mouseleave)="this.reactionService.isHovered(null, null)">
                                                         <img src="./assets/icons/emoji _rocket_.png" alt="">
                                                         <span>{{message.reactionRocket.length}}</span>
                                                     </button>
     
                                                     <div class="reaction-bubble"
                                                     [ngClass]="{ 
-                                                        'visible': isBubbleVisible(message.messageId, 'reactionRocket'), 
-                                                        'hidden': !isBubbleVisible(message.messageId, 'reactionRocket') 
+                                                        'visible': this.reactionService.isBubbleVisible(message.messageId, 'reactionRocket'), 
+                                                        'hidden': !this.reactionService.isBubbleVisible(message.messageId, 'reactionRocket') 
                                                       }">
                                                             <img src="./assets/icons/emoji _rocket_.png" alt="">
                                                             
