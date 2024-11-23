@@ -567,11 +567,16 @@
     button {
         border: unset;
         background-color: unset;
-        img{
-            cursor: pointer;
-            
-            &:hover {
-                filter: contrast(0.5)
+        &:disabled{
+            filter: contrast(0.5);
+        }
+        &:enabled{
+            img{
+                cursor: pointer;
+               
+                &:hover {
+                    filter: contrast(0.5)
+                }
             }
         }
     }
