@@ -44,6 +44,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
   hasNames: boolean = false;
   selectedNames: { name: string; userId: string }[] = [];
   filteredSearchMessages: MessageGroup[] = [];
+  
 
   @ViewChild('chatContainer') chatContainer!: ElementRef;
   @ViewChild('nameContainerRef', { static: false }) nameContainerRef!: ElementRef;
@@ -153,14 +154,14 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
      // Listener auf das gesamte Dokument
      this.documentClickListener = this.renderer.listen('document', 'click', (event: MouseEvent) => {
       const emojiPicker = this.elementRef.nativeElement.querySelector('.chat-emoji-picker');
-      
+      const reactionContainer = this.elementRef.nativeElement.querySelector('.add-reaction-container');
       // Prüfen, ob der Klick außerhalb des Emoji-Pickers ist
-      if (
-        (this.showEmojis || this.showEditEmojis) &&
-        emojiPicker &&
-        !emojiPicker.contains(event.target as Node)
-      ) {
+      if ((this.showEmojis || this.showEditEmojis) && emojiPicker && !emojiPicker.contains(event.target as Node)) {
         this.closeEmojiPicker();
+      }
+
+      if(this.reactionService.showReactionContainer && reactionContainer && !reactionContainer.contains(event.target as Node)){
+        this.reactionService.showReactionContainer = false;
       }
     });
   }

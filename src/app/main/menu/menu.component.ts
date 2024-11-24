@@ -73,19 +73,16 @@ export class MenuComponent {
       this.userId = params['userId'];
       this.currentUserId = this.userId;
     });
+
     this.userService.getAllUsers().then(() => {
       this.currentUser = this.userService.findUserNameById(this.userId);
     });
+
     // Abonniere die ungelesenen Zähler für alle Chats
     this.chatService.unreadCount$.subscribe((counts) => {
       this.unreadCounts = counts;
     });
   }
-
-
-  createChatID(myUserId: string, userId: string) {
-    return [myUserId, userId].sort().join('_');
-  };
 
 
   subscribeToSearch() {
@@ -142,7 +139,6 @@ export class MenuComponent {
             creatorName: channel['creatorName'],
             tagIcon: channel['tagIcon'],
             members: channel['members'] || [],
-
           };
 
         });
@@ -195,7 +191,7 @@ export class MenuComponent {
 
         this.filteredUsers = this.userData;
         this.filteredUsers.forEach(user => {
-          user.chatId = this.createChatID(this.currentUserId, user.userId);
+          user.chatId = this.chatService.createChatID(this.currentUserId, user.userId);
         });
       },
       (error) => {
@@ -257,10 +253,10 @@ export class MenuComponent {
     }
   };
 
+
   //öffnet den Channel hinzufügen Dialog
   openDialogAddChannel() {
     const isMobile = this.breakpointObserver.isMatched('(max-width: 600px)');
-
     const dialogConfig = {
       width: isMobile ? '100vw' : '600px',
       height: isMobile ? '100vh' : 'auto',
@@ -274,12 +270,14 @@ export class MenuComponent {
     });
   }
 
+
   //öffnet einen ausgewählten channel
   onChannelClick(channel: any) {
     this.selectedChannel = channel;
     this.channelSelected.emit(channel);
     this.selectedChannel.id = channel.id;
   }
+
 
   //Öffnet eine neue Nachricht
   onNewMessageClick() {

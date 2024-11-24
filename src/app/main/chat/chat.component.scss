@@ -233,7 +233,30 @@
                 color: rgba(83, 90, 241, 1);
             }
 
+            .add-reaction-container{
+                display: flex;
+                align-items: center;
+                height: 46px;
+                border-radius: 25px 25px 25px 0;
+                padding: 3px  20px;
+                background: rgba(255, 255, 255, 1);
+                border: 1px solid rgba(173, 176, 217, 1);
+                position: absolute;
+                top: -58px;
+                left: 28px;
 
+                img{
+                    border-radius: 30px;
+                    width: 20px;
+                    height: 20px;
+                    padding: 10px;
+                }
+
+                img:hover{
+                    cursor: pointer;
+                    background: #ECEEFE;
+                }
+            }
         }
 
         .reaction-hover{
@@ -369,6 +392,31 @@
                 font-size: 18px;
                 font-weight: 400;
                 color: rgba(83, 90, 241, 1);
+            }
+
+            .add-reaction-container{
+                display: flex;
+                align-items: center;
+                height: 46px;
+                border-radius: 25px 25px 0 25px;
+                padding: 3px  20px;
+                background: rgba(255, 255, 255, 1);
+                border: 1px solid rgba(173, 176, 217, 1);
+                position: absolute;
+                top: -58px;
+                right: 28px;
+
+                img{
+                    border-radius: 30px;
+                    width: 20px;
+                    height: 20px;
+                    padding: 10px;
+                }
+
+                img:hover{
+                    cursor: pointer;
+                    background: #ECEEFE;
+                }
             }
         }
 

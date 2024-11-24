@@ -244,23 +244,25 @@
                                                     </div>
                                                 </div>
 
-                                                <button class="add-reaction-button">
-                                                    <img src="./assets/icons/add_reaction.png" alt="">
-                                                </button>
+                                                <div style="position: relative;">
+                                                    <button class="add-reaction-button" (click)="this.reactionService.toggleReactionContainer($event, message.messageId)">
+                                                        <img src="./assets/icons/add_reaction.png" alt="">
+                                                    </button>
+                                                    <div class="add-reaction-container" *ngIf="this.reactionService.showReactionContainer && this.reactionService.clickedMessage == message.messageId">
+                                                        <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionNerd')" src="./assets/icons/emoji _reactionNerd_.png" alt="">
+                                                        <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionCelebrate')" src="./assets/icons/emoji _reactionCelebrate_.png"alt="">
+                                                        <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionCheck')" src="./assets/icons/emoji _reactionCheck_.png" alt="">
+                                                        <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionRocket')" src="./assets/icons/emoji _reactionRocket_.png" alt="">
+                                                    </div>
+                                                </div>
                                             </div>
 
                                         </div>
                                     </div>
                                     <div class="reaction-hover">
-                                        <div>
-                                            <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionNerd')" src="./assets/icons/emoji _nerd face_.png" alt="">
-                                            <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionCelebrate')" src="./assets/icons/emoji _person raising both hands in celebration_.png"alt="">
-                                            <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionCheck')" src="./assets/icons/emoji _white heavy check mark_.png" alt="">
-                                            <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionRocket')" src="./assets/icons/emoji _rocket_.png" alt="">
-                                            <img src="./assets/icons/add_reaction.png" alt="">
-                                            <img src="./assets/icons/comment.png" alt="">
-                                        </div>
-
+                                        @for(lastReaction of this.reactionService.lastReactions; track lastReaction){
+                                            <img (click)="this.reactionService.addReaction(currentUser, message, lastReaction)" src="./assets/icons/emoji _{{lastReaction}}_.png" alt="">
+                                        }
                                     </div>
                                 </td>
                             </tr>
@@ -273,11 +275,9 @@
                             <tr>
                                 <td>
                                     <div class="reaction-hover" *ngIf="editingMessageId !== message.messageId">
-                                        <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionNerd')" src="./assets/icons/emoji _nerd face_.png" alt="">
-                                        <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionCelebrate')" src="./assets/icons/emoji _person raising both hands in celebration_.png"alt="">
-                                        <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionCheck')" src="./assets/icons/emoji _white heavy check mark_.png" alt="">
-                                        <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionRocket')" src="./assets/icons/emoji _rocket_.png" alt="">
-
+                                        @for(lastReaction of this.reactionService.lastReactions; track lastReaction){
+                                            <img (click)="this.reactionService.addReaction(currentUser, message, lastReaction)" src="./assets/icons/emoji _{{lastReaction}}_.png" alt="">
+                                        }
                                         <img src="./assets/icons/more_vert.png" alt=""
                                             (click)="editDirectMessage(message)">
                                     </div>
@@ -470,10 +470,18 @@
                                                             }
                                                     </div>
                                                 </div>
+                                                <div style="position: relative;">
+                                                    <button class="add-reaction-button" (click)="this.reactionService.toggleReactionContainer($event, message.messageId)">
+                                                        <img src="./assets/icons/add_reaction.png" alt="">
+                                                    </button>
+                                                    <div class="add-reaction-container" *ngIf="this.reactionService.showReactionContainer && this.reactionService.clickedMessage == message.messageId">
+                                                        <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionNerd')" src="./assets/icons/emoji _reactionNerd_.png" alt="">
+                                                        <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionCelebrate')" src="./assets/icons/emoji _reactionCelebrate_.png"alt="">
+                                                        <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionCheck')" src="./assets/icons/emoji _reactionCheck_.png" alt="">
+                                                        <img (click)="this.reactionService.addReaction(currentUser, message, 'reactionRocket')" src="./assets/icons/emoji _reactionRocket_.png" alt="">
+                                                    </div>
+                                                </div>
 
-                                                <button class="add-reaction-button">
-                                                    <img src="./assets/icons/add_reaction.png" alt="">
-                                                </button>
                                             </div>
                                         </div>
 

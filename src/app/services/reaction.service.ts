@@ -7,6 +7,10 @@ import { doc, Firestore, updateDoc } from '@angular/fire/firestore';
 })
 export class ReactionService {
 
+  lastReactions: string[] = ['reactionNerd', 'reactionRocket'];
+  showReactionContainer: boolean = false;
+  clickedMessage: string = '';
+
   constructor(public firestore: Firestore) { }
 
   //Reactions
@@ -42,8 +46,27 @@ export class ReactionService {
     const chatDocRef = doc(this.firestore, 'chats', message.chatId, 'messages', message.messageId);
     if (!currentUserReactedAlready) {
       this.addUserReaction(chatDocRef, reaction, currentUsers, currentUser);
+      this.changeLastReactions(reaction);
     } else {
       this.deleteUserReaction(chatDocRef, reaction, currentUsers, currentUserId);
+    }
+    this.showReactionContainer = false;
+  }
+
+  
+  async toggleReactionContainer(event: any, clickedMessage: string){
+    event.stopPropagation();
+    this.clickedMessage = clickedMessage;
+    this.showReactionContainer = !this.showReactionContainer;
+  }
+
+
+  async changeLastReactions(reaction: string){
+    if(!this.lastReactions.includes(reaction)){
+      this.lastReactions.unshift(reaction);
+      this.lastReactions.length = 2;
+    }else{
+      return;
     }
   }
 
