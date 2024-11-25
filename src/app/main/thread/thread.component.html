@@ -26,19 +26,19 @@
                     <div *ngIf="message.fileUrl" class="fileUrl">
                         <!-- Image Preview -->
                         <div *ngIf="message.fileType?.startsWith('image/')">
-                            <img [src]="getSafeUrl(message.fileUrl)" alt="Image Preview"
+                            <img [src]="fileService.getSafeUrl(message.fileUrl)" alt="Image Preview"
                                 style="width: 70px; height: auto; object-fit: contain;">
                         </div>
                         <!-- PDF Preview -->
                         <div *ngIf="message.fileType === 'application/pdf'">
-                            <iframe [src]="getSafeUrl(message.fileUrl)" width="200" height="70px"
+                            <iframe [src]="fileService.getSafeUrl(message.fileUrl)" width="200" height="70px"
                                 style="border: none;"></iframe>
                         </div>
                         <!-- Other File Types -->
                         <div *ngIf="!message.fileType?.startsWith('image/') && message.fileType != 'application/pdf'">
                             {{message.fileName}}</div>
                         <!-- Download Link -->
-                        <a [href]="getSafeUrl(message.fileUrl)" class="open-file-button" target="_blank">Anhang
+                        <a [href]="fileService.getSafeUrl(message.fileUrl)" class="open-file-button" target="_blank">Anhang
                             öffnen</a>
                     </div>
                 </div>
@@ -117,19 +117,19 @@
                         <div *ngIf="answer.fileUrl" class="fileUrl">
                             <!-- Image Preview -->
                             <div *ngIf="answer.fileType?.startsWith('image/')">
-                                <img [src]="getSafeUrl(answer.fileUrl)" alt="Image Preview"
+                                <img [src]="fileService.getSafeUrl(answer.fileUrl)" alt="Image Preview"
                                     style="width: 70px; height: auto; object-fit: contain;">
                             </div>
                             <!-- PDF Preview -->
                             <div *ngIf="answer.fileType === 'application/pdf'">
-                                <iframe [src]="getSafeUrl(answer.fileUrl)" width="200" height="70px"
+                                <iframe [src]="fileService.getSafeUrl(answer.fileUrl)" width="200" height="70px"
                                     style="border: none;"></iframe>
                             </div>
                             <!-- Other File Types -->
                             <div *ngIf="!answer.fileType?.startsWith('image/') && answer.fileType != 'application/pdf'">
                                 {{answer.fileName}}</div>
                             <!-- Download Link -->
-                            <a [href]="getSafeUrl(answer.fileUrl)" class="open-file-button" target="_blank">Anhang
+                            <a [href]="fileService.getSafeUrl(answer.fileUrl)" class="open-file-button" target="_blank">Anhang
                                 öffnen</a>
                         </div>
                     </div>
@@ -179,7 +179,7 @@
                 </textarea>
                 <div class="button-icons-group">
                     <div class="button-group">
-                        <button class="cancelBtn" (click)="cancelEditAnswer(answer)">Abbrechen</button>
+                        <button class="cancelBtn" (click)="answersService.cancelEditAnswer(answer)">Abbrechen</button>
                         <button class="saveBtn" (click)="saveEditAnswer(answer)">Speichern</button>
                     </div>
                 </div>

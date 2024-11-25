@@ -249,7 +249,9 @@ td:hover .speech-bubble {
     background-color: #FFFFFF !important;
     color: black;
 }
-
+td:hover .textAreaContainer{
+    background-color: #fff;
+} 
 .day-time-btn {
     position: absolute;
     top: 50%;
@@ -389,8 +391,6 @@ td:hover .b-radius {
 }
 
 .button-icons-group {
-    position: absolute;
-    bottom: 8px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -465,8 +465,13 @@ td:hover .b-radius {
     position: relative;
     width: 100%;
     min-width: 300px;
-    height: 170px;
-    background-color: #ECEEFE;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
+    border: 1px solid #ECEEFE;
+    padding: 20px;
+    gap: 12px;
 }
 
 .speech-bubble-content {
@@ -477,19 +482,17 @@ td:hover .b-radius {
 
 .textEditingArea {
     width: 100%;
-    height: 100%;
+    height: auto;
     padding: 20px;
     font-family: 'Nunito';
     font-weight: 400;
-    font-size: 18px;
-    border-radius: 20px;
+    font-size: 14px;
     resize: none;
     box-sizing: border-box;
-
+    border-style: none;
     &:focus {
         outline: none;
-        border: 1px solid #797EF3;
-        ;
+        border-style: none;
     }
 }
 
@@ -813,6 +816,7 @@ td:hover .b-radius {
     app-thread {
         position: relative;
         width: 100%;
+        height: calc(100vh - 90px);
     }
 
 }

@@ -52,7 +52,7 @@ export class DialogAddUserComponent {
   }
 
   updateChannelMembers() {
-    if (this.userData.length === 0)      return;
+    if (this.userData.length === 0)return;
 
     const currentMemberIds = this.channel.members.map((member: any) => member.userId);
     const updatedMembers = this.channel.members.filter((member: any) =>

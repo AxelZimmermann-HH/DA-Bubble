@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { SafeResourceUrl, DomSanitizer } from '@angular/platform-browser';
 import { getStorage, ref, deleteObject } from 'firebase/storage';
 import { Message } from '../models/message.class';
-import { ChatService } from './chat.service';
 import { getDownloadURL, uploadBytes } from '@angular/fire/storage';
 
 @Injectable({
@@ -21,8 +20,7 @@ export class FileService {
   fileType: boolean = false;
 
   constructor(
-    private sanitizer: DomSanitizer,
-    private chatService: ChatService) { }
+    private sanitizer: DomSanitizer) { }
 
 
   extractFileName(fileUrl: string): string {
@@ -47,13 +45,15 @@ export class FileService {
           message.fileUrl = '';
           message.fileName = '';
           message.fileType = '';
+
+          this.fileUrl = null;
+          this.selectedFile = null;
         })
         .catch((error) => {
           console.error('Fehler beim Löschen der Datei:', error);
         });
     }
   }
-
 
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
@@ -67,7 +67,6 @@ export class FileService {
       }
     }
   }
-
 
   setFileUrl(file: File) {
     this.selectedFile = file;

@@ -46,7 +46,7 @@ export class AnswersService {
       const messageDoc = await getDoc(messageDocRef);
       if (messageDoc.exists()) {
         const updatedAnswers = messageDoc.data()?.['answers'].map((a: any) => {
-          if (a.text === answer.text && a.user === answer.user) {
+          if (a.text === answer.text) {
             a.text = updatedAnswer.text;
             a.isEditing = false;
           }
@@ -57,5 +57,10 @@ export class AnswersService {
     } catch (error) {
       console.error("Fehler beim Bearbeiten der Antwort: ", error);
     }
+  }
+
+  cancelEditAnswer(answer: Answer) {
+    answer.isEditing = false;
+    answer.editedText = answer.text;
   }
 }

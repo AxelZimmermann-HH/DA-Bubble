@@ -8,13 +8,12 @@ import { SharedService } from '../../services/shared.service';
 import { ThreadComponent } from "../thread/thread.component";
 import { Answer } from '../../models/answer.class';
 import { ActivatedRoute } from '@angular/router';
-import { addDoc, collection, doc, Firestore, Timestamp, updateDoc } from '@angular/fire/firestore';
+import { Firestore } from '@angular/fire/firestore';
 import { UserService } from '../../services/user.service';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { ChatService } from '../../services/chat.service';
 import { FormsModule } from '@angular/forms';
 import { SearchService } from '../../services/search.service';
-import { getDownloadURL, getStorage, ref, uploadBytes } from '@angular/fire/storage';
 import { MessagesService } from '../../services/messages.service';
 import { ChannelService } from '../../services/channel.service';
 import { FileService } from '../../services/file.service';
@@ -94,7 +93,7 @@ export class ChannelComponent {
     public chatService: ChatService,
     public searchService: SearchService,
     public fileService: FileService,
-    public dbService: DatabaseService
+    public dbService: DatabaseService,
   ) { }
 
   ngOnInit() {
@@ -224,43 +223,53 @@ export class ChannelComponent {
   }
 
   async sendMessage() {
-    if (this.newMessageText.trim() === '' && !this.fileService.selectedFile) return;
-
-    await this.updateMessage();
-
-    const taggedUsernames = this.extractTaggedUsernames(this.newMessageText);
-
-    const userName = this.userService.findUserNameById(this.userId);
-    if (!userName) return;
-
     const fileUrl = await this.fileService.uploadFiles();
+    if (this.newMessageText.trim() === '' && !this.fileService.selectedFile && !this.isEditingOnMobile) return;
+
+    await this.editMessageForMobile();
+
+    // const fileUrl = await this.fileService.uploadFiles();
     if (!fileUrl && !this.newMessageText.trim()) return;
     if (this.channelService.selectedChannel) {
       await this.messagesService.sendChannelMessage(this.selectedChannelId, this.newMessageText, fileUrl, this.userId);
     } else {
       await this.handleDirectMessageOrEmail(fileUrl);
     }
-    for (const username of taggedUsernames) {
-      await this.messagesService.sendDirectMessage(username, this.newMessageText, fileUrl, this.userId);
-    }
+
+    // Senden von Direktnachrichten, falls Benutzernamen markiert wurden
+    await this.sendTaggedMessages(fileUrl);
 
     this.resetInput();
   }
 
-  async updateMessage() {
-    if (this.isEditingOnMobile && this.editingMessageId) {
-      await this.messagesService.updateMessages(this.selectedChannelId, this.selectedMessage.messageId, this.newMessageText)
-      this.isEditingOnMobile = false;
-      this.editingMessageId = null;
-      this.newMessageText = '';
+  async sendTaggedMessages(fileUrl: string | null) {
+    const taggedUsernames = this.extractTaggedUsernames(this.newMessageText);
+    for (const username of taggedUsernames) {
+      await this.messagesService.sendDirectMessage(username, this.newMessageText, fileUrl, this.userId);
     }
   }
+  async editMessageForMobile() {
+    if (this.isEditingOnMobile) {
+      console.log('message:', this.newMessageText, 'filservice edit:', this.fileService.selectedFile);
+
+      // if (!this.newMessageText.trim() && !this.fileService.selectedFile) {
+      //   await this.messagesService.deleteMessage(this.editingMessageId, this.selectedChannelId);
+      // }
+      // else {
+      //   await this.messagesService.updateMessages(this.selectedChannelId, this.editingMessageId, this.newMessageText);
+      // }
+      this.newMessageText = '';
+      this.isEditingOnMobile = false;
+      this.editingMessageId = null;
+      return;
+    }
+  }
+
 
   extractTaggedUsernames(message: string): string[] {
     const tagRegex = /@([A-Za-z0-9_]+)/g;
     const taggedUsernames = [];
     let match;
-
     while ((match = tagRegex.exec(message)) !== null) {
       taggedUsernames.push(match[1].trim());
     }
@@ -271,6 +280,7 @@ export class ChannelComponent {
     this.inputValue = '';
     this.newMessageText = '';
     this.fileService.selectedFile = null;
+    this.fileService.fileUrl = null;
     this.newMessageText = '';
     this.isEditingOnMobile = false;
     this.editingMessageId = null;
@@ -291,6 +301,7 @@ export class ChannelComponent {
       }
     }
   }
+
   onThreadClosed() {
     this.isThreadOpen = false;
   }
@@ -344,7 +355,7 @@ export class ChannelComponent {
     }
   }
 
-  editDirectMessage(message: Message) {
+  async editDirectMessage(message: Message) {
     if (!this.sharedService.isMobile) {
       message.isEditing = true;
       message.editedText = message.text;
@@ -352,8 +363,20 @@ export class ChannelComponent {
       this.newMessageText = message.text;
       this.isEditingOnMobile = true;
       this.editingMessageId = message.messageId;
+
+      if (message.fileUrl) {
+        this.fileService.fileUrl = this.fileService.getSafeUrl(message.fileUrl);
+        const fakeFile = new File([''], message.fileName || 'Unbenannte Datei', {
+          type: message.fileType || 'application/octet-stream',
+        });
+        this.fileService.selectedFile = fakeFile;
+      } else {
+        this.fileService.closePreview();
+      }
+
     }
   }
+
   selectUser(user: User) {
     this.newMessageText += `@${user.name}`;
     this.taggedUser = false;

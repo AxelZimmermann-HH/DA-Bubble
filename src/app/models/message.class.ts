@@ -23,7 +23,7 @@ export class Message {
   answers: Answer[] = [];
   emojis: EmojiData[] = [];
   fileUrl?: string;
-  fileType?: string;
+  fileType?: string |null;
   fileName?: string;
   isEditing: boolean = false;
   editedText: string = '';

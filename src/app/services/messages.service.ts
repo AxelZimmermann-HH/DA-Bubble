@@ -5,6 +5,7 @@ import { UserService } from './user.service';
 import { FileService } from './file.service';
 import { ChatService } from './chat.service';
 import { DatabaseService } from './database.service';
+import { deleteDoc } from 'firebase/firestore';
 
 @Injectable({
     providedIn: 'root'
@@ -14,6 +15,7 @@ export class MessagesService {
     message = new Message();
     constructor(public firestore: Firestore, public userService: UserService, public fileService: FileService, public chatService: ChatService, public dbService: DatabaseService
     ) { }
+
 
     getAllMessages(channelId: string | null, callback: () => void) {
         const messagesQuery = query(
@@ -54,16 +56,22 @@ export class MessagesService {
         });
     }
 
-    saveMessageEdit(message: Message, channelId: string | null) {
+    async saveMessageEdit(message: Message, channelId: string | null) {
+        if (!channelId || !message.messageId) return;
         const messageRef = doc(this.firestore, `channels/${channelId}/messages/${message.messageId}`);
-        updateDoc(messageRef, { text: message.editedText })
-            .then(() => {
-                message.text = message.editedText;  // Lokale Aktualisierung
-                message.isEditing = false;
-            })
-            .catch((error) => {
-                console.error("Fehler beim Speichern der Nachricht: ", error);
-            });
+
+        try {
+            await updateDoc(messageRef, { text: message.editedText });
+            message.text = message.editedText;
+            if (!message.text.trim() && !message.fileUrl) {
+                await this.deleteMessage(message.messageId, channelId);
+
+            }
+            else { message.isEditing = false; }
+
+        } catch (error) {
+            console.error('Fehler beim Speichern der Nachricht:', error);
+        }
     }
     cancelMessageEdit(message: Message) {
         message.isEditing = false;
@@ -133,19 +141,36 @@ export class MessagesService {
         this.fileService.fileDownloadUrl = '';
     }
 
-    async updateMessages(channelId: string|null, messageId: string, newMessage:string) {
+    async updateMessages(channelId: string | null, messageId: string | null, newMessage: string) {
+
         const messageRef = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
-        await updateDoc(messageRef, { text: newMessage })
-            .then(() => {
-                const message = this.allMessages.find(m => m.messageId === messageId);
-                if (message) {
-                    message.text = newMessage;
-                    message.isEditing = false;
+        if (!channelId || !messageId || !newMessage) return;
+        try {
+            await updateDoc(messageRef, { text: newMessage })
+            const message = this.allMessages.find(m => m.messageId === messageId);
+            if (message) {
+                message.text = newMessage;
+                if (!message.text.trim()) {
+                    this.deleteMessage(messageId, channelId);
+                    return;
                 }
-            })
-            .catch((error) => {
-                console.error("Fehler beim Speichern der Nachricht: ", error);
-            });
+
+                message.isEditing = false;
+
+
+            }
+        } catch (error) {
+            console.error("Fehler beim Speichern der Nachricht: ", error);
+        }
         return;
+    }
+
+    async deleteMessage(messageId: string | null, channelId: string | null) {
+        if (!channelId) return;
+        await deleteDoc(doc(this.firestore, `channels/${channelId}/messages/${messageId}`))
+    }
+
+    findMessageById(messageId: string) {
+        return this.allMessages.find((message) => message.messageId === messageId);
     }
 }

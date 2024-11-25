@@ -48,7 +48,6 @@ export class Answer {
             emojis: this.emojis,
         };
         
-        // Nur hinzufügen, wenn definiert
         if (this.fileUrl) json.fileUrl = this.fileUrl;
         if (this.fileType) json.fileType = this.fileType; 
         if (this.fileName) json.fileName = this.fileName; 

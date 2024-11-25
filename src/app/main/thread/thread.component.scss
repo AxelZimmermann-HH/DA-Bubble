@@ -1,5 +1,5 @@
 .thread-container {
-    height: 940px;
+    height: 88vh;
     min-width: 300px;
     width: 100%;
     background-color: #FFFFFF;
@@ -510,6 +510,7 @@
 @media (max-width: 768px) {
     .thread-container {
         border-radius: 0;
+        height: 100%;
     }
 
     .thread-container .thread-header {

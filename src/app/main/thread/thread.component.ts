@@ -2,7 +2,7 @@ import { Component, EventEmitter, HostListener, Input, Output, SimpleChanges } f
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
-import { arrayUnion,doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
+import { arrayUnion, doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Answer } from '../../models/answer.class';
@@ -16,6 +16,7 @@ import { EmojiData } from './../../models/emoji-data.models';
 import { getDownloadURL, getStorage, ref, uploadBytes } from '@angular/fire/storage';
 import { AnswersService } from '../../services/answers.service';
 import { SharedService } from '../../services/shared.service';
+import { FileService } from '../../services/file.service';
 
 
 
@@ -63,7 +64,8 @@ export class ThreadComponent {
     public threadService: ThreadService,
     public answersService: AnswersService,
     private sanitizer: DomSanitizer,
-    public sharedService: SharedService
+    public sharedService: SharedService,
+    public fileService: FileService
   ) { }
 
   ngOnInit(): void {
@@ -113,13 +115,11 @@ export class ThreadComponent {
 
   getAnswers(messageId: string) {
     const messageDocRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}`);
-
     onSnapshot(
       messageDocRef,
       (docSnapshot) => {
         if (docSnapshot.exists()) {
           const messageData = docSnapshot.data();
-  
           if (Array.isArray(messageData['answers'])) {
             this.selectedAnswers = messageData['answers'].map((a: any) => new Answer(a));
           } else {
@@ -135,15 +135,12 @@ export class ThreadComponent {
 
   async addAnswer(messageId: string) {
     if (this.newAnswerText.trim() === '' && !this.selectedFile) return;
-
     const username = this.userService.findUserNameById(this.userId);
     if (!username) {
       this.newAnswerText = '';
       return;
     }
-
     const fileUrl = await this.uploadFileIfSelected();
-
     const answer = new Answer({
       text: this.newAnswerText,
       user: username,
@@ -167,10 +164,8 @@ export class ThreadComponent {
 
   async uploadFileIfSelected() {
     if (!this.selectedFile) return null;
-
     const filePath = `files/${this.selectedFile.name}`;
     const storageRef = ref(getStorage(), filePath);
-
     try {
       const snapshot = await uploadBytes(storageRef, this.selectedFile);
       return await getDownloadURL(snapshot.ref);
@@ -186,27 +181,15 @@ export class ThreadComponent {
       text: answer.editedText,
       isEditing: false
     });
-
     await this.answersService.saveEditAnswer(this.message.messageId, answer, updatedAnswer, this.selectedChannelId!);
     this.getAnswers(this.message.messageId);
-  }
-
-  cancelEditAnswer(answer: Answer) {
-    answer.isEditing = false;
-    answer.editedText = answer.text;
-  }
-
-  getSafeUrl(url: string) {
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
   //messages
   toggleEmojiReaction(message: Message, emojiData: EmojiData) {
     const currentUserId = this.userId; // Aktuelle Benutzer-ID
     const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
-
     if (currentUserIndex > -1) {
-
       emojiData.userIds.splice(currentUserIndex, 1);
     } else {
       emojiData.userIds.push(currentUserId);
@@ -240,21 +223,17 @@ export class ThreadComponent {
   //answers
   toggleEmojiReactionForAnswer(answer: Answer, emojiData: EmojiData) {
     const currentUserId = this.userId;
-
     const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
     if (currentUserIndex > -1) {
-
       emojiData.userIds.splice(currentUserIndex, 1);
     } else {
       emojiData.userIds.push(currentUserId);
     }
-
     this.updateEmojisInAnswer(answer);
   }
 
   updateEmojisInAnswer(answer: Answer) {
     const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${this.message.messageId}`);
-
     getDoc(messageRef).then((docSnap) => {
       if (docSnap.exists()) {
         const messageData = docSnap.data();
@@ -265,12 +244,6 @@ export class ThreadComponent {
           return a;
         });
         updateDoc(messageRef, { answers: updatedAnswers })
-          .then(() => {
-            console.log("Emoji-Reaktionen für die Antwort erfolgreich gespeichert");
-          })
-          .catch((error) => {
-            console.error("Fehler beim Speichern der Emoji-Reaktionen für die Antwort: ", error);
-          });
       }
     }).catch((error) => {
       console.error('Fehler beim Abrufen der Nachricht: ', error);
