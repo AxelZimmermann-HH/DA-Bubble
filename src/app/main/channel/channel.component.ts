@@ -252,12 +252,12 @@ export class ChannelComponent {
     if (this.isEditingOnMobile) {
       console.log('message:', this.newMessageText, 'filservice edit:', this.fileService.selectedFile);
 
-      // if (!this.newMessageText.trim() && !this.fileService.selectedFile) {
-      //   await this.messagesService.deleteMessage(this.editingMessageId, this.selectedChannelId);
-      // }
-      // else {
-      //   await this.messagesService.updateMessages(this.selectedChannelId, this.editingMessageId, this.newMessageText);
-      // }
+      if (!this.newMessageText.trim() && !this.fileService.selectedFile) {
+        await this.messagesService.deleteMessage(this.editingMessageId, this.selectedChannelId);
+      }
+      else {
+        await this.messagesService.updateMessages(this.selectedChannelId, this.editingMessageId, this.newMessageText);
+      }
       this.newMessageText = '';
       this.isEditingOnMobile = false;
       this.editingMessageId = null;
