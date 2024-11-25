@@ -24,6 +24,7 @@
     "@ctrl/ngx-emoji-mart": "^9.2.0",
     "@npmcli/package-json": "^5.2.1",
     "@sendgrid/mail": "^8.1.4",
+    "cors": "^2.8.5",
     "firebase": "^10.13.2",
     "glob": "^11.0.0",
     "inflight": "^1.0.6",

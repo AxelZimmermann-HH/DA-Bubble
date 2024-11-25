@@ -1,6 +1,6 @@
 [
     {
-      "origin": ["http://localhost:4200"],
+      "origin": ["http://localhost:51300/login/"],
       "method": ["GET", "HEAD", "OPTIONS"],
       "maxAgeSeconds": 3600,
       "responseHeader": ["Content-Type", "Authorization"]
