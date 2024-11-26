@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject } from '@angular/core';
+import { Component, HostListener, Inject,  } from '@angular/core';
 import { doc, Firestore, updateDoc } from '@angular/fire/firestore';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
@@ -29,8 +29,8 @@ export class DialogAddUserComponent {
 
   selectedOption: string | null = null;
   selectedUser: any;
+  selectedUsers: any = [];
   dropdownOpen = false;
-
 
   constructor(
     public firestore: Firestore,
@@ -39,7 +39,7 @@ export class DialogAddUserComponent {
     @Inject(MAT_DIALOG_DATA)
     public data: any,
     public sharedService: SharedService,
-    public channelService : ChannelService
+    public channelService: ChannelService
   ) {
     if (data && data.channel) {
       this.channel = new Channel(data.channel);
@@ -51,8 +51,9 @@ export class DialogAddUserComponent {
     }
   }
 
+
   updateChannelMembers() {
-    if (this.userData.length === 0)return;
+    if (this.userData.length === 0) return;
 
     const currentMemberIds = this.channel.members.map((member: any) => member.userId);
     const updatedMembers = this.channel.members.filter((member: any) =>
@@ -64,7 +65,6 @@ export class DialogAddUserComponent {
       updateDoc(channelRef, { members: updatedMembers })
         .then(() => {
           this.channel.members = updatedMembers;
-          console.log('Channel members updated:', this.channel.members);
         })
         .catch((error) => {
           console.error('Error updating channel members:', error);
@@ -74,21 +74,38 @@ export class DialogAddUserComponent {
 
   async addMember() {
     const channelRef = doc(this.firestore, 'channels', this.channel.id);
+
     try {
       const currentMembers = this.channel.members || [];
       if (this.selectedOption === 'channel') {
         await this.addAllUsers(currentMembers, channelRef);
-
-      } else if (this.selectedOption === 'user' || this.selectedUser) {
-        await this.addSelectedUsers(currentMembers, channelRef)
       }
+      else if (this.selectedOption == 'user' || this.selectedUsers) {
+        const newMembers = this.selectedUsers.filter(
+          (user: any) => !currentMembers.some(member => member.userId === user.userId)
+        );
+
+        if (newMembers.length > 0) {
+          const updatedMembers = [...currentMembers, ...newMembers.map((user: any) => user.toJson())];
+          await updateDoc(channelRef, { members: updatedMembers });   
+        } 
+
+        this.selectedUsers = []; // Auswahl zurücksetzen
+        this.dialogRef.close(true);
+      }
+
     } catch (error) {
-      console.error('Fehler beim Hinzufügen des Mitglieds/der Mitglieder:', error);
+      console.error('Fehler beim Hinzufügen der Mitglieder:', error);
+      this.dialogRef.close(false);
     }
   }
 
+  isSelected(user: any): boolean {
+    return this.selectedUsers.some((selected: any) => selected.userId === user.userId);
+  }
+
   async addAllUsers(currentMembers: any[], channelRef: any) {
-    const newMembers = this.userData
+    const newMembers = this.userService.userData
       .filter((user: any) => !currentMembers.some(member => member.userId === user.userId))
       .map((user: any) => user.toJson());
     if (newMembers.length > 0) {
@@ -101,14 +118,28 @@ export class DialogAddUserComponent {
   }
 
   async addSelectedUsers(currentMembers: any[], channelRef: any) {
-    const isMemberAlready = currentMembers.some(member => member.userId === this.selectedUser.userId);
-    if (isMemberAlready) {
+   
+    const newMembers = this.selectedUsers.filter(
+      (user: any) => !currentMembers.some(member => member.userId === user.userId)
+    );
+
+    console.log('Neue Benutzer nach Filterung:', newMembers);
+
+    if (newMembers.length === 0) {
       this.dialogRef.close(false);
       return;
     }
-    const updatedMembers = [...currentMembers, this.selectedUser.toJson()];
-    await updateDoc(channelRef, { members: updatedMembers });
-    this.dialogRef.close(true);
+
+    const updatedMembers = [...currentMembers, ...newMembers.map((user: any) => user.toJson())];
+
+    try {
+      await updateDoc(channelRef, { members: updatedMembers });
+      this.selectedUsers = [];
+      this.dialogRef.close(true);
+    } catch (error) {
+      console.error('Fehler beim Hinzufügen der Mitglieder:', error);
+      this.dialogRef.close(false);
+    }
   }
 
   toggleDropdown() {
@@ -116,15 +147,46 @@ export class DialogAddUserComponent {
   }
 
   selectUser(user: any) {
-    this.selectedUser = user;
+
+    if (!this.isSelected(user)) {
+      this.selectedUsers.push(user);
+    }
     this.dropdownOpen = false;
   }
 
-  removeSelectedUser(event: Event) {
+  removeSelectedUser(user: any, event: Event) {
     event.stopPropagation();
-    this.selectedUser = null;
-    this.dropdownOpen = false;
+    this.selectedUsers = this.selectedUsers.filter((selected: any) => selected.userId !== user.userId);
   }
+
+
+  @HostListener('document:click', ['$event'])
+  onClick(event: MouseEvent) {
+    const dropdown = document.querySelector('.dropdown-options');
+    const dropdownSelected = document.querySelector('.dropdown-selected');
+    const clickedInsideDropdown = dropdown?.contains(event.target as Node);
+    const clickedInsideSelected = dropdownSelected?.contains(event.target as Node);
+
+    // Schließe Dropdown nur, wenn der Klick außerhalb von Dropdown und Dropdown-Trigger erfolgte
+    if (!clickedInsideDropdown && !clickedInsideSelected) {
+      this.dropdownOpen = false;
+    }
+  }
+
+
+  // const searchList = document.querySelector('.searchListe');
+  // const taggedUserDiv = document.querySelector('.tagged-user-list');
+  // const emojiPicker = document.querySelector('.emoji-picker');
+  // if (this.taggedUser && searchList && taggedUserDiv &&
+  //   !searchList.contains(event.target as Node) && !taggedUserDiv.contains(event.target as Node)) {
+  //   this.taggedUser = false;
+  // }
+  // if ((this.showEmojiPicker || this.showEditEmojiPicker) && emojiPicker && !emojiPicker.contains(event.target as Node)) {
+  //   this.showEmojiPicker = false;
+  //   this.showEditEmojiPicker = false;
+  // }
+
+
 
   closeDialog() {
     this.dialogRef.close();

@@ -1,9 +1,8 @@
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { addDoc, collection, doc, Firestore, getDocs, onSnapshot, query, setDoc, where } from '@angular/fire/firestore';
+import { addDoc, collection, doc, Firestore, getDocs, query, setDoc, where } from '@angular/fire/firestore';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Channel } from '../models/channel.class';
-import { User } from '../models/user.class';
 import { ChannelService } from '../services/channel.service';
 import { ChatService } from '../services/chat.service';
 import { CommonModule } from '@angular/common';
@@ -39,7 +38,8 @@ export class DialogAddChannelComponent {
   channelData: any;
 
   creatorName!: string;
-  userData: any = [];
+  creatorId!: string;
+  creator:any;
 
   channelExists: boolean = false;
 
@@ -48,6 +48,9 @@ export class DialogAddChannelComponent {
   ngOnInit() {
     this.userService.getAllUsers().then(() => {
       this.creatorName = this.userService.findUserNameById(this.data.userId);
+      this.creator = this.userService.findUserByName(this.creatorName);
+        console.log('Creator loaded:', this.creator);
+      
     });
   }
 
@@ -66,12 +69,8 @@ export class DialogAddChannelComponent {
     this.channel.channelDescription = this.channelDescription.value!;
     this.channel.tagIcon = 'tag.png';
     this.channel.creatorName = this.creatorName;
-  }
-
-  resetAndCloseDialog() {
-    this.channelName.setValue('');
-    this.channelDescription.setValue('');
-    this.dialogRef.close();
+    this.creatorId = this.data.userId;
+    this.channel.members.push(this.creator.toJson())
   }
 
   async saveNewChannel(channelData: any) {
@@ -103,5 +102,11 @@ export class DialogAddChannelComponent {
       return;
     }
     this.channelExists = await this.checkChannelExists(enteredName);
+  }
+
+  resetAndCloseDialog() {
+    this.channelName.setValue('');
+    this.channelDescription.setValue('');
+    this.dialogRef.close();
   }
 }

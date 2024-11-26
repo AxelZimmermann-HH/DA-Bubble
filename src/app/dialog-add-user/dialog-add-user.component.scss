@@ -87,7 +87,9 @@
     align-items: center;
     justify-content: space-between;
     position: relative;
-
+    overflow-y: hidden;
+    overflow-x: scroll;
+    scrollbar-width: none;
 }
 
 .dropdown-selected {
@@ -95,7 +97,7 @@
     cursor: pointer;
     padding: 20px;
     font-weight: 400;
-    font-size: 18px;
+    font-size: 14px;
 }
 
 .dropdown-options {
@@ -103,8 +105,6 @@
     padding: 0;
     list-style: none;
     position: absolute;
-
-    /* Um die Liste unter dem ausgewählten Element anzuzeigen */
     background: rgba(255, 255, 255, 1);
     border-radius: 0px 0px 20px 20px;
     border: 1px solid rgba(173, 176, 217, 1);
@@ -112,14 +112,12 @@
     max-height: 171px;
     overflow-y: auto;
     z-index: 100;
-    /* Sicherstellen, dass die Liste vor anderen Elementen angezeigt wird */
-
     font-weight: 400;
     font-size: 14px;
     width: auto;
     max-height: 171px;
     height: auto;
-    top: 45px;
+    bottom:-65px;
     padding: 20px 21px;
     overflow-y: scroll;
     scrollbar-width: none;
@@ -166,16 +164,20 @@
 
 .selected-user {
     background: rgba(236, 238, 254, 1);
-    width: auto;
+    width: max-content;
     height: 40px;
     border-radius: 30px;
     padding: 3px 20px;
-    gap: 15px;
     display: flex;
     align-items: center;
-    position: absolute;
+    // position: absolute;
     margin: 0 6px;
 }
+
+.selected-users {
+    display: flex;
+}
+
 
 .slectedUserImg {
     width: 40px;
@@ -237,7 +239,8 @@
         width: 25px;
         height: 25px;
     }
-    .dropdown-options{
+
+    .dropdown-options {
         position: fixed;
         bottom: 0;
     }
