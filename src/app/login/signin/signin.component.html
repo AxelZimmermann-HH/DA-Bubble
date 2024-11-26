@@ -17,27 +17,28 @@
         <div class="input">
             <img [ngStyle]="{'width': '20px'}" src="./assets/icons/login-mail.svg" alt="">
             <input 
-                name="mailInput" 
-                [(ngModel)]="user.mail" 
-                #mailInput 
-                required 
-                placeholder="beispielname@email.com" 
-                [placeholder]="validMail ? 'beispielname@email.com' : 'Die Mailadresse wurde nicht gefunden!'"
-                pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
-                [ngClass]="{'placeholder-error': !validMail}"
-                (blur)="checkEmail()" />
+            name="mailInput" 
+            [(ngModel)]="user.mail" 
+            #mailInput 
+            required 
+            placeholder="beispielname@email.com" 
+            [placeholder]="authError ? 'E-Mail oder Passwort inkorrekt' : (emailError ? 'Bitte korrekte E-Mail-Adresse eingeben!' : 'beispielname@email.com')" 
+            pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
+            [ngClass]="{'placeholder-error': authError || emailError}" 
+            (blur)="checkEmail()" />
         </div>
 
         <div class="input">
             <img [ngStyle]="{'width': '16px'}" src="./assets/icons/login-lock.svg" alt="">
-            <input name="passwordInput" 
-                [(ngModel)]="user.password" 
-                required 
-                placeholder="Passwort (min. 6 Zeichen)" 
-                [placeholder]="validPassword ? 'Passwort (min. 6 Zeichen)' : 'Falsches Passwort!'" 
-                [ngClass]="{'placeholder-error': !validPassword}" 
-                type="password" 
-                (blur)="checkEmail()" />
+            <input 
+            name="passwordInput" 
+            [(ngModel)]="user.password" 
+            required 
+            placeholder="Passwort (min. 6 Zeichen)" 
+            [placeholder]="authError ? 'E-Mail oder Passwort inkorrekt' : (passwordError ? 'Mindestens 6 Zeichen' : 'Passwort (min. 6 Zeichen)')" 
+            [ngClass]="{'placeholder-error': authError || passwordError}" 
+            type="password"
+            (blur)="checkPw()" />
         </div>
 
         <a (click)="goToPasswordReset()">Passwort vergessen?</a>

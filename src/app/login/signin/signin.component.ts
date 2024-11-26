@@ -27,6 +27,10 @@ export class SigninComponent {
   validPassword: boolean = true;
   checkPassword: any;
 
+  public emailError: boolean = false; 
+  public passwordError: boolean = false; 
+  public authError: boolean = false;
+
   constructor(public firestore: Firestore, private router: Router, private userService: UserService, private auth: Auth) {
     this.getAllUsers();
   }
@@ -44,44 +48,15 @@ export class SigninComponent {
     });
   }
 
-  async checkEmail() {
-    const enteredMail = this.user.mail.trim();
-
-    if (!this.validateEmail(enteredMail)) {
-      this.handleMailError();
-      return;
-      }
-      try {
-        await this.searchEmailInDatabase(enteredMail);
-      } catch (error) {
-        this.handleMailError();
-      }
-  }
-
-  async test() {
-    const enteredMail = this.user.mail.trim();
-
-    if (!this.validateEmail(enteredMail)) {
-      this.handleMailError();
-      return;
-      }
-      try {
-        await this.searchEmailInDatabase(enteredMail);
-      } catch (error) {
-        this.handleMailError();
-      }
-  }
-
+  async checkEmail(): Promise<void> {
+    const enteredMail = this.user.mail ? this.user.mail.trim() : ''; 
   
-
-  async searchEmailInDatabase(email: string) {
-    const q = query(collection(this.firestore, 'users'), where('mail', '==', email));
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      this.handleMailError();
-    } else {
-      this.validMail = true;
+    if (!this.validateEmail(enteredMail)) {
+      this.user.mail = '';
+      this.emailError = true; 
+      setTimeout(() => {
+        this.emailError = false; 
+      }, 2000);
     }
   }
 
@@ -90,49 +65,37 @@ export class SigninComponent {
     return emailPattern.test(email);
   }
 
-  handleMailError() {
-    this.user.mail = '';
-    this.validMail = false;  
-    setTimeout(() => {
-      this.validMail = true;  
-    }, 2000);
+  async checkPw(): Promise<void> {
+    const enteredPassword = this.user.password ? this.user.password.trim() : ''; 
+  
+    if (!this.validatePassword(enteredPassword)) {
+      this.user.password = '';
+      this.passwordError = true; 
+      setTimeout(() => {
+        this.passwordError = false; 
+      }, 2000);
+    }
+  }
+  
+  private validatePassword(password: string): boolean {
+    return password.length >= 6; 
   }
 
-public handlePwError() {
-    this.user.password = '';
-    this.validPassword = false;
-    setTimeout(() => {
-        this.validPassword = true;  
-    }, 2000);
-}
-
-
-  async onSubmit(ngForm: NgForm) {
-    let enteredMail = this.user.mail.trim();
-    let enteredPassword = this.user.password;
-
+  async onSubmit(ngForm: NgForm): Promise<void> {
+    const enteredMail = this.user.mail.trim();
+    const enteredPassword = this.user.password;
+  
     try {
       const userCredential = await signInWithEmailAndPassword(this.auth, enteredMail, enteredPassword);
       const firebaseUser = userCredential.user;
       await this.checkFirestore(firebaseUser);
-      this.emptyValue();
+      this.emptyValue(); 
     } catch (error: any) {
-      this.handleAuthError(error);
-    }
-  }
-
-  handleAuthError(error: any) {
-    switch (error.code) {
-      case 'auth/wrong-password':
-      case 'auth/invalid-credential':
-      case 'auth/too-many-requests':
-        this.handlePasswordError();
-        break;
-      case 'auth/user-not-found':
-        this.handleMailError();
-        break;
-      default:
-        this.handlePasswordError();
+      this.authError = true; this.user.mail = ''; this.user.password = '';
+  
+      setTimeout(() => {
+        this.authError = false;
+      }, 2000);
     }
   }
 
@@ -163,14 +126,6 @@ public handlePwError() {
     await updateDoc(userDocRef, { online: true });
     this.userService.setUser(user);
     this.router.navigate(['/login',user.userId]);
-  }
-
-  handlePasswordError() {
-    this.validPassword = false;
-    this.user.password = '';
-    setTimeout(() => {
-      this.validPassword = true;
-    }, 2000);
   }
 
   guestLogin() {
