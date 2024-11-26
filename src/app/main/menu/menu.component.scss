@@ -18,10 +18,12 @@ html {
     display: flex;
     flex-direction: column;
     margin-left: 16px;
-    overflow: auto;
+    overflow-y: auto;
 }
 
 .mobile-menu-container {
+    height: 84vh;
+    padding-bottom: 40px;
     margin: 0;
     border: unset;
     border-radius: unset;

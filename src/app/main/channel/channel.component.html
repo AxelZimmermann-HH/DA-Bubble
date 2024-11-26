@@ -206,7 +206,7 @@
                     <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail"
                         (click)="toggleAutoListe($event)">
                     <!-- Emoji hinzufügen -->
-                    <img src="./assets/icons/sentiment_satisfied-1.png" alt="Emoji hinzufügen" class="add-emoji"
+                    <img *ngIf="!this.sharedService.isMobile" src="./assets/icons/sentiment_satisfied-1.png" alt="Emoji hinzufügen" class="add-emoji"
                         (click)="toggleEmojiPicker($event)">
                 </div>
                 <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"

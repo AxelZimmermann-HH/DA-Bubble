@@ -623,7 +623,7 @@
                 </div>
 
                 <div style="height: 50px; width: 1px; background-color: rgba(104, 104, 104, 1);"></div>
-                <img src="./assets/icons/sentiment_satisfied-1.png" (click)="toggleEmojis($event)" alt="" class="add-emoji">
+                <img *ngIf="!this.sharedService.isMobile" src="./assets/icons/sentiment_satisfied-1.png" (click)="toggleEmojis($event)" alt="" class="add-emoji">
                 <img src="./assets/icons/alternate_email-1.png" (click)="toggleUserList()" alt="" class="add-mail">
 
             </div>

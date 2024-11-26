@@ -221,8 +221,9 @@
             }
 
             .preview-img{
-                width: 40%;
+                width: 70px;
                 height: auto;
+                object-fit: contain;
             }
 
             .label-answers {
