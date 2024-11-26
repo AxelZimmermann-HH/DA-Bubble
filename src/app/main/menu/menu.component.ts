@@ -37,6 +37,7 @@ export class MenuComponent {
   dmIcon2 = 'account_circle.png';
   openCloseIcon = "Hide-navigation.png";
   showMenu: boolean = true;
+  closeMenu:boolean = false;
   openCloseButtonText = 'Workspace-Menü schließen';
   userData: any[] = [];
   filteredUsers: any[] = [];
@@ -219,7 +220,7 @@ export class MenuComponent {
     }
   }
 
-  closeMenu:boolean = false;
+  
   //öffnet und schließt das Menü-Panel
   openCloseMenu() {
     if (this.showMenu) {
@@ -238,24 +239,17 @@ export class MenuComponent {
   };
 
 
-  //tauscht das Icon beim hovern
-  setHoverIcon() {
-    if (this.showMenu) {
-      this.openCloseIcon = 'Frame 18.png'
-    } else {
-      this.openCloseIcon = 'Frame 41.png'
-    }
-  };
+  get containerClass() {
+    return this.sharedService.isMobile ? 'mobile-menu-container menu-container gap-25' : 'menu-container gap-25';
+  }
+  
 
-
-  //tauscht das Icon beim hovern
-  setUnhoverIcon() {
-    if (this.showMenu) {
-      this.openCloseIcon = 'Hide-navigation.png'
-    } else {
-      this.openCloseIcon = 'Hide-navigation-1.png'
+  get animationClass() {
+    if (this.sharedService.isMobile) {
+      return ''; // Keine Animationen für Mobilgeräte
     }
-  };
+    return !this.closeMenu ? 'open-menu' : 'close-menu';
+  }
 
 
   //öffnet den Channel hinzufügen Dialog
