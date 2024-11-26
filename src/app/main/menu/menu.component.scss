@@ -260,8 +260,32 @@ html {
     position: absolute;
 }
 
+.open-menu{
+    animation: open forwards ease-in 100ms;
+}
+
+@keyframes open {
+    0%{transform: translateX(-110%);}
+    100%{transform: translateX(0%);}
+}
+
+.close-menu{
+    animation: close forwards ease-in 100ms;
+}
+
+@keyframes close {
+    0%{transform: translateX(0%);}
+    100%{transform: translateX(-110%);}
+}
+
 .rotateArrow {
     transform: rotate(-90deg);
+    transition: filter 0.3s ease, transform 0.3s ease;
+    &:hover {
+        filter: brightness(0) saturate(100%) invert(45%) sepia(72%) saturate(5802%) hue-rotate(228deg) brightness(95%) contrast(99%);
+        cursor: pointer;
+        
+    }
 }
 
 .rotate-text {
@@ -283,10 +307,20 @@ html {
     border-radius: 0px 0px 30px 30px;
     background-color: #FFFFFF;
     box-shadow: 0px 4px 7px 4px rgba(0, 0, 0, 0.2);
+    transition: filter 0.3s ease;
+
+    img{
+        transform: rotate(90deg);
+    }
 
     &:hover {
         cursor: pointer;
-        color: #535AF1;
+
+        .rotate-text, img {
+            transition: filter 0.3s ease;
+            filter: brightness(0) saturate(100%) invert(45%) sepia(72%) saturate(5802%) hue-rotate(228deg) brightness(95%) contrast(99%);
+            cursor: pointer;
+        }
     }
 }
 
@@ -298,6 +332,7 @@ html {
 
     &:hover {
         filter: contrast(0.6);
+        cursor: pointer;
     }
 }
 

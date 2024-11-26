@@ -219,14 +219,18 @@ export class MenuComponent {
     }
   }
 
-
+  closeMenu:boolean = false;
   //öffnet und schließt das Menü-Panel
   openCloseMenu() {
     if (this.showMenu) {
-      this.showMenu = false;
+      this.closeMenu = true;
+      setTimeout(() => {
+        this.showMenu = false;
+      }, 101);
       this.openCloseButtonText = 'Workspace-Menü öffnen';
       this.openCloseIcon = 'Hide-navigation-1.png'
     } else {
+      this.closeMenu = false;
       this.showMenu = true;
       this.openCloseButtonText = 'Workspace-Menü schließen';
       this.openCloseIcon = 'Hide-navigation.png'

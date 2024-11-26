@@ -1,11 +1,12 @@
 <button class="menu-toggle-button" *ngIf="!this.sharedService.isMobile" (click)="openCloseMenu()"
-    (mouseover)="setHoverIcon()" (mouseleave)="setUnhoverIcon()">
+    >
     <span class="rotate-text header4">{{openCloseButtonText}}</span>
-    <img style="transform: rotate(90deg);" src="assets\icons\{{openCloseIcon}}" alt="">
+    <img  src="assets\icons\{{openCloseIcon}}" alt="">
 </button>
 
-<div class="menu-container gap-25" *ngIf="showMenu"
-    [ngClass]="this.sharedService.isMobile ? 'mobile-menu-container' : 'menu-container gap-25'">
+<div class="menu-container gap-25" *ngIf="this.showMenu"
+    [ngClass]="this.sharedService.isMobile ? 'mobile-menu-container' : 'menu-container gap-25'"
+    [ngClass]="this.showMenu && !this.closeMenu ? 'open-menu' : 'close-menu'">
 
     <div class="menu-header-container">
         <div class="flex-align-center gap-15">
