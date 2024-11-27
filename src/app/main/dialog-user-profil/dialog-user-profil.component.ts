@@ -97,7 +97,7 @@ export class DialogUserProfilComponent {
       this.originalAvatar = this.data.user.avatar;
     } else {
       this.data.user.avatar = this.originalAvatar;
-      this.selectedAvatar = this.getAvatarForUser(this.data.user); // Vorschau zurücksetzen
+      this.selectedAvatar = this.getAvatarForUser(this.data.user);
     }
   
     this.isEditMode = !this.isEditMode;
