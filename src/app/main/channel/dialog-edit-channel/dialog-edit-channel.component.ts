@@ -66,6 +66,13 @@ export class DialogEditChannelComponent {
 
   async editChannelName() {
     if (!this.newChannelName.trim()) return;
+
+    if (this.newChannelName.trim() === this.channel.channelName) {
+      this.errorMessage = null; // Keine Fehlermeldung
+      this.isEditing = false; // Bearbeitungsmodus beenden
+      return;
+    }
+    
     if (await this.channelService.checkChannelExists(this.newChannelName.trim())) {
       this.errorMessage = 'Dieser Kanalname existiert bereits. Bitte wählen Sie einen anderen Namen.';
       return;
