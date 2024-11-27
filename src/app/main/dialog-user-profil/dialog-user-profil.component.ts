@@ -39,6 +39,18 @@ export class DialogUserProfilComponent {
     this.isEditable = data.isEditable; 
   }
 
+  avatars: string[] = [
+    '../../../assets/avatars/avatar_0.png',
+    '../../../assets/avatars/avatar_1.png',
+    '../../../assets/avatars/avatar_2.png',
+    '../../../assets/avatars/avatar_3.png',
+    '../../../assets/avatars/avatar_4.png',
+    '../../../assets/avatars/avatar_5.png'
+  ];
+
+  selectedAvatar: string = '../../../assets/avatars/avatar_6.png';  
+  originalAvatar: string | number = '';
+
   selectedChannel: Channel | null = null;
 
   ngOnInit() {
@@ -62,6 +74,12 @@ export class DialogUserProfilComponent {
     return './assets/avatars/avatar_0.png';  // Default avatar when user not found
   }
 
+  async selectAvatar(avatar: string) {
+    this.selectedAvatar = avatar;
+    const avatarId = parseInt(avatar.match(/\d+/)?.[0] || '0', 10);
+    this.data.user.avatar = avatarId;
+  }
+
   saveProfile(form: NgForm) {
     if (form.valid) {
       this.userService.updateUser(this.data.user); // Pass the updated user to the service
@@ -75,6 +93,14 @@ export class DialogUserProfilComponent {
   }
 
   toggleEditMode() {
+    if (!this.isEditMode) {
+      this.originalAvatar = this.data.user.avatar;
+    } else {
+      this.data.user.avatar = this.originalAvatar;
+      this.selectedAvatar = this.getAvatarForUser(this.data.user); // Vorschau zurücksetzen
+    }
+  
     this.isEditMode = !this.isEditMode;
   }
+  
 }

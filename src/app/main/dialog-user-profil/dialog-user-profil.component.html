@@ -8,6 +8,12 @@
 
     <img [src]="getAvatarForUser(data.user)" alt="" class="profilImg">
 
+    <div *ngIf="isEditMode" class="avatars">
+        @for (avatar of avatars; track avatar) {
+            <img [src]="avatar" (click)="selectAvatar(avatar)" alt="Avatar">
+        }
+    </div>
+
     <div style="display: flex;align-items: center;justify-content: space-between;width: 100%;" *ngIf="!isEditMode">
         <div class="user-name">{{ data.user.name }}</div> 
         <!-- Conditionally show the "bearbeiten" button if the profile is editable -->
