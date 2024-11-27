@@ -59,6 +59,7 @@ export class ChannelComponent {
 
   inputValue: string = '';
 
+
   filteredUsers: User[] = [];
   filteredMessages: Message[] = [];
   filteredSearchMessages: MessageGroup[] = [];
@@ -68,7 +69,6 @@ export class ChannelComponent {
 
   taggedUser: boolean = false;
 
-  emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   showEmojiPicker: boolean = false;
   showEditEmojiPicker: boolean = false;
@@ -130,7 +130,9 @@ export class ChannelComponent {
       this.resetChannelState();
     }
   }
-
+  onFileChange(event: any) {
+    this.fileService.onFileSelected(event);
+  }
   resetChannelState() {
     this.channelService.selectedChannel = null;
     this.messagesService.allMessages = [];
@@ -211,71 +213,17 @@ export class ChannelComponent {
     }
     this.searchService.hideAutocompleteList();
   }
+  async sendMessage(selectedChannelId: string | null, editingMessageId: string | null) {
+    console.log(this.selectedChannelId, '/', this.editingMessageId);
+    this.selectedChannelId
+    console.log(this.newMessageText, '/', this.inputValue, '/', this.userId, '/', this.isEditingOnMobile, '/', selectedChannelId, '/', editingMessageId);
 
-  async sendEmail(email: string, message: string, fileUrl: string | null) {
-    try {
-      const user = this.userService.findUserByEmail(email);
-      if (!user) return;
-      await this.messagesService.sendDirectMessage(user.name, message, fileUrl, this.userId);
-    } catch (error) {
-      console.error("Fehler beim Suchen des Benutzers: ", error);
-    }
-  }
-
-  async sendMessage() {
-    const fileUrl = await this.fileService.uploadFiles();
-    if (this.newMessageText.trim() === '' && !this.fileService.selectedFile && !this.isEditingOnMobile) return;
-
-    await this.editMessageForMobile();
-
-    // const fileUrl = await this.fileService.uploadFiles();
-    if (!fileUrl && !this.newMessageText.trim()) return;
-    if (this.channelService.selectedChannel) {
-      await this.messagesService.sendChannelMessage(this.selectedChannelId, this.newMessageText, fileUrl, this.userId);
-    } else {
-      await this.handleDirectMessageOrEmail(fileUrl);
-    }
-
-    // Senden von Direktnachrichten, falls Benutzernamen markiert wurden
-    await this.sendTaggedMessages(fileUrl);
-
+    await this.messagesService.sendMessage(this.newMessageText, this.inputValue, this.userId, this.isEditingOnMobile, selectedChannelId, editingMessageId);
     this.resetInput();
   }
-
-  async sendTaggedMessages(fileUrl: string | null) {
-    const taggedUsernames = this.extractTaggedUsernames(this.newMessageText);
-    for (const username of taggedUsernames) {
-      await this.messagesService.sendDirectMessage(username, this.newMessageText, fileUrl, this.userId);
-    }
+  async editDirectMessage(message: Message) {
+    return await this.messagesService.editDirectMessage(message, this.newMessageText, this.isEditingOnMobile, this.editingMessageId)
   }
-  async editMessageForMobile() {
-    if (this.isEditingOnMobile) {
-      console.log('message:', this.newMessageText, 'filservice edit:', this.fileService.selectedFile);
-
-      if (!this.newMessageText.trim() && !this.fileService.selectedFile) {
-        await this.messagesService.deleteMessage(this.editingMessageId, this.selectedChannelId);
-      }
-      else {
-        await this.messagesService.updateMessages(this.selectedChannelId, this.editingMessageId, this.newMessageText);
-      }
-      this.newMessageText = '';
-      this.isEditingOnMobile = false;
-      this.editingMessageId = null;
-      return;
-    }
-  }
-
-
-  extractTaggedUsernames(message: string): string[] {
-    const tagRegex = /@([A-Za-z0-9_]+)/g;
-    const taggedUsernames = [];
-    let match;
-    while ((match = tagRegex.exec(message)) !== null) {
-      taggedUsernames.push(match[1].trim());
-    }
-    return taggedUsernames;
-  }
-
   resetInput() {
     this.inputValue = '';
     this.newMessageText = '';
@@ -285,22 +233,23 @@ export class ChannelComponent {
     this.isEditingOnMobile = false;
     this.editingMessageId = null;
   }
-
-  async handleDirectMessageOrEmail(fileUrl: string | null) {
-    const inputValue = this.inputValue.trim();
-    if (this.emailPattern.test(inputValue)) {
-      await this.sendEmail(inputValue, this.newMessageText, fileUrl);
-    } else if (inputValue.startsWith('@')) {
-      const userName = inputValue.slice(1).trim();
-      await this.messagesService.sendDirectMessage(userName, this.newMessageText, fileUrl, this.userId);
-    } else if (inputValue.startsWith('#')) {
-      const channelName = inputValue.slice(1).trim();
-      const channelId = this.channelService.getChannelIdByName(channelName);
-      if (channelId) {
-        await this.messagesService.sendChannelMessage(channelId, this.newMessageText, fileUrl, this.userId);
-      }
+  isValidInput(): boolean {
+    const trimmedValue = this.inputValue.trim();
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (emailPattern.test(trimmedValue)) {
+      return true;
     }
+    if (trimmedValue.startsWith('#')) {
+      const channelName = trimmedValue.slice(1).trim();
+      return this.filteredChannels.some(channel => channel.channelName === channelName);
+    }
+    if (trimmedValue.startsWith('@')) {
+      const userName = trimmedValue.slice(1).trim();
+      return this.userService.userData.some(user => user.name === userName);
+    }
+    return false;
   }
+
 
   onThreadClosed() {
     this.isThreadOpen = false;
@@ -355,27 +304,6 @@ export class ChannelComponent {
     }
   }
 
-  async editDirectMessage(message: Message) {
-    if (!this.sharedService.isMobile) {
-      message.isEditing = true;
-      message.editedText = message.text;
-    } else {
-      this.newMessageText = message.text;
-      this.isEditingOnMobile = true;
-      this.editingMessageId = message.messageId;
-
-      if (message.fileUrl) {
-        this.fileService.fileUrl = this.fileService.getSafeUrl(message.fileUrl);
-        const fakeFile = new File([''], message.fileName || 'Unbenannte Datei', {
-          type: message.fileType || 'application/octet-stream',
-        });
-        this.fileService.selectedFile = fakeFile;
-      } else {
-        this.fileService.closePreview();
-      }
-
-    }
-  }
 
   selectUser(user: User) {
     this.newMessageText += `@${user.name}`;

@@ -2,7 +2,7 @@ import { Injectable, Input } from '@angular/core';
 import { User } from '../models/user.class';
 import { Channel } from '../models/channel.class';
 import { Message } from '../models/message.class';
-import { collection, doc, Firestore, onSnapshot, updateDoc } from '@angular/fire/firestore';
+import { collection, doc, Firestore, getDocs, onSnapshot, query, updateDoc, where } from '@angular/fire/firestore';
 import { DialogEditChannelComponent } from '../main/channel/dialog-edit-channel/dialog-edit-channel.component';
 import { MatDialog } from '@angular/material/dialog';
 import { SearchService } from './search.service';
@@ -120,4 +120,12 @@ export class ChannelService {
           }
         })
       }
+
+      async checkChannelExists(channelName: string) {
+        const channelsCollection = collection(this.firestore, 'channels');
+        const q = query(channelsCollection, where('channelName', '==', channelName));
+        const querySnapshot = await getDocs(q);
+        return !querySnapshot.empty;
+      }
+      
 }

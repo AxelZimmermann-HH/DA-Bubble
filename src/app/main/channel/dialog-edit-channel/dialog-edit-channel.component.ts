@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { deleteDoc, doc, Firestore, getDoc, updateDoc } from '@angular/fire/firestore';
+import { collection, deleteDoc, doc, Firestore, getDoc, getDocs, query, updateDoc, where } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Channel } from '../../../models/channel.class';
@@ -36,7 +36,7 @@ export class DialogEditChannelComponent {
   isHoveredDescription = false;
   newChannelName!: string;
   newChannelDescription!: string;
-
+  errorMessage: string | null = null;
   constructor(
     public dialogRef: MatDialogRef<DialogEditChannelComponent>,
     public firestore: Firestore,
@@ -51,7 +51,7 @@ export class DialogEditChannelComponent {
 
     if (this.channel && this.channel.channelName) {
       this.newChannelName = this.channel.channelName;
-    } 
+    }
     this.channelService.getAllChannels();
 
   }
@@ -59,25 +59,30 @@ export class DialogEditChannelComponent {
   ngOnInit() {
     this.currentUser = this.userService.findUserNameById(this.userId);
   }
-  
+
   toggleInputName() {
     this.isEditing = true;
   }
 
   async editChannelName() {
-    if (this.newChannelName.trim()) {
-      if (this.newChannelName.trim()) {
-        const channelDocRef = doc(this.firestore, 'channels', this.channel.id);
-        updateDoc(channelDocRef, { channelName: this.newChannelName })
-          .then(() => {
-            this.channel.channelName = this.newChannelName
-          })
-          .catch((error) => {
-            console.error('Error updating channel description: ', error);
-          });
-      }
+    if (!this.newChannelName.trim()) return;
+    if (await this.channelService.checkChannelExists(this.newChannelName.trim())) {
+      this.errorMessage = 'Dieser Kanalname existiert bereits. Bitte wählen Sie einen anderen Namen.';
+      return;
+    }
+    try {
+      const channelDocRef = doc(this.firestore, 'channels', this.channel.id);
+      await updateDoc(channelDocRef, { channelName: this.newChannelName.trim() });
+      this.channel.channelName = this.newChannelName.trim();
+      this.errorMessage = null;
+
+    } catch (error) {
+      console.error('Error updating channel name: ', error);
+      this.errorMessage = 'Beim Aktualisieren des Kanalnamens ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.';
+
     }
     this.isEditing = false;
+
   }
 
   toggleDescriptionEdit() {
@@ -128,7 +133,7 @@ export class DialogEditChannelComponent {
           (member: any) => member.userId !== this.userId
         );
         await updateDoc(channelDocRef, { members: updatedMembers });
-      } 
+      }
     } catch (error) {
       console.error('Fehler beim Verlassen des Channels:', error);
     }

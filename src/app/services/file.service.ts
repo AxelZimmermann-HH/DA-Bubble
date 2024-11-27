@@ -3,6 +3,7 @@ import { SafeResourceUrl, DomSanitizer } from '@angular/platform-browser';
 import { getStorage, ref, deleteObject } from 'firebase/storage';
 import { Message } from '../models/message.class';
 import { getDownloadURL, uploadBytes } from '@angular/fire/storage';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +19,9 @@ export class FileService {
   safeFileUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
   fileSize: boolean = false;
   fileType: boolean = false;
+
+  private _errorMessage = new BehaviorSubject<string | null>(null);
+  errorMessage$ = this._errorMessage.asObservable();
 
   constructor(
     private sanitizer: DomSanitizer) { }
@@ -38,7 +42,7 @@ export class FileService {
   removeFile(message: Message) {
     if (message.fileUrl) {
       const storage = getStorage();
-      const fileRef = ref(storage, message.fileUrl);  
+      const fileRef = ref(storage, message.fileUrl);
 
       deleteObject(fileRef)
         .then(() => {
@@ -57,14 +61,27 @@ export class FileService {
 
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
+
+
     if (file) {
-      this.selectedFile = file; 
-      const objectUrl = URL.createObjectURL(file);  
-      if (file.type.startsWith('image/') || file.type === 'application/pdf') {
-        this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
-      } else {
+      if (!this.isFileSizeAllowed(file)) {
+        // Datei ist zu groß
+        this._errorMessage.next('Die Datei darf maximal 500 KB groß sein.');
+        this.selectedFile = null;
         this.fileUrl = null;
+        return;
       }
+    
+      if (!this.isFileTypeAllowed(file))  {
+        this._errorMessage.next('Nur Bilder oder PDF-Dateien sind erlaubt.');
+        this.selectedFile = null;
+        this.fileUrl = null;
+        return;
+      }
+      this.selectedFile = file;
+      const objectUrl = URL.createObjectURL(file);
+      this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
+      this._errorMessage.next(null);
     }
   }
 
@@ -84,12 +101,10 @@ export class FileService {
     return fileUrl.split('/').pop() || 'Datei';
   }
 
-
   closePreview() {
     this.fileUrl = null;
     this.selectedFile = null;
   }
-
 
   async uploadFiles(): Promise<string | null> {
     if (!this.selectedFile) return null;
@@ -115,11 +130,11 @@ export class FileService {
       return; // Keine Datei ausgewählt
     }
     const file = input.files[0];
-    if(!this.isFileTypeAllowed(file)){
+    if (!this.isFileTypeAllowed(file)) {
       this.showFileTypeInfo();
       return;
     }
-    if(!this.isFileSizeAllowed(file)){
+    if (!this.isFileSizeAllowed(file)) {
       this.showFileSizeInfo();
       return;
     }
@@ -135,11 +150,11 @@ export class FileService {
       return; // Keine Datei ausgewählt
     }
     const file = input.files[0];
-    if(!this.isFileTypeAllowed(file)){
+    if (!this.isFileTypeAllowed(file)) {
       this.showFileTypeInfo();
       return;
     }
-    if(!this.isFileSizeAllowed(file)){
+    if (!this.isFileSizeAllowed(file)) {
       this.showFileSizeInfo();
       return;
     }
@@ -159,7 +174,7 @@ export class FileService {
   }
 
 
-  showFileTypeInfo(){
+  showFileTypeInfo() {
     this.fileType = true;
     setTimeout(() => {
       this.fileType = false;
@@ -167,7 +182,7 @@ export class FileService {
   }
 
 
-  showFileSizeInfo(){
+  showFileSizeInfo() {
     this.fileSize = true;
     setTimeout(() => {
       this.fileSize = false;
@@ -181,15 +196,15 @@ export class FileService {
     this.selectedFileType = file.type;
     this.uploadFile(); // Datei hochladen
   }
-  
+
 
   //Holt sich eine sichere URL
-  async loadSafeFile(fileUrl: string, fileType:string) {
+  async loadSafeFile(fileUrl: string, fileType: string) {
     if (!fileUrl) {
       console.error('Die Datei-URL ist ungültig.');
       return;
     }
-    if(fileType == 'image/png' || 'image/jpeg' || 'application/pdf'){
+    if (fileType == 'image/png' || 'image/jpeg' || 'application/pdf') {
       this.safeFileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fileUrl);
     }
   }
@@ -212,7 +227,7 @@ export class FileService {
   }
 
 
-  async loadPdfPreview(){
+  async loadPdfPreview() {
     if (this.selectedFileType == 'application/pdf') {
       console.log('Lade die Datei von URL:', this.fileDownloadUrl);
       await this.loadSafeFile(this.fileDownloadUrl, this.selectedFileType)

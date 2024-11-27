@@ -22,6 +22,9 @@
             </button>
         </div>
         <input *ngIf="isEditing" class="edit-input" type="text" [(ngModel)]="newChannelName" />
+        <div *ngIf="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </div>
         <div *ngIf="!isEditing" style="display: flex; align-items: center;">
             <img src="./assets/icons/tag.png" alt="">
             <p>{{ channel.channelName }}</p>

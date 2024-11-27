@@ -56,7 +56,7 @@ export class DialogAddChannelComponent {
 
   async createNewChannel() {
     const enteredName = this.channelName.value?.trim();
-    if (!enteredName || await this.checkChannelExists(enteredName)) return;
+    if (!enteredName || await this.channelService.checkChannelExists(enteredName)) return;
     this.setChannelData(enteredName);
     await this.saveNewChannel(this.channel.toJson());
     this.channelCreated.emit(this.channel);
@@ -88,12 +88,7 @@ export class DialogAddChannelComponent {
     await setDoc(doc(this.firestore, "channels", id), channelData)
   }
 
-  async checkChannelExists(channelName: string) {
-    const channelsCollection = collection(this.firestore, 'channels');
-    const q = query(channelsCollection, where('channelName', '==', channelName));
-    const querySnapshot = await getDocs(q);
-    return !querySnapshot.empty;
-  }
+ 
 
   async validateChannelName() {
     const enteredName = this.channelName.value?.trim();
@@ -101,7 +96,7 @@ export class DialogAddChannelComponent {
       this.channelExists = false;
       return;
     }
-    this.channelExists = await this.checkChannelExists(enteredName);
+    this.channelExists = await this.channelService.checkChannelExists(enteredName);
   }
 
   resetAndCloseDialog() {

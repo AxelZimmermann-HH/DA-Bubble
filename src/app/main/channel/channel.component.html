@@ -93,7 +93,9 @@
                                                         <span class="emoji-reaction-text">
                                                             {{emojiService.getEmojiReactionText(emojiData, userId) }}
                                                         </span>
-                                                        <span> {{emojiData.userIds.length > 1 ? 'haben reagiert' : 'hat reagiert' }}</span>
+                                                        <span>
+                                                            {{emojiData.userIds.length>1 ? 'haben reagiert':'hat  reagiert'}} 
+                                                        </span>
                                                     </span>
                                                 </div>
                                             </span>
@@ -114,10 +116,6 @@
                                             <iframe [src]="message.fileUrl" width="200" height="200"
                                                 style="border: none;"></iframe>
                                         </div>
-                                        <div *ngIf="!message.fileUrl || (!message.selectedFile?.type?.startsWith('image/') && message.selectedFile?.type !== 'application/pdf')"
-                                        class="file-preview">
-                                        <p>{{ message.selectedFile?.name }}</p>
-                                    </div>
                                     </div>
                                     <div class="button-icons-group">
                                         <img src="./assets/icons/sentiment_satisfied-1.png" alt=""
@@ -161,25 +159,17 @@
 
         <div class="custom-input">
             <textarea #messageInput placeholder="Nachricht an #{{channelService.selectedChannel.channelName}}"
-                class="text-area" [(ngModel)]="newMessageText"></textarea>
-            <!-- Vorschau der ausgewählten Datei -->
-            <div *ngIf="fileService.fileUrl" class="selectedFileStyle">
-                <!-- Datei-Vorschau für Bilder -->
+                class="text-area" [(ngModel)]="newMessageText">
+            </textarea>
+            <div *ngIf="fileService.fileUrl" class="selectedFileStyle">                
                 <div *ngIf="fileService.fileUrl && fileService.selectedFile?.type?.startsWith('image/')"
                     class="file-preview">
                     <img [src]="fileService.fileUrl" alt="Image Preview" class="image-preview">
                 </div>
-                <!-- Datei-Vorschau für PDFs -->
                 <div *ngIf="fileService.selectedFile?.type === 'application/pdf' && fileService.fileUrl"
                     class="file-preview">
                     <iframe [src]="fileService.fileUrl" width="200" height="200" style="border: none;"></iframe>
                 </div>
-                <!-- Anzeige für andere Dateitypen -->
-                <div *ngIf="!fileService.fileUrl || (!fileService.selectedFile?.type?.startsWith('image/') && fileService.selectedFile?.type !== 'application/pdf')"
-                    class="file-preview">
-                    <p>{{ fileService.selectedFile?.name }}</p>
-                </div>
-                <!-- Schließen-Button für Datei-Vorschau -->
                 <img src="./../../../assets/icons/close.png" alt="Close" class="close-icon"
                     (click)="fileService.closePreview()" style="cursor: pointer;">
             </div>
@@ -194,25 +184,27 @@
                     </li>
                 </ul>
             </div>
-            <!-- Datei hochladen und Emoji hinzufügen -->
+    
             <div class="add-reaction">
                 <div class="reactions">
                     <img src="./assets/icons/add-1.png" alt="Datei hinzufügen" class="add-icon"
                         (click)="fileInput.click()">
                     <input type="file" #fileInput style="display: none" (change)="fileService.onFileSelected($event)">
-
+                    <div *ngIf="fileService.errorMessage$ | async as errorMessage" class="error-message" style="color: red; font-size: 14px; padding-top: 10px;">
+                        {{ errorMessage }}
+                      </div>
                     <!-- Trennlinie -->
                     <div class="trennLine"></div>
                     <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail"
                         (click)="toggleAutoListe($event)">
                     <!-- Emoji hinzufügen -->
-                    <img *ngIf="!this.sharedService.isMobile" src="./assets/icons/sentiment_satisfied-1.png" alt="Emoji hinzufügen" class="add-emoji"
-                        (click)="toggleEmojiPicker($event)">
+                    <img *ngIf="!this.sharedService.isMobile" src="./assets/icons/sentiment_satisfied-1.png"
+                        alt="Emoji hinzufügen" class="add-emoji" (click)="toggleEmojiPicker($event)">
                 </div>
                 <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"
                     class="emoji-picker"></emoji-mart>
                 <!-- Nachricht senden -->
-                <img src="./assets/icons/Send icon.png" (click)="sendMessage()" class="send-icon">
+                <button class="send-btn" [disabled]="!fileService.selectedFile && !newMessageText && !selectedUser" (click)=" sendMessage(selectedChannelId,editingMessageId)"><img src="./assets/icons/Send icon.png"></button>
             </div>
         </div>
     </div>
@@ -222,10 +214,10 @@
                 <p>Neue Nachricht</p>
                 <input class="inputChannel" type="text" placeholder="An #channel, oder @jemand oder E-Mail Adresse"
                     (input)="onInput($event)" [(ngModel)]="inputValue" />
-                <div *ngIf="showAutocomplete" class="autocomplete-list">
-                    <ul class="searchListe">
+                <div *ngIf="showAutocomplete">
+                    <ul class="searchListe"  *ngIf="filteredChannels.length || filteredUsers.length || inputValue.startsWith('@')" >
                         <li *ngFor="let channel of filteredChannels" (click)="selectValue(channel.channelName)">
-                            <div style="cursor: pointer;" *ngIf="inputValue.startsWith('#')" class="channel_liste">{{
+                            <div *ngIf="inputValue.startsWith('#')" class="channel_liste">{{
                                 channel.channelName }}
                             </div>
                         </li>
@@ -245,25 +237,20 @@
             <div class="custom-input">
                 <textarea placeholder="Starte eine neue Nachricht" class="text-area" [(ngModel)]="newMessageText"
                     placeholder="Nachricht eingeben"></textarea>
-
                 <div *ngIf="fileService.selectedFile" class="selectedFileStyle">
-                    <!-- Datei-Vorschau für Bilder -->
                     <div *ngIf="fileService.selectedFile.type.startsWith('image/') && fileService.fileUrl"
                         class="file-preview">
                         <img [src]="fileService.fileUrl" alt="Image Preview" class="image-preview">
                     </div>
-                    <!-- Datei-Vorschau für PDFs -->
+                
                     <div *ngIf="fileService.selectedFile.type === 'application/pdf' && fileService.fileUrl"
                         class="file-preview">
                         <iframe [src]="fileService.fileUrl" width="200" height="200" style="border: none;"></iframe>
                     </div>
-                    <!-- Anzeige für andere Dateitypen -->
                     <div *ngIf="!fileService.fileUrl || (!fileService.selectedFile.type.startsWith('image/') && fileService.selectedFile.type !== 'application/pdf')"
                         class="file-preview">
                         <p>{{ fileService.selectedFile.name }}</p>
                     </div>
-
-                    <!-- Schließen-Button für Datei-Vorschau -->
                     <img src="./../../../assets/icons/close.png" alt="Close" class="close-icon"
                         (click)="fileService.closePreview()" style="cursor: pointer;">
                 </div>
@@ -289,7 +276,10 @@
                         <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail"
                             (click)="toggleAutoListe($event)">
                     </div>
-                    <img src="./assets/icons/Send icon.png" (click)="sendMessage()" class="send-icon">
+                    <button class="send-btn" [disabled]="!isValidInput() ||!newMessageText " (click)="sendMessage(selectedChannelId,editingMessageId)">
+                         <img src="./assets/icons/Send icon.png"  >
+                    </button>
+                   
                 </div>
                 <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"
                     class="emoji-picker"></emoji-mart>

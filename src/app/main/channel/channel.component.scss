@@ -249,9 +249,11 @@ td:hover .speech-bubble {
     background-color: #FFFFFF !important;
     color: black;
 }
-td:hover .textAreaContainer{
+
+td:hover .textAreaContainer {
     background-color: #fff;
-} 
+}
+
 .day-time-btn {
     position: absolute;
     top: 50%;
@@ -298,7 +300,7 @@ td:hover .textAreaContainer{
         min-height: 20px;
         overflow-y: scroll;
         scrollbar-width: none;
-        //margin: 20px;
+        resize: none;
         max-width: -webkit-fill-available;
 
         &:focus {
@@ -351,11 +353,14 @@ td:hover .textAreaContainer{
     }
 }
 
-.send-icon {
+.send-btn{
     cursor: pointer;
+    border: none;
+    background: transparent;
 
-    &:hover {
-        filter: contrast(0.5)
+    &:disabled {
+        filter: contrast(0.5);
+        cursor: not-allowed;
     }
 }
 
@@ -491,6 +496,7 @@ td:hover .b-radius {
     resize: none;
     box-sizing: border-box;
     border-style: none;
+
     &:focus {
         outline: none;
         border-style: none;
@@ -538,17 +544,20 @@ td:hover .b-radius {
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    overflow-y: scroll;
+    gap: 8px;
+    overflow-y: auto;
     scrollbar-width: none;
     background: rgba(255, 255, 255, 1);
     font-size: 18px;
     font-weight: 400;
-    height: 150px;
+    max-height: 150px;
     width: max-content;
     box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.2);
     border-radius: 20px 20px 20px 0;
-    padding: 40px;
+    padding:10px 20px;
+    &:empty{
+        display: none;
+    }
 }
 
 .tagged-user-list {
@@ -589,14 +598,13 @@ td:hover .b-radius {
 }
 
 .channel_liste {
-    padding: 10px 20px;
+    padding: 10px;
     display: flex;
     align-items: center;
     gap: 8px;
-
+    cursor: pointer;
     &:hover {
         background: rgba(236, 238, 254, 1);
-        padding: 10px 20px;
         border-radius: 30px;
     }
 
@@ -606,7 +614,9 @@ td:hover .b-radius {
         border-radius: 30px;
     }
 }
-
+.error-message{color: red;
+    font-size: 12px;
+    margin-top: 5px;}
 .close-icon {
     width: 16px;
     height: 16px;
@@ -746,6 +756,7 @@ td:hover .b-radius {
             font-size: 18px;
         }
     }
+
     .channel-content .chat-table .message-content .label-answers {
         font-size: 14px;
         font-weight: 700;

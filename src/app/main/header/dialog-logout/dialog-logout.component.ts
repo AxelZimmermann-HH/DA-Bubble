@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { UserService } from '../../../services/user.service';
 import { DialogUserProfilComponent } from '../../dialog-user-profil/dialog-user-profil.component';
+import { ChatService } from '../../../services/chat.service';
 
 @Component({
   selector: 'app-dialog-add-user',
@@ -34,6 +35,7 @@ export class DialogLogoutComponent implements OnInit {
     public dialogRef: MatDialogRef<DialogLogoutComponent>, 
     private userService: UserService,
     private sharedService: SharedService,
+    public chatService:ChatService,
     @Inject(MAT_DIALOG_DATA) public data: { user: User }) {
       this.currentUser = data.user;
   }
@@ -62,12 +64,15 @@ export class DialogLogoutComponent implements OnInit {
       } else {
         await updateDoc(userDocRef, { online: false });
       }
+      this.chatService.selectedChannelId = null; 
+      this.chatService.showChat =false;
+      this.chatService.showChannel = true;
       this.dialogRef.close();
     } else {
       console.error('Kein Benutzer zum Ausloggen gefunden');
     }
   }
-
+ 
   openProfil() {
     this.dialogRef.close()
     this.dialog.open(DialogUserProfilComponent, { 
