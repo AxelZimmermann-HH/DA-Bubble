@@ -102,5 +102,4 @@ export class DialogUserProfilComponent {
   
     this.isEditMode = !this.isEditMode;
   }
-  
 }
