@@ -47,7 +47,7 @@
                                     </div>
                                     <div class="speech-bubble"
                                         [ngClass]="{'b-radius': userService.isCurrentUser(message.user, userId)}">
-                                        <div class="speech-bubble-content">
+                                        <div [innerHTML]="message.text?.replace('\n', '<br>')" class="speech-bubble-content">
                                             {{ message.text }}
                                             <div *ngIf="message.fileUrl" class="fileUrl">
                                                 <!-- Image Preview -->
@@ -159,7 +159,8 @@
 
         <div class="custom-input">
             <textarea #messageInput placeholder="Nachricht an #{{channelService.selectedChannel.channelName}}"
-                class="text-area" [(ngModel)]="newMessageText">
+                class="text-area" [(ngModel)]="newMessageText"
+                (keydown)="handleEnterKey($event, selectedChannelId, editingMessageId)">
             </textarea>
             <div *ngIf="fileService.fileUrl" class="selectedFileStyle">                
                 <div *ngIf="fileService.fileUrl && fileService.selectedFile?.type?.startsWith('image/')"
@@ -204,7 +205,8 @@
                 <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"
                     class="emoji-picker"></emoji-mart>
                 <!-- Nachricht senden -->
-                <button class="send-btn" [disabled]="!fileService.selectedFile && !newMessageText && !selectedUser" (click)=" sendMessage(selectedChannelId,editingMessageId)"><img src="./assets/icons/Send icon.png"></button>
+                <button class="send-btn" [disabled]="!fileService.selectedFile && !newMessageText && !selectedUser" 
+                (click)=" sendMessage(selectedChannelId,editingMessageId)"><img src="./assets/icons/Send icon.png"></button>
             </div>
         </div>
     </div>

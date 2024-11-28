@@ -15,6 +15,7 @@ import { AudioService } from '../../services/audio.service';
 import { FileService } from '../../services/file.service';
 import { DatabaseService } from '../../services/database.service';
 import { ReactionService } from '../../services/reaction.service';
+import { KeyEventService } from '../../services/key-event.service';
 
 interface MessageGroup {
   date: string;
@@ -45,7 +46,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
   selectedNames: { name: string; userId: string }[] = [];
   filteredSearchMessages: MessageGroup[] = [];
   
-
   @ViewChild('chatContainer') chatContainer!: ElementRef;
   @ViewChild('nameContainerRef', { static: false }) nameContainerRef!: ElementRef;
   @ViewChild('customInput') customInput: any;
@@ -63,9 +63,9 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     public dbService: DatabaseService,
     private renderer: Renderer2,
     private elementRef: ElementRef,
-    public reactionService: ReactionService
+    public reactionService: ReactionService,
+    public keyEventService: KeyEventService
   ) { }
-
 
   getAvatarForUser(userName: string): any {
     if (!this.user || !this.user.name) {
@@ -83,7 +83,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     return './assets/avatars/avatar_0.png'; 
   }
 
-
   private getCurrentUserAvatar(): string {
     if (this.userService.isNumber(this.currentUser.avatar)) {
       return './assets/avatars/avatar_' + String(this.currentUser.avatar) + '.png';  // Typkonvertierung zu string
@@ -91,7 +90,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
       return String(this.currentUser.avatar);  // Typkonvertierung zu string
     }
   }
-
 
   private getChatPartnerAvatar(): string {
     if (this.userService.isNumber(this.user.avatar)) {
@@ -101,19 +99,16 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     }
   }
 
-
   // Scrollen direkt nach dem Initialisieren der View
   ngAfterViewInit() {
     this.scrollToBottom();
   };
-
 
   // scrollen, wenn die View aktualisiert wird
   ngAfterViewChecked() {
     this.scrollToBottom();
   };
 
-  
   async ngOnInit() {
     // Abonniere Benutzerdaten
     this.chatService.user$.subscribe((userData) => {
@@ -121,7 +116,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
         this.user = userData;
       }
     });
-
 
     // Abonniere und lade den Chat
     this.chatService.chat$.subscribe((chatSubject) => {
@@ -136,7 +130,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
       this.focusInputField();
     });
 
-  
     this.route.params.subscribe(params => {
       const userId = params['userId'];
       if (userId) {
@@ -173,7 +166,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     }
   }
 
-
   subscribeToSearch() {
     this.sharedService.searchTerm$.subscribe((term) => {
       if (term.length >= 3) {
@@ -183,7 +175,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
       }
     });
   }
-
 
   filterMessages(term: string) {
     const groupedMessagesArray = Object.keys(this.chatService.groupedMessages).map(date => ({
@@ -203,7 +194,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     })).filter(group => group.messages.length > 0);
   }
 
-
   resetFilteredMessages() {
     const groupedMessagesArray = Object.keys(this.chatService.groupedMessages).map(date => ({
       date,
@@ -211,7 +201,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     }));
     this.filteredSearchMessages = groupedMessagesArray;
   }
-
 
   async sendDirectMessage() {
     const newDm = this.directMessage.value!;
@@ -227,7 +216,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     this.hasNames = false;
   }
   
-
   async resetDirectMessage(){
     this.directMessage.setValue('');
     this.fileService.selectedFile = null;
@@ -235,7 +223,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     this.fileService.fileDownloadUrl = '';
     this.audioService.audioDownloadUrl = '';
   }
-
 
   async sendMessagesToMultipleUsers(newDm: string, fileDownloadUrl: string, fileName: string, fileType: string) {
     for (const user of this.selectedNames) {
@@ -250,7 +237,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     }
   }
   
-
   //scrollt das Chatfenster nach unten
   scrollToBottom(): void {
     if (!this.chatService.chatIsEmpty && this.chatContainer) {
@@ -262,12 +248,10 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     }
   };
 
-
   //öffnet das User Profil im Chatfenster
   openUserProfil(user: any) {
     this.dialog.open(DialogUserProfilComponent, { data: {user: user} });
   };
-
 
   //checkt das Datum im Chatfenster, ob es mit dem heutigen übereinstimmt
   isToday(dateString: string): boolean {
@@ -279,19 +263,16 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
       today.getDate() === date.getDate();
   };
 
-
   // öffnet das Bearbeitungsfeld
   editDirectMessage(message: any) {
     this.editingMessageId = message.messageId;
     this.editedMessage.setValue(message.text)
   }
 
-
   // schlie0t das Bearbeitungsfeld, ohne Speichern
   cancelEditing() {
     this.editingMessageId = null;
   }
-
 
   // setzt die bearbeitete Nachricht 
   async setEditedDirectMessage(message: any) {
@@ -301,7 +282,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     this.editingMessageId = null;
   }
 
-
   //Emojis>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   showEmojis: boolean = false;
   showEditEmojis: boolean = false;
@@ -310,7 +290,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     this.showEmojis = false;
     this.showEditEmojis = false;
   }
-
 
   toggleEmojis(event: any) {
     event.stopPropagation();
@@ -322,7 +301,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     this.showEditEmojis = !this.showEditEmojis;
   }
 
-
   onEmojiSelect(event: any) {
     const emoji = event.emoji.native; // Das ausgewählte Emoji
     const currentMessageValue = this.directMessage.value || '';
@@ -330,14 +308,12 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     this.showEmojis = false;
   }
 
-
   onEmojiSelectEdit(event: any){
     const emoji = event.emoji.native; // Das ausgewählte Emoji
     const currentMessageValue = this.editedMessage.value || '';
     this.editedMessage.setValue(currentMessageValue + emoji);
     this.showEditEmojis = false;
   }
-
 
   // @ Users 
   toggleUserList() {
@@ -353,7 +329,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     }
   }
 
-
   // Klick-Event auf das gesamte Dokument
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
@@ -364,7 +339,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
       this.toggleUserList();
     }
   }
-
 
   insertName(userName: string) {
     if (this.selectedNames.some(user => user.name === userName)) {
@@ -382,17 +356,41 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     this.toggleUserList();
   }
 
-
   removeName(index: number) {
     this.selectedNames.splice(index, 1); 
     this.hasNames = this.selectedNames.length > 0; 
     this.cdr.detectChanges();
   }
   
-
   focusInputField() {
     if (this.customInput) {
       this.customInput.nativeElement.focus();
     }
+  }
+
+  handleEnterKey(event: KeyboardEvent){
+    if (event.key === 'Enter' && !event.shiftKey) {
+      if (this.directMessage?.valid) {
+        this.sendDirectMessage();
+      } else {
+        event.preventDefault();
+      }
+    }
+    if(event.key === 'Enter' && event.shiftKey && event.location === 1){
+      event.preventDefault();
+      this.newLine(event);
+    }
+  }
+
+  newLine(event: KeyboardEvent){
+    const textarea = event.target as HTMLTextAreaElement;
+
+    // Füge einen Zeilenumbruch an der aktuellen Cursor-Position hinzu
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const value = textarea.value;
+
+    textarea.value = value.substring(0, start) + '\n' + value.substring(end);
+    textarea.selectionStart = textarea.selectionEnd = start + 1; // Setze den Cursor hinter den Zeilenumbruch
   }
 }
