@@ -55,6 +55,15 @@
             <div *ngIf="email.errors?.['email']">Please enter a valid email address.</div>
         </div>
 
+        <!-- Password Field for Re-Authentication -->
+    <label style="display: flex;align-items: center;gap:8px"><img src="./assets/icons/lock.png" alt="" style="width: 30px;height: 30px;object-fit: contain;"> Aktuelles Passwort</label>
+    <input type="password" name="password" [(ngModel)]="currentPassword" required minlength="6" #password="ngModel"
+           style="padding: 0 10px;margin: 0 -10px;width: 100%;height: 52px;border-radius: 30px;border: 1px solid rgba(173, 176, 217, 1);"/>
+    <div *ngIf="password.invalid && (password.dirty || password.touched)" class="error">
+        <div *ngIf="password.errors?.['required']">Passwort ist erforderlich.</div>
+        <div *ngIf="password.errors?.['minlength']">Das Passwort muss mindestens 6 Zeichen lang sein.</div>
+    </div>
+
         <!-- Action Buttons -->
         <div class="button-group">
             <button type="button" (click)="toggleEditMode()" class="cancelBtn">Abbrechen</button>

@@ -36,8 +36,8 @@
     </div>
         <!-- Gruppierte Nachrichten anzeigen -->
         <!-- <div *ngFor="let group of chatService.groupedMessages | keyvalue; let i = index"> -->
-        <div *ngFor="let group of filteredSearchMessages; let i = index">
-            <div style="position: relative;">
+        <div  *ngFor="let group of filteredSearchMessages; let i = index">
+            <div style="position: relative;" *ngIf="!chatService.chatIsEmpty">
                 <hr class="separator-line">
                 <button class="day-time-btn header3">{{ isToday(group.messages[0].timestamp) ? 'Heute' :
                     group.messages[0].dayDateMonth }}</button>
@@ -62,7 +62,7 @@
                                                 <p class="time">{{ message.time }} Uhr</p>
                                             </div>
                                             <div class="speech-bubble">
-                                                <span>{{ message.text }}</span>
+                                                <span [innerHTML]="message.text?.replace('\n', '<br>')">{{ message.text }}</span>
                                                 <div *ngIf="message.fileName" class="file-container">
                                                     <span>{{message.fileName}}</span>
                                                     <img *ngIf="message.fileType == 'image/jpeg' || message.fileType == 'image/png'" class="preview-img" [src]="message.fileDownloadUrl" alt="">
@@ -288,7 +288,7 @@
                                                 <p class="time">{{ message.time }} Uhr</p> {{ currentUser.name + ' (Du)'}}
                                             </div>
                                             <div class="speech-bubble">
-                                                <span>{{ message.text }}</span>
+                                                <span [innerHTML]="message.text?.replace('\n', '<br>')">{{ message.text }}</span>
 
                                                 <div *ngIf="message.fileName" class="file-container">
                                                     <span>{{message.fileName}}</span>
@@ -489,7 +489,7 @@
                                         <div *ngIf="editingMessageId === message.messageId"
                                             class="edit-message-container">
 
-                                            <textarea class="edit-textarea" [formControl]="editedMessage"></textarea>
+                                            <textarea (keydown)="handleEnterKey($event)" class="edit-textarea" [formControl]="editedMessage"></textarea>
                                             <emoji-mart class="chat-emoji-picker" *ngIf="showEditEmojis" 
                                                 set="google"
                                                 [emojiSize]="24"
@@ -544,7 +544,7 @@
     </div>
     <!-- Nachrichteneingabe -->
     <div class="custom-input" [ngClass]="this.sharedService.isMobile ? 'mobile-custom-input' : 'custom-input'">
-        <textarea #customInput contenteditable="true" placeholder="Nachricht an {{ user.name }}" class="text-area" [formControl]="directMessage"></textarea>
+        <textarea (keydown)="handleEnterKey($event)" #customInput contenteditable="true" placeholder="Nachricht an {{ user.name }}" class="text-area" [formControl]="directMessage"></textarea>
         <div>
             <emoji-mart class="chat-emoji-picker" *ngIf="showEmojis" 
                 set="google"

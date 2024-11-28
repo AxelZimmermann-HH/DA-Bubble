@@ -337,6 +337,29 @@ fileUrl: SafeResourceUrl | null = null;
     this.taggedUser = !this.taggedUser;
   }
 
+  handleEnterKey(event: KeyboardEvent, selectedChannelId: string|null, editingMessageId:string|null){
+    if (event.key === 'Enter' && !event.shiftKey) {
+      if (this.newMessageText) {
+        this.sendMessage(selectedChannelId,editingMessageId);
+      } else {
+        event.preventDefault();
+      }
+    }
+    if(event.key === 'Enter' && event.shiftKey && event.location === 1){
+      event.preventDefault();
+      this.newLine(event);
+    }
+  }
+
+  newLine(event: KeyboardEvent){
+    const textarea = event.target as HTMLTextAreaElement;
+    // Füge einen Zeilenumbruch an der aktuellen Cursor-Position hinzu
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const value = textarea.value;
+    textarea.value = value.substring(0, start) + '\n' + value.substring(end);
+    textarea.selectionStart = textarea.selectionEnd = start + 1; // Setze den Cursor hinter den Zeilenumbruch
+  }
 }
 
 
