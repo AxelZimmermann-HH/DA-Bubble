@@ -489,7 +489,7 @@
                                         <div *ngIf="editingMessageId === message.messageId"
                                             class="edit-message-container">
 
-                                            <textarea class="edit-textarea" [formControl]="editedMessage"></textarea>
+                                            <textarea (keydown)="handleEnterKey($event)" class="edit-textarea" [formControl]="editedMessage"></textarea>
                                             <emoji-mart class="chat-emoji-picker" *ngIf="showEditEmojis" 
                                                 set="google"
                                                 [emojiSize]="24"

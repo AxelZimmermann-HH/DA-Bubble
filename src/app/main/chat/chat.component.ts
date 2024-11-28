@@ -204,6 +204,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
 
   async sendDirectMessage() {
     const newDm = this.directMessage.value!;
+    console.log('Raw Message:', JSON.stringify(this.directMessage.value));
     const fileDownloadUrl = this.fileService.fileDownloadUrl;
     const fileName = this.fileService.selectedFileName;
     const fileType = this.fileService.selectedFileType;
