@@ -216,11 +216,14 @@
                     style="cursor: pointer;">
             </div>
 
-
             <div class="add-reaction">
                 <div class="reactions">
                     <img src="./assets/icons/add-1.png" alt="Add" class="add-icon" (click)="fileInput.click()">
                     <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)">
+                <div *ngIf="errorMessage!==null" class="error-message" >
+                    {{ errorMessage }}
+                <img (click)="resetErrorMessage()" src="./assets/icons/close.png" class="close-icon" style="height: auto !important">
+                </div>
                     <div style="height: 50px; width: 1px; background-color: rgba(104, 104, 104, 1);"></div>
                     <img src="./assets/icons/sentiment_satisfied-1.png" alt="Emoji" class="add-emoji"
                         (click)="toggleEmojiPicker($event)">

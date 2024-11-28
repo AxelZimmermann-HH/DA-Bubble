@@ -20,6 +20,8 @@ import { FileService } from '../../services/file.service';
 import { EmojisService } from '../../services/emojis.service';
 import { DatabaseService } from '../../services/database.service';
 import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-channel.component';
+import { ReactionService } from '../../services/reaction.service';
+import { SafeResourceUrl } from '@angular/platform-browser';
 
 interface MessageGroup {
   date: string;
@@ -68,10 +70,11 @@ export class ChannelComponent {
   selectedUser: User | null = null;
 
   taggedUser: boolean = false;
-
-
   showEmojiPicker: boolean = false;
   showEditEmojiPicker: boolean = false;
+
+  selectedFile: File | null = null;
+fileUrl: SafeResourceUrl | null = null;
 
   @Input() selectedChannelId: string | null = null;
   @Output() chatSelected = new EventEmitter<void>();
@@ -94,6 +97,7 @@ export class ChannelComponent {
     public searchService: SearchService,
     public fileService: FileService,
     public dbService: DatabaseService,
+    public reactionService : ReactionService
   ) { }
 
   ngOnInit() {
@@ -233,6 +237,14 @@ export class ChannelComponent {
     this.isEditingOnMobile = false;
     this.editingMessageId = null;
   }
+
+  closePreview(message: Message) {
+    this.fileService.selectedFile = null;
+  
+    message.fileUrl!= null;
+    message.fileType = null;
+
+  }
   isValidInput(): boolean {
     const trimmedValue = this.inputValue.trim();
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -251,6 +263,7 @@ export class ChannelComponent {
   }
 
 
+  
   onThreadClosed() {
     this.isThreadOpen = false;
   }
@@ -294,6 +307,8 @@ export class ChannelComponent {
     const searchList = document.querySelector('.searchListe');
     const taggedUserDiv = document.querySelector('.tagged-user-list');
     const emojiPicker = document.querySelector('.emoji-picker');
+    const reactionContainer = document.querySelector('.add-reaction-container');
+
     if (this.taggedUser && searchList && taggedUserDiv &&
       !searchList.contains(event.target as Node) && !taggedUserDiv.contains(event.target as Node)) {
       this.taggedUser = false;
@@ -302,8 +317,15 @@ export class ChannelComponent {
       this.showEmojiPicker = false;
       this.showEditEmojiPicker = false;
     }
+    if (reactionContainer && !reactionContainer.contains(event.target as Node)) {
+      this.emojiService.showReactionContainer = false;
+    }
   }
-
+  onFileSelected(event: any): void {
+    this.fileService.onFileSelected(event);
+    this.selectedFile = this.fileService.selectedFile;
+    this.fileUrl = this.fileService.fileUrl;
+  }
 
   selectUser(user: User) {
     this.newMessageText += `@${user.name}`;

@@ -353,7 +353,7 @@ td:hover .textAreaContainer {
     }
 }
 
-.send-btn{
+.send-btn {
     cursor: pointer;
     border: none;
     background: transparent;
@@ -452,6 +452,7 @@ td:hover .b-radius {
     }
 }
 
+
 .d-flex {
     display: flex;
     align-items: center;
@@ -500,6 +501,52 @@ td:hover .b-radius {
     &:focus {
         outline: none;
         border-style: none;
+    }
+}
+
+
+
+.add-reaction-container {
+    display: flex;
+    align-items: center;
+    height: 46px;
+    border-radius: 25px 25px 25px 0;
+    padding: 3px 20px;
+    background: rgba(255, 255, 255, 1);
+    border: 1px solid rgba(173, 176, 217, 1);
+    position: absolute;
+    top: -58px;
+    right: 0;
+
+    img {
+        border-radius: 30px;
+        width: 20px;
+        height: 20px;
+        padding: 10px;
+    }
+
+    img:hover {
+        cursor: pointer;
+        background: #ECEEFE;
+    }
+}
+
+.add-reaction-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: unset;
+    background-color: #FFFFFF;
+    padding: 5px;
+    border-radius: 20px;
+
+    &:hover {
+        cursor: pointer;
+        background-color: #ECEEFE;
+
+        img {
+            content: url('./../../../assets/icons/add_reaction-1.png');
+        }
     }
 }
 
@@ -554,8 +601,9 @@ td:hover .b-radius {
     width: max-content;
     box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.2);
     border-radius: 20px 20px 20px 0;
-    padding:10px 20px;
-    &:empty{
+    padding: 10px 20px;
+
+    &:empty {
         display: none;
     }
 }
@@ -603,6 +651,7 @@ td:hover .b-radius {
     align-items: center;
     gap: 8px;
     cursor: pointer;
+
     &:hover {
         background: rgba(236, 238, 254, 1);
         border-radius: 30px;
@@ -614,9 +663,13 @@ td:hover .b-radius {
         border-radius: 30px;
     }
 }
-.error-message{color: red;
+
+.error-message {
+    color: red;
     font-size: 12px;
-    margin-top: 5px;}
+    margin-top: 5px;
+}
+
 .close-icon {
     width: 16px;
     height: 16px;

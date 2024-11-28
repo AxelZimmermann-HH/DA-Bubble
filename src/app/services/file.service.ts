@@ -61,28 +61,30 @@ export class FileService {
 
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
-
-
     if (file) {
       if (!this.isFileSizeAllowed(file)) {
-        // Datei ist zu groß
         this._errorMessage.next('Die Datei darf maximal 500 KB groß sein.');
-        this.selectedFile = null;
-        this.fileUrl = null;
+        this.resetFile();
         return;
       }
-    
-      if (!this.isFileTypeAllowed(file))  {
+
+      if (!this.isFileTypeAllowed(file)) {
         this._errorMessage.next('Nur Bilder oder PDF-Dateien sind erlaubt.');
-        this.selectedFile = null;
-        this.fileUrl = null;
+        this.resetFile();
         return;
       }
       this.selectedFile = file;
       const objectUrl = URL.createObjectURL(file);
       this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
       this._errorMessage.next(null);
+    } else {
+      this.resetErrorMessage();
     }
+  }
+
+  resetErrorMessage(): void {
+    this._errorMessage.next(null);
+
   }
 
   setFileUrl(file: File) {
@@ -90,7 +92,10 @@ export class FileService {
     const objectUrl = URL.createObjectURL(file);
     this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
   }
-
+  resetFile() {
+    this.selectedFile = null;
+    this.fileUrl = null;
+  }
 
   getSafeUrl(url: string) {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
@@ -102,8 +107,9 @@ export class FileService {
   }
 
   closePreview() {
-    this.fileUrl = null;
-    this.selectedFile = null;
+    this.fileUrl = null; console.log('this fileurl', this.fileUrl);
+
+    this.selectedFile = null; console.log('this fileurl', this.selectedFile);
   }
 
   async uploadFiles(): Promise<string | null> {

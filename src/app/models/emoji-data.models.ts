@@ -1,4 +1,7 @@
 export interface EmojiData {
-    emoji: string;    
-    userIds: string[];  
-  }
+
+
+  emoji: string;
+  userIds: string[];
+}
+

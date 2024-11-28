@@ -23,21 +23,21 @@ export class Message {
   answers: Answer[] = [];
   emojis: EmojiData[] = [];
   fileUrl?: string;
-  fileType?: string |null;
+  fileType?: string | null;
   fileName?: string;
   isEditing: boolean = false;
   editedText: string = '';
 
 
   constructor(obj: MessageData = {}, messageId: string = '') {
-    this.messageId = messageId; 
+    this.messageId = messageId;
     this.text = obj.text || '';
     this.user = obj.user || '';
     const date = obj.timestamp ? this.getDateFromTimestamp(obj.timestamp) : new Date();
     this.timestamp = date;
     this.fullDate = this.formatFullDate(date);
     this.answers = Array.isArray(obj.answers) ? obj.answers.map(a => new Answer(a)) : []; // Initialize answers
-    this.emojis = (obj.emojis || []).map(e => 
+    this.emojis = (obj.emojis || []).map(e =>
       typeof e === 'string' ? { emoji: e, userIds: [] } : e // Setze userId auf ein leeres Array
     );
     this.fileUrl = obj.fileUrl || '';
@@ -79,6 +79,8 @@ export class Message {
     };
     return new Intl.DateTimeFormat('de-DE', options).format(date);
   }
+
+
 
   public toJson() {
     return {
