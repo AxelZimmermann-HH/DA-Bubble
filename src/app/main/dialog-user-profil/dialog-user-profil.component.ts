@@ -32,6 +32,8 @@ export class DialogUserProfilComponent {
   isEditMode: boolean = false;
   isEditable: boolean; 
 
+  emailChanged: boolean = false;
+
   @Output() chatSelected = new EventEmitter<void>();
 
   constructor(
@@ -86,7 +88,44 @@ export class DialogUserProfilComponent {
     this.data.user.avatar = avatarId;
   }
 
+
+  checkEmailBlur() {
+    const enteredEmail = this.data.user.mail; // Aktuelle Eingabe im E-Mail-Feld
+    const currentEmail = this.auth.currentUser?.email; // Aktuelle E-Mail aus Auth
+  
+    if (enteredEmail === currentEmail) {
+      console.log('Die eingegebene E-Mail-Adresse stimmt mit der aktuellen überein.');
+      this.emailChanged = false;
+      console.log(this.emailChanged);
+    } else {
+      console.log('Die eingegebene E-Mail-Adresse ist anders als die aktuelle.');
+      this.emailChanged = true;
+      console.log(this.emailChanged);
+    }
+  }
+
   saveProfile(form: NgForm) {
+    if (this.emailChanged == true) {
+      this.handleMailChange(form) 
+    } else {
+      this.handleSmallChanges(form)
+    }
+  }
+
+  handleSmallChanges(form: NgForm) {
+    if (form.valid) {
+      this.userService.updateUser(this.data.user); // Pass the updated user to the service
+  
+      console.log('Profile successfully saved:', this.data.user);
+      this.toggleEditMode();  // Exit edit mode
+      this.dialogRef.close()
+      window.location.reload();
+    } else {
+      console.error('Form is invalid');
+    }
+  }
+
+  handleMailChange(form: NgForm) {
     if (form.valid) {
       const user = this.auth.currentUser;
   
@@ -109,7 +148,18 @@ export class DialogUserProfilComponent {
           })
           .then(() => {
             console.log('Verifizierungs-Mail an neue E-Mail-Adresse gesendet:', newEmail);
-            alert('Eine Verifizierungs-Mail wurde an Ihre neue E-Mail-Adresse gesendet. Bitte bestätigen Sie die Änderung.');
+
+            return this.userService.updateUser(this.data.user);
+          })
+          .then(() => {
+            console.log('Profil erfolgreich in Firestore gespeichert:', this.data.user);
+
+            // Erfolgsdialog anzeigen
+            this.sharedService.setMailChangeSuccess(true);
+
+            // Schritt 4: Popup schließen und Edit-Modus verlassen
+            this.toggleEditMode();
+            this.dialogRef.close();
           })
           .catch((error) => {
             console.error('Fehler beim Aktualisieren der E-Mail-Adresse:', error);
@@ -132,74 +182,6 @@ export class DialogUserProfilComponent {
       }
     } else {
       alert('Formular ist ungültig.');
-    }
-  }
-  
-  
-  
-
-  saveProfile3(form: NgForm) {
-    if (form.valid) {
-      const user = this.auth.currentUser;
-  
-      if (user && this.data.user.mail) {
-        const newEmail = this.data.user.mail; // Neue E-Mail-Adresse
-  
-        // Aktuelle Anmeldedaten vom Benutzer abfragen
-        const credentials = EmailAuthProvider.credential(
-          user.email!, // Aktuelle E-Mail-Adresse
-          this.currentPassword // Vom Benutzer eingegebenes Passwort
-        );
-  
-        // Schritt 1: Re-Authentifizierung
-        reauthenticateWithCredential(user, credentials)
-          .then(() => {
-            console.log('Re-Authentifizierung erfolgreich.');
-  
-            // Schritt 2: E-Mail-Adresse aktualisieren
-            return updateEmail(user, newEmail);
-          })
-          .then(() => {
-            console.log('E-Mail-Adresse erfolgreich geändert:', newEmail);
-  
-            // Schritt 3: Verifizierungs-Mail senden
-            return sendEmailVerification(user);
-          })
-          .then(() => {
-            console.log('Verifizierungs-Mail erfolgreich gesendet.');
-            alert('Eine Bestätigungs-E-Mail wurde an Ihre neue Adresse gesendet.');
-          })
-          .catch((error) => {
-            console.error('Fehler beim Speichern:', error);
-  
-            if (error.code === 'auth/wrong-password') {
-              alert('Das eingegebene Passwort ist falsch.');
-            } else if (error.code === 'auth/requires-recent-login') {
-              alert('Bitte loggen Sie sich erneut ein.');
-            } else {
-              alert('Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.');
-            }
-          });
-      } else {
-        console.error('Keine gültige E-Mail-Adresse angegeben.');
-      }
-    } else {
-      alert('Formular ist ungültig.');
-    }
-  }
-  
-  
-
-
-  saveProfile2(form: NgForm) {
-    if (form.valid) {
-      this.userService.updateUser(this.data.user); // Pass the updated user to the service
-  
-      console.log('Profile successfully saved:', this.data.user);
-      this.toggleEditMode();  // Exit edit mode
-      this.dialogRef.close()
-    } else {
-      console.error('Form is invalid');
     }
   }
 

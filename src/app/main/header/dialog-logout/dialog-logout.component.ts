@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, Output, EventEmitter } from '@angular/core';
 import { SharedService } from '../../../services/shared.service';
 import { collection, Firestore, onSnapshot, doc, updateDoc, deleteDoc, getDoc, setDoc } from '@angular/fire/firestore';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
@@ -28,7 +28,7 @@ export class DialogLogoutComponent implements OnInit {
   currentUser: User | null = null;
   isLogoutContainerActive = false;
 
-
+  
 
   constructor(public firestore: Firestore, 
     public dialog: MatDialog, 
@@ -78,4 +78,7 @@ export class DialogLogoutComponent implements OnInit {
     this.dialog.open(DialogUserProfilComponent, { 
       data: { user: this.currentUser, isEditable: true } 
     });
-  }}
+
+}}
+
+  

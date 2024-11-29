@@ -122,6 +122,7 @@ export class UserService {
     });
   }
 
+
   updateUser(updatedUser: User): void {
     const currentUser = this.getUser();
     if (currentUser) {
@@ -188,7 +189,4 @@ getUserNameById(userId: string): string | undefined {
     });
     console.log('add channel user ', member.name);
   }
-
-  
 }
-

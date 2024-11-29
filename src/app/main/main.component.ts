@@ -17,8 +17,23 @@ import { SharedService } from '../services/shared.service';
 })
 export class MainComponent {
 
+  showSuccessDialog: boolean = false;
+
+
   constructor(public chatService: ChatService, public sharedService: SharedService) { }
 
+  ngOnInit() {
+    this.sharedService.mailChangeSuccess$.subscribe((state) => {
+      this.showSuccessDialog = state;
+    });
+  }
 
+  showSuccessDialogHandler(): void {
+    this.showSuccessDialog = true;
+  }
+
+  toggleSuccessDialog(show: boolean): void {
+    this.showSuccessDialog = show;
+  }
 
 }
