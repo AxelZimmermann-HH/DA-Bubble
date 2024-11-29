@@ -45,7 +45,7 @@ export class ThreadComponent {
   showEmojiPicker: boolean = false;
 
   taggedUser: boolean = false;
-
+  errorMessage: string | null = null;
   filteredSearchAnswers: Answer[] = [];
 
   @Output() threadClosed = new EventEmitter<void>();
@@ -293,7 +293,12 @@ export class ThreadComponent {
     }
     return userNames.length > 0 ? userNames.join(", ") : "Keine Reaktionen";
   }
-
+  getRecentEmojis(answer: Answer): EmojiData[] {
+    return answer.emojis
+    .filter(emojiData => emojiData.userIds.length > 0)
+    .sort((a, b) => b.userIds.length - a.userIds.length)
+    .slice(0, 2); 
+  }
   toggleShowEmoji() { this.showEmoji = !this.showEmoji }
 
   toggleEmojitoAnswer() {
@@ -316,19 +321,32 @@ export class ThreadComponent {
     this.showEmojiPicker = false;
   }
 
-  onFileSelected(event: any) {
+  onFileSelected(event: any): void {
     const file: File = event.target.files[0];
     if (file) {
+      if (!this.fileService.isFileSizeAllowed(file)) {
+        this.errorMessage = 'Nur Bilder oder PDF-Dateien sind erlaubt.';
+        this.fileService.resetFile();
+        return;
+      }
+
+      if (!this.fileService.isFileTypeAllowed(file)) {
+        this.errorMessage='Nur Bilder oder PDF-Dateien sind erlaubt.';
+        this.fileService.resetFile();
+        return;
+      }
       this.selectedFile = file;
       const objectUrl = URL.createObjectURL(file);
-      if (file.type.startsWith('image/') || file.type === 'application/pdf') {
-        this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
-      } else {
-        this.fileUrl = null;
-      }
+      this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
+      this.errorMessage = null;
+    } else {
+      this.resetErrorMessage();
     }
   }
 
+  resetErrorMessage(): void {
+    this.errorMessage = null;
+  }
   closePreview() {
     this.fileUrl = null;
     this.selectedFile = null;

@@ -16,7 +16,7 @@ export class MessagesService {
     allMessages: any[] = [];
     message = new Message();
     emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
+   
     constructor(
         public firestore: Firestore,
         public userService: UserService,
@@ -233,6 +233,7 @@ export class MessagesService {
         }
     }
     async editMessageForMobile(isEditingOnMobile: boolean, messageText: string, editingMessageId: string | null, selectedChannelId: string | null) {
+   
         if (isEditingOnMobile) {
             console.log('message:', messageText, 'filservice edit:', this.fileService.selectedFile);
 

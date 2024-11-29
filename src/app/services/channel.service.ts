@@ -3,14 +3,12 @@ import { User } from '../models/user.class';
 import { Channel } from '../models/channel.class';
 import { Message } from '../models/message.class';
 import { collection, doc, Firestore, getDocs, onSnapshot, query, updateDoc, where } from '@angular/fire/firestore';
-import { DialogEditChannelComponent } from '../main/channel/dialog-edit-channel/dialog-edit-channel.component';
 import { MatDialog } from '@angular/material/dialog';
 import { SearchService } from './search.service';
 import { DialogAddUserComponent } from '../dialog-add-user/dialog-add-user.component';
 import { UserService } from './user.service';
 import { SharedService } from './shared.service';
 import { AddChannelUserComponent } from '../main/channel/add-channel-user/add-channel-user.component';
-import { ActivatedRoute } from '@angular/router';
 
 @Injectable({
     providedIn: 'root'
