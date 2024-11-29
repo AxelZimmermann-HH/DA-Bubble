@@ -47,8 +47,8 @@
                                     </div>
                                     <div class="speech-bubble"
                                         [ngClass]="{'b-radius': userService.isCurrentUser(message.user, userId)}">
-                                        <div [innerHTML]="message.text?.replace('\n', '<br>')" class="speech-bubble-content">
-                                            {{ message.text }}
+                                        <div class="speech-bubble-content">
+                                            <span [innerHTML]="message.text?.replace('\n', '<br>')">{{ message.text }}</span>
                                             <div *ngIf="message.fileUrl" class="fileUrl">
                                                 <!-- Image Preview -->
                                                 <div *ngIf="message.fileType.startsWith('image/')">
