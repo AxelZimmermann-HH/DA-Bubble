@@ -114,7 +114,7 @@ export class DialogUserProfilComponent {
 
   handleSmallChanges(form: NgForm) {
     if (form.valid) {
-      this.userService.updateUser(this.data.user); // Pass the updated user to the service
+      this.userService.updateUser(this.data.user);
   
       console.log('Profile successfully saved:', this.data.user);
       this.toggleEditMode();  // Exit edit mode

@@ -7,55 +7,8 @@
     </div>
     <div class="login-content">
         <div class="header">
-            <img (click)="getBack()" src="./assets/icons/arrow_back.png" alt="">
-            <h1>Erfolgreich!</h1>
+            <h1>Ihre E-Mail-Adresse <br>wurde erfolgreich geändert!</h1> 
+            <p>Sie werden gleich weitergeleitet und können sich mit der neuen Mailadresse einloggen.</p>
         </div>
-
-        <!-- <form #form="ngForm" (ngSubmit)="resetPassword(password1)">
-            <div class="input">
-                <img [ngStyle]="{'width': '20px'}" src="./assets/icons/login-mail.svg" alt="">
-                <input 
-                    type="password"
-                    name="password1" 
-                    [(ngModel)]="password1"
-                    (keyup)="validatePasswords()"
-                    required 
-                    placeholder="Neues Passwort (min. fünf Zeichen)" 
-                    />
-            </div>
-
-            <div class="input">
-                <img [ngStyle]="{'width': '20px'}" src="./assets/icons/login-mail.svg" alt="">
-                <input 
-                    type="password"
-                    name="password2" 
-                    [(ngModel)]="password2"
-                    (keyup)="validatePasswords()"
-                    required 
-                    placeholder="Neues Passwort bestätigen" 
-                    />
-            </div> -->
-
-            <!-- @if (emailNotFound) {
-                <p style="color: red;">Diese E-Mail-Adresse ist uns nicht bekannt.</p>
-            } -->
-
-
-            <!-- <div class="login-buttons">
-                <button type="submit" class="login-button"
-                [disabled]="!buttonEnabled" 
-                [ngClass]="{'active-button': buttonEnabled}"
-                >Passwort ändern</button>
-            </div> -->
-            
-        <!-- </form> -->
     </div>
 </div>
-
-@if (isSuccess) {
-    <div class="success-dialog">
-        <div class="success-inner-dialog">
-            <p>Passwort geändert!</p>
-        </div>
-    </div>
-}
