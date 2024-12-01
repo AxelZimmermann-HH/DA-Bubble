@@ -543,7 +543,8 @@
         </div>
     </div>
     <!-- Nachrichteneingabe -->
-    <div class="custom-input" [ngClass]="this.sharedService.isMobile ? 'mobile-custom-input' : 'custom-input'">
+    <div class="input-background">
+        <div class="custom-input" [ngClass]="this.sharedService.isMobile ? 'mobile-custom-input' : 'custom-input'">
         <textarea (keydown)="handleEnterKey($event)" #customInput contenteditable="true" placeholder="Nachricht an {{ user.name }}" class="text-area" [formControl]="directMessage"></textarea>
         <div>
             <emoji-mart class="chat-emoji-picker" *ngIf="showEmojis" 
@@ -646,6 +647,7 @@
             [disabled]="directMessage.invalid && !this.fileService.selectedFile && !this.audioService.audioDownloadUrl">
                 <img src="./assets/icons/Send icon.png">
             </button>
+        </div>
         </div>
     </div>
 </div>

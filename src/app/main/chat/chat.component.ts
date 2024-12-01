@@ -30,7 +30,7 @@ interface MessageGroup {
   styleUrls: ['./chat.component.scss']
 })
 
-export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy {
+export class ChatComponent implements AfterViewInit, OnDestroy {
   private documentClickListener?: () => void;
   directMessage = new FormControl('', [Validators.required, Validators.minLength(2)]);
   editedMessage = new FormControl('', [Validators.required, Validators.minLength(2)]);
@@ -67,6 +67,26 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     public keyEventService: KeyEventService
   ) { }
 
+  async ngOnInit() {
+    this.aboUser(); // Abonniere Benutzerdaten
+    this.aboChat(); // Abonniere und lade den Chat
+    this.aboRoute();
+    this.subscribeToSearch();
+    this.listenToEmojiReactions(); // Listener auf das gesamte Dokument
+  }
+
+  // scrollen, wenn die View aktualisiert wird
+  ngAfterViewInit() {
+    const chatContainer = document.querySelector('.chat-container');
+    if (chatContainer) {
+      const observer = new MutationObserver(() => {
+        this.scrollToBottom(); // Wird nur ausgeführt, wenn sich etwas ändert
+      });
+  
+      observer.observe(chatContainer, { childList: true, subtree: true });
+    }
+  }
+
   getAvatarForUser(userName: string): any {
     if (!this.user || !this.user.name) {
       return './assets/avatars/avatar_0.png'; 
@@ -99,60 +119,45 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     }
   }
 
-  // Scrollen direkt nach dem Initialisieren der View
-  ngAfterViewInit() {
-    this.scrollToBottom();
-  };
-
-  // scrollen, wenn die View aktualisiert wird
-  ngAfterViewChecked() {
-    this.scrollToBottom();
-  };
-
-  async ngOnInit() {
-    // Abonniere Benutzerdaten
+  aboUser(){
     this.chatService.user$.subscribe((userData) => {
       if (userData) {
         this.user = userData;
       }
     });
+  }
 
-    // Abonniere und lade den Chat
+  aboChat(){
     this.chatService.chat$.subscribe((chatSubject) => {
       if (chatSubject && chatSubject.length > 0) {
         this.chatService.chatIsEmpty = false;
         this.chat = chatSubject;
-
-        // Initialisiere filteredSearchMessages mit allen Nachrichten
         this.filteredSearchMessages = chatSubject;
-        
       }
       this.focusInputField();
     });
+  }
 
+  aboRoute(){
     this.route.params.subscribe(params => {
       const userId = params['userId'];
       if (userId) {
         this.currentUserId = userId;
-        // Lade den aktuellen Benutzer basierend auf der userId
         this.userService.loadCurrentUser(userId);   
-        // Falls du weiterhin den Benutzer in einer Variable speichern willst
         this.userService.currentUser$.subscribe(user => {
           this.currentUser = user;
         });
       }
     });
-    this.subscribeToSearch();
+  }
 
-     // Listener auf das gesamte Dokument
-     this.documentClickListener = this.renderer.listen('document', 'click', (event: MouseEvent) => {
+  listenToEmojiReactions(){
+    this.documentClickListener = this.renderer.listen('document', 'click', (event: MouseEvent) => {
       const emojiPicker = this.elementRef.nativeElement.querySelector('.chat-emoji-picker');
       const reactionContainer = this.elementRef.nativeElement.querySelector('.add-reaction-container');
-      // Prüfen, ob der Klick außerhalb des Emoji-Pickers ist
       if ((this.showEmojis || this.showEditEmojis) && emojiPicker && !emojiPicker.contains(event.target as Node)) {
         this.closeEmojiPicker();
       }
-
       if(this.reactionService.showReactionContainer && reactionContainer && !reactionContainer.contains(event.target as Node)){
         this.reactionService.showReactionContainer = false;
       }
@@ -209,7 +214,6 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     const fileName = this.fileService.selectedFileName;
     const fileType = this.fileService.selectedFileType;
     const audioDownloadUrl = this.audioService.audioDownloadUrl;
-  
     await this.chatService.setChatData(newDm, fileDownloadUrl, fileName, fileType, this.currentUserId, audioDownloadUrl);
     await this.resetDirectMessage();
     await this.sendMessagesToMultipleUsers(newDm, fileDownloadUrl, fileName, fileType);  
@@ -229,11 +233,9 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     for (const user of this.selectedNames) {
       const chatId = await this.chatService.createChatID(this.currentUserId, user.userId);
       const chatExists = await this.chatService.doesChatExist(chatId);
-  
       if (!chatExists) {
         await this.dbService.createNewChat(chatId, this.currentUserId, user.userId);
       }
-  
       await this.chatService.sendMessageToChat(chatId, newDm, fileDownloadUrl, fileName, fileType, this.currentUserId);
     }
   }
@@ -316,8 +318,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     this.showEditEmojis = false;
   }
 
-  // @ Users 
-  toggleUserList() {
+  toggleUserList() { // @ Users 
     if (this.userList.length === 0) {
       this.userService.loadUsers().then(() => {
         this.userList = this.userService.userData;
@@ -330,8 +331,7 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
     }
   }
 
-  // Klick-Event auf das gesamte Dokument
-  @HostListener('document:click', ['$event'])
+  @HostListener('document:click', ['$event'])// Klick-Event auf das gesamte Dokument
   onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
     const isInsideUsersDialog = target.closest('.users-dialog');
@@ -342,18 +342,15 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
   }
 
   insertName(userName: string) {
+    const user = this.userService.userData.find(u => u.name === userName);
     if (this.selectedNames.some(user => user.name === userName)) {
       return;
     }
-  
-    const user = this.userService.userData.find(u => u.name === userName);
-
     if (user) {
       this.selectedNames.push({ name: user.name, userId: user.userId });
       this.hasNames = true;
       this.cdr.detectChanges();
     }
-
     this.toggleUserList();
   }
 
@@ -385,13 +382,10 @@ export class ChatComponent implements AfterViewInit, AfterViewChecked, OnDestroy
 
   newLine(event: KeyboardEvent){
     const textarea = event.target as HTMLTextAreaElement;
-
-    // Füge einen Zeilenumbruch an der aktuellen Cursor-Position hinzu
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const value = textarea.value;
-
-    textarea.value = value.substring(0, start) + '\n' + value.substring(end);
+    textarea.value = value.substring(0, start) + '\n' + value.substring(end); // Füge einen Zeilenumbruch an der aktuellen Cursor-Position hinzu
     textarea.selectionStart = textarea.selectionEnd = start + 1; // Setze den Cursor hinter den Zeilenumbruch
   }
 }

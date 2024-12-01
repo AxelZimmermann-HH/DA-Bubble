@@ -20,7 +20,7 @@
                 </button>
             </div>
         </div>
-        <div class="channel-content" [ngClass]="sharedService.isMobile ? 'mobile-channel-content' : 'channel-content'">
+        <div class="channel-content" #chatContainer [ngClass]="sharedService.isMobile ? 'mobile-channel-content' : 'channel-content'">
             <table class="chat-table">
                 <tr>
                     <td style="height: 50px;"></td>

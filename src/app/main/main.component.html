@@ -7,7 +7,7 @@
       (chatSelected)="this.chatService.onChatSelected()">
     </app-menu>
 
-    <app-channel *ngIf="this.chatService.showChannel" [selectedChannelId]="this.chatService.selectedChannelId"
+    <app-channel class="app-channel-container" *ngIf="this.chatService.showChannel" [selectedChannelId]="this.chatService.selectedChannelId"
       (chatSelected)="this.chatService.onChatSelected()" [ngClass]="this.sharedService.isMobile ? 'mobile-channel' : 'desk-channel'">
     </app-channel>
 

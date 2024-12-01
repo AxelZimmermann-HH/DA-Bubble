@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
@@ -42,7 +42,7 @@ interface MessageGroup {
   styleUrl: './channel.component.scss'
 })
 
-export class ChannelComponent {
+export class ChannelComponent implements AfterViewInit{
 
   user = new User();
   userId!: string;
@@ -360,6 +360,31 @@ fileUrl: SafeResourceUrl | null = null;
     textarea.value = value.substring(0, start) + '\n' + value.substring(end);
     textarea.selectionStart = textarea.selectionEnd = start + 1; // Setze den Cursor hinter den Zeilenumbruch
   }
+
+  @ViewChild('chatContainer') chatContainer!: ElementRef;
+
+    // scrollen, wenn die View aktualisiert wird
+    ngAfterViewInit() {
+      const chatContainer = document.querySelector('.app-channel-container');
+      if (chatContainer) {
+        const observer = new MutationObserver(() => {
+          this.scrollToBottom(); // Wird nur ausgeführt, wenn sich etwas ändert
+        });
+    
+        observer.observe(chatContainer, { childList: true, subtree: true });
+      }
+    }
+
+  //scrollt das Chatfenster nach unten
+  scrollToBottom(): void {
+    if (!this.chatService.chatIsEmpty && this.chatContainer) {
+      try {
+        this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
+      } catch (err) {
+        console.error('Scrollen fehlgeschlagen:', err);
+      }
+    }
+  };
 }
 
 
