@@ -21,7 +21,14 @@ export class UserService {
   constructor(private firestore: Firestore,
     public dialog: MatDialog,
     private route: ActivatedRoute,
-  ) { }
+  ) { 
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      this.setUser(new User(parsedUser));
+      console.log('User restored from localStorage:', parsedUser);
+  }
+  }
 
   ngOnInit() {
     this.route.params.subscribe(params => {
@@ -97,6 +104,7 @@ export class UserService {
 
   setUser(user: User) {
     this.currentUserSubject.next(user);
+    localStorage.setItem('currentUser', JSON.stringify(user));
   }
 
   getUser(): User | null {

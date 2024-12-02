@@ -119,7 +119,7 @@ export class DialogUserProfilComponent {
       console.log('Profile successfully saved:', this.data.user);
       this.toggleEditMode();  // Exit edit mode
       this.dialogRef.close()
-      window.location.reload();
+      // window.location.reload();
     } else {
       console.error('Form is invalid');
     }
