@@ -105,6 +105,7 @@ export class ChannelService {
             });
         }
     }
+    
     getChannelMembers(channelId:string) {
         const channelRef = doc(this.firestore, 'channels', channelId);
         onSnapshot(channelRef, (doc) => {

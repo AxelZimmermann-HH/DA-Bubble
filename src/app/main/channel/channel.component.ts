@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
@@ -22,6 +22,7 @@ import { DatabaseService } from '../../services/database.service';
 import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-channel.component';
 import { ReactionService } from '../../services/reaction.service';
 import { SafeResourceUrl } from '@angular/platform-browser';
+import { AnswersService } from '../../services/answers.service';
 
 interface MessageGroup {
   date: string;
@@ -49,18 +50,13 @@ export class ChannelComponent {
 
   newMessageText: string = '';
 
-  answer = new Answer();
-  allAnswers: any = [];
-
   showChannel: boolean = true;
   showChat: boolean = false;
 
   isLoading = false;
-  isEditingOnMobile: boolean = false;
   editingMessageId: string | null = null;
 
   inputValue: string = '';
-
 
   filteredUsers: User[] = [];
   filteredMessages: Message[] = [];
@@ -74,16 +70,18 @@ export class ChannelComponent {
   showEditEmojiPicker: boolean = false;
 
   selectedFile: File | null = null;
-fileUrl: SafeResourceUrl | null = null;
+  fileUrl: SafeResourceUrl | null = null;
 
   @Input() selectedChannelId: string | null = null;
   @Output() chatSelected = new EventEmitter<void>();
 
   @ViewChild('messageInput') messageInput: any;
+  @ViewChild('fileInput') fileInput!: ElementRef;
 
   isThreadOpen: boolean = false;
   selectedMessage = new Message();
   selectedAnswers: Answer[] = [];
+  lastAnswerTime!: string;
 
   constructor(public dialog: MatDialog,
     public firestore: Firestore,
@@ -97,7 +95,8 @@ fileUrl: SafeResourceUrl | null = null;
     public searchService: SearchService,
     public fileService: FileService,
     public dbService: DatabaseService,
-    public reactionService : ReactionService
+    public reactionService: ReactionService,
+    public answerService: AnswersService
   ) { }
 
   ngOnInit() {
@@ -109,34 +108,60 @@ fileUrl: SafeResourceUrl | null = null;
     });
     this.subscribeToSearch();
     this.channelService.getAllChannels();
-
-    this.messagesService.getAllMessages('channelId', () => {
-      this.filteredSearchMessages = this.messagesService.allMessages;
-    });
     this.subscribeToFilteredData();
+    this.loadAnswersForMessages();
   }
 
   ngOnChanges(): void {
     this.isLoading = true;
     if (this.selectedChannelId) {
-      this.channelService.loadChannel(this.selectedChannelId).then(() => {
-        this.messagesService.getAllMessages(this.selectedChannelId, () => {
-          this.filteredSearchMessages = this.messagesService.allMessages;
-          this.isLoading = false;
-          this.focusInputField()
-        });
-      }).catch(error => {
-        console.error('Fehler beim Laden des Channels:', error);
-        this.isLoading = false;
-      });
-    }
-    else {
+      this.loadChannelData();
+
+    } else {
       this.resetChannelState();
     }
+  }
+
+  loadChannelData() {
+    if (this.selectedChannelId) {
+      this.channelService.loadChannel(this.selectedChannelId)
+        .then(() => this.loadMessages())
+        .catch(error => {
+          console.error('Fehler beim Laden des Channels:', error);
+          this.isLoading = false;
+        })
+    }
+  }
+
+  loadMessages() {
+    this.messagesService.getAllMessages(this.selectedChannelId, () => {
+      this.filteredSearchMessages = this.messagesService.allMessages;
+      this.isLoading = false;
+      this.focusInputField();
+      this.loadAnswersForMessages();
+    });
+  }
+  loadAnswersForMessages() {
+    this.filteredSearchMessages.forEach(group => {
+      group.messages.forEach(message => {
+        this.loadAnswers(message);
+      });
+    });
+  }
+
+  loadAnswers(message: any) {
+    this.answerService.getAnswers(this.selectedChannelId, message.messageId, (answers) => {
+      message.answersCount = answers.length;
+      if (answers.length > 0) {
+        const lastAnswer = answers[answers.length - 1];
+        this.lastAnswerTime = lastAnswer.formatTimestamp()
+      }
+    });
   }
   onFileChange(event: any) {
     this.fileService.onFileSelected(event);
   }
+
   resetChannelState() {
     this.channelService.selectedChannel = null;
     this.messagesService.allMessages = [];
@@ -218,33 +243,57 @@ fileUrl: SafeResourceUrl | null = null;
     this.searchService.hideAutocompleteList();
   }
   async sendMessage(selectedChannelId: string | null, editingMessageId: string | null) {
-    console.log(this.selectedChannelId, '/', this.editingMessageId);
-    this.selectedChannelId
-    console.log(this.newMessageText, '/', this.inputValue, '/', this.userId, '/', this.isEditingOnMobile, '/', selectedChannelId, '/', editingMessageId);
-
-    await this.messagesService.sendMessage(this.newMessageText, this.inputValue, this.userId, this.isEditingOnMobile, selectedChannelId, editingMessageId);
+    if (editingMessageId) {
+      await this.messagesService.editMessageForMobile(this.newMessageText, editingMessageId, selectedChannelId);
+      this.resetInput();
+      return;
+    }
+    await this.messagesService.sendMessage(this.newMessageText, this.inputValue, this.userId, selectedChannelId, editingMessageId);
     this.resetInput();
   }
   async editDirectMessage(message: Message) {
-    return await this.messagesService.editDirectMessage(message, this.newMessageText, this.isEditingOnMobile, this.editingMessageId)
+    if (!this.sharedService.isMobile) {
+      message.isEditing = true;
+      message.editedText = message.text;
+    } else {
+      this.newMessageText = message.text;
+      this.editingMessageId = message.messageId;
+
+      if (message.fileUrl) {
+        this.fileService.fileUrl = this.fileService.getSafeUrl(message.fileUrl);
+
+        // Simuliere die Auswahl einer Datei, wenn eine Datei an der Nachricht hängt
+        const fakeFile = new File([''], message.fileName || 'Unbenannte Datei', {
+          type: message.fileType || 'application/octet-stream',
+        });
+        this.fileService.selectedFile = fakeFile;
+      } else {
+        this.fileService.closePreview();
+      }
+    }
   }
+
   resetInput() {
     this.inputValue = '';
     this.newMessageText = '';
     this.fileService.selectedFile = null;
     this.fileService.fileUrl = null;
     this.newMessageText = '';
-    this.isEditingOnMobile = false;
     this.editingMessageId = null;
   }
 
-  closePreview(message: Message) {
-    this.fileService.selectedFile = null;
-  
-    message.fileUrl!= null;
-    message.fileType = null;
 
+  resetFileInput() {
+    if (this.fileInput) {
+      this.fileInput.nativeElement.value = '';
+    }
   }
+
+  onClosePreview() {
+    this.fileService.closePreview();
+    this.resetFileInput();
+  }
+
   isValidInput(): boolean {
     const trimmedValue = this.inputValue.trim();
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -261,9 +310,6 @@ fileUrl: SafeResourceUrl | null = null;
     }
     return false;
   }
-
-
-  
   onThreadClosed() {
     this.isThreadOpen = false;
   }
@@ -337,21 +383,30 @@ fileUrl: SafeResourceUrl | null = null;
     this.taggedUser = !this.taggedUser;
   }
 
-  handleEnterKey(event: KeyboardEvent, selectedChannelId: string|null, editingMessageId:string|null){
+  removeFile(message: any) {
+    // Datei-Daten zurücksetzen
+    message.fileUrl = '';
+    message.fileName = '';
+    message.fileType = '';
+    message.selectedFile = null;
+
+    this.fileInput.nativeElement.value = '';
+  }
+  handleEnterKey(event: KeyboardEvent, selectedChannelId: string | null, editingMessageId: string | null) {
     if (event.key === 'Enter' && !event.shiftKey) {
       if (this.newMessageText) {
-        this.sendMessage(selectedChannelId,editingMessageId);
+        this.sendMessage(selectedChannelId, editingMessageId);
       } else {
         event.preventDefault();
       }
     }
-    if(event.key === 'Enter' && event.shiftKey && event.location === 1){
+    if (event.key === 'Enter' && event.shiftKey && event.location === 1) {
       event.preventDefault();
       this.newLine(event);
     }
   }
 
-  newLine(event: KeyboardEvent){
+  newLine(event: KeyboardEvent) {
     const textarea = event.target as HTMLTextAreaElement;
     // Füge einen Zeilenumbruch an der aktuellen Cursor-Position hinzu
     const start = textarea.selectionStart;

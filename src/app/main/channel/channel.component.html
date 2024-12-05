@@ -47,7 +47,7 @@
                                     </div>
                                     <div class="speech-bubble"
                                         [ngClass]="{'b-radius': userService.isCurrentUser(message.user, userId)}">
-                                        <div [innerHTML]="message.text?.replace('\n', '<br>')" class="speech-bubble-content">
+                                        <div class="speech-bubble-content">
                                             {{ message.text }}
                                             <div *ngIf="message.fileUrl" class="fileUrl">
                                                 <!-- Image Preview -->
@@ -115,10 +115,11 @@
                                         
                                     </div>
                                     <div class="label-answers" (click)="openThread(message)"
-                                        *ngIf="message.answers.length > 0">
-                                        {{ message.answers.length }} Antworten
-                                        <p class="time">Letzte Antwort {{message.getLastAnswerTimestamp()}} </p>
-                                    </div>
+                                 *ngIf="message.answersCount > 0" >
+                                        {{message.answersCount}} Antworten
+                                        <p class="time">Letzte Antwort {{lastAnswerTime}} </p>
+
+                                                                           </div>
                                    
                                 </div>
                                 <!-- edit message -->
@@ -135,6 +136,7 @@
                                             <iframe [src]="message.fileUrl" width="200" height="200"
                                                 style="border: none;"></iframe>
                                         </div>
+                                        <img src="./../../../assets/icons/close.png" alt="Close" class="close-icon" (click)="removeFile(message)">
                                     </div>
                                     <div class="button-icons-group">
                                         <img src="./assets/icons/sentiment_satisfied-1.png" alt=""
@@ -186,7 +188,7 @@
                     <iframe [src]="fileService.fileUrl" width="200" height="200" style="border: none;"></iframe>
                 </div>
                 <img src="./../../../assets/icons/close.png" alt="Close" class="close-icon"
-                    (click)="fileService.closePreview()" style="cursor: pointer;">
+                    (click)="onClosePreview()" style="cursor: pointer;">
             </div>
 
             <div *ngIf="taggedUser" class="tagged-user-list">
@@ -209,7 +211,6 @@
                         {{ errorMessage }}
                     <img (click)="fileService.resetErrorMessage()" src="./assets/icons/close.png" class="close-icon" style="height: auto !important">
                     </div>
-                    
                     <!-- Trennlinie -->
                     <div class="trennLine"></div>
                     <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail"
@@ -221,7 +222,7 @@
                 <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmojiToNewMessage($event)"
                     class="emoji-picker"></emoji-mart>
                 <!-- Nachricht senden -->
-                <button class="send-btn" [disabled]="!fileService.selectedFile && !newMessageText && !selectedUser" 
+                <button class="send-btn" [disabled]="!fileService.selectedFile && !newMessageText && !selectedUser  && !editingMessageId" 
                 (click)=" sendMessage(selectedChannelId,editingMessageId)"><img src="./assets/icons/Send icon.png"></button>
             </div>
         </div>
@@ -272,7 +273,7 @@
                         <p>{{ fileService.selectedFile.name }}</p>
                     </div>
                     <img src="./../../../assets/icons/close.png" alt="Close" class="close-icon"
-                        (click)="fileService.closePreview()" style="cursor: pointer;">
+                        (click)="onClosePreview()" style="cursor: pointer;">
                 </div>
                 <div *ngIf="taggedUser" class="tagged-user-list">
                     <ul class="searchListe">
@@ -308,6 +309,6 @@
     </ng-template>
     <app-thread *ngIf="isThreadOpen" [selectedChannelId]="selectedChannelId"
         [channelName]="channelService.selectedChannel?.channelName" [message]="selectedMessage"
-        [selectedAnswers]="selectedAnswers" (threadClosed)="onThreadClosed()">
+        (threadClosed)="onThreadClosed()">
     </app-thread>
 </div>

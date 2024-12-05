@@ -1,8 +1,8 @@
-import { Component, EventEmitter, HostListener, Input, Output, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
-import { arrayUnion, doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
+import { addDoc, collection, deleteDoc, doc, Firestore, getDoc, updateDoc } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Answer } from '../../models/answer.class';
@@ -13,12 +13,11 @@ import { ThreadService } from '../../services/thread.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { EmojiData } from './../../models/emoji-data.models';
-import { getDownloadURL, getStorage, ref, uploadBytes } from '@angular/fire/storage';
+import { deleteObject, getDownloadURL, getMetadata, getStorage, ref, uploadBytes } from '@angular/fire/storage';
 import { AnswersService } from '../../services/answers.service';
 import { SharedService } from '../../services/shared.service';
 import { FileService } from '../../services/file.service';
-
-
+import { EmojisService } from '../../services/emojis.service';
 
 @Component({
   selector: 'app-thread',
@@ -28,16 +27,16 @@ import { FileService } from '../../services/file.service';
   styleUrls: ['./thread.component.scss']
 })
 export class ThreadComponent {
-
+  @ViewChild('fileInput') fileInput!: ElementRef;
   user = new User();
   userId!: string;
 
   newAnswerText: string = "";
 
-  channel = new Channel();
-
   showEmoji: boolean = false;
   showAnswerEmoji: boolean = false;
+  showAllAnswerEmoji: boolean = false;
+  clickedAnswer: string = '';
 
   fileUrl: SafeResourceUrl | null = null;
   selectedFile: File | null = null;
@@ -53,8 +52,8 @@ export class ThreadComponent {
   @Input() selectedChannelId: string | null = null;
   @Input() channelName: string | undefined;
   @Input() message!: Message;
-  @Input() selectedAnswers: Answer[] = []
 
+  selectedAnswers: Answer[] = []
 
   constructor(
     public firestore: Firestore,
@@ -65,7 +64,8 @@ export class ThreadComponent {
     public answersService: AnswersService,
     private sanitizer: DomSanitizer,
     public sharedService: SharedService,
-    public fileService: FileService
+    public fileService: FileService,
+    public emojiService: EmojisService,
   ) { }
 
   ngOnInit(): void {
@@ -73,18 +73,19 @@ export class ThreadComponent {
       this.userId = params['userId'];
     });
     this.subscribeToSearch();
-    this.getAnswers(this.message.messageId);
 
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['message'] && this.message && this.message.messageId) {
-      this.getAnswers(this.message.messageId);
+      this.answersService.getAnswers(this.selectedChannelId, this.message.messageId, (answers) => {
+        this.selectedAnswers = answers;
+      });
     }
 
     if (changes['selectedChannelId'] && !changes['selectedChannelId'].isFirstChange()) {
       this.selectedAnswers = [];
-      this.closeThread()
+      this.closeThread();
     }
   }
 
@@ -98,68 +99,50 @@ export class ThreadComponent {
     });
   }
 
+  deleteFile(answer: Answer) {
+    answer.fileUrl = '';
+    answer.fileName = '';
+    answer.fileType = '';
+    this.selectedFile = null;
+    this.fileInput.nativeElement.value = '';
+  }
+
   filterAnswers(term: string) {
-    this.selectedAnswers = this.message.answers.filter((answer: any) => {
+    this.selectedAnswers = this.selectedAnswers.filter((answer: any) => {
       const matchesUser = answer.user?.toLowerCase().includes(term.toLowerCase());
       const matchesText = answer.text?.toLowerCase().includes(term.toLowerCase());
-
       return matchesUser || matchesText;
     });
-
-    console.log('Filtered answers:', this.filteredSearchAnswers);
   }
 
   resetFilteredAnswers() {
-    this.filteredSearchAnswers = this.message.answers;
-  }
-
-  getAnswers(messageId: string) {
-    const messageDocRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}`);
-    onSnapshot(
-      messageDocRef,
-      (docSnapshot) => {
-        if (docSnapshot.exists()) {
-          const messageData = docSnapshot.data();
-          if (Array.isArray(messageData['answers'])) {
-            this.selectedAnswers = messageData['answers'].map((a: any) => new Answer(a));
-          } else {
-            this.selectedAnswers = [];
-          }
-        }
-      },
-      (error) => {
-        console.error('Fehler beim Abrufen der Antworten:', error);
-      }
-    );
+    this.filteredSearchAnswers = this.selectedAnswers;
   }
 
   async addAnswer(messageId: string) {
-    if (this.newAnswerText.trim() === '' && !this.selectedFile) return;
     const username = this.userService.findUserNameById(this.userId);
-    if (!username) {
-      this.newAnswerText = '';
-      return;
-    }
     const fileUrl = await this.uploadFileIfSelected();
-    const answer = new Answer({
-      text: this.newAnswerText,
+    if (!this.newAnswerText.trim() && !fileUrl) return;
+    const answerData = {
+      messageId,
+      text: this.newAnswerText.trim(),
       user: username,
       timestamp: new Date(),
+      emojis: [],
       ...(fileUrl && { fileUrl, fileType: this.selectedFile?.type, fileName: this.selectedFile?.name }),
-    });
+    };
 
-    const messageDocRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}`);
     try {
-      await updateDoc(messageDocRef, {
-        answers: arrayUnion(answer.toJson())
-      });
+      const answersCollectionRef = collection(
+        this.firestore,
+        `channels/${this.selectedChannelId}/messages/${messageId}/answers`
+      );
+      await addDoc(answersCollectionRef, answerData);
+      this.newAnswerText = '';
+      this.selectedFile = null;
     } catch (error) {
-      console.error("Fehler beim Speichern der Antwort: ", error);
+      console.error('Fehler beim Hinzufügen der Antwort:', error);
     }
-
-    this.getAnswers(messageId);
-    this.newAnswerText = '';
-    this.selectedFile = null;
   }
 
   async uploadFileIfSelected() {
@@ -174,16 +157,23 @@ export class ThreadComponent {
       throw error;
     }
   }
-
-  async saveEditAnswer(answer: Answer) {
-    const updatedAnswer = new Answer({
-      ...answer,
-      text: answer.editedText,
-      isEditing: false
-    });
-    await this.answersService.saveEditAnswer(this.message.messageId, answer, updatedAnswer, this.selectedChannelId!);
-    this.getAnswers(this.message.messageId);
+  editDirectAnswer(answer: Answer) {
+    if (!this.sharedService.isMobile) {
+      answer.isEditing = true;
+      answer.editedText = answer.text;
+    }
+    else {
+      this.newAnswerText = answer.text;
+    }
+    if (answer.fileUrl) {
+      this.fileService.fileUrl = this.fileService.getSafeUrl(answer.fileUrl);
+      const fakeFile = new File([''], answer.fileName || 'Unbenannte Datei', {
+        type: answer.fileType || 'application/octet-stream',
+      });
+      this.fileService.selectedFile = fakeFile;
+    } else { this.fileService.closePreview(); }
   }
+
 
   //messages
   toggleEmojiReaction(message: Message, emojiData: EmojiData) {
@@ -222,8 +212,13 @@ export class ThreadComponent {
 
   //answers
   toggleEmojiReactionForAnswer(answer: Answer, emojiData: EmojiData) {
+    if (!emojiData || !emojiData.userIds) {
+      console.error('Ungültige Emoji-Daten:', emojiData);
+      return;
+    }
     const currentUserId = this.userId;
     const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
+
     if (currentUserIndex > -1) {
       emojiData.userIds.splice(currentUserIndex, 1);
     } else {
@@ -233,21 +228,11 @@ export class ThreadComponent {
   }
 
   updateEmojisInAnswer(answer: Answer) {
-    const messageRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${this.message.messageId}`);
-    getDoc(messageRef).then((docSnap) => {
-      if (docSnap.exists()) {
-        const messageData = docSnap.data();
-        const updatedAnswers = messageData['answers'].map((a: any) => {
-          if (a.text === answer.text && a.user === answer.user) {
-            a.emojis = answer.emojis;
-          }
-          return a;
-        });
-        updateDoc(messageRef, { answers: updatedAnswers })
-      }
-    }).catch((error) => {
-      console.error('Fehler beim Abrufen der Nachricht: ', error);
-    });
+    if (!this.selectedChannelId || !answer.messageId || !answer.id) {
+      return;
+    }
+    const answerRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${answer.messageId}/answers/${answer.id}`);
+    updateDoc(answerRef, { emojis: answer.emojis });
   }
 
   toggleUserEmojiAnswer(answer: Answer, emoji: string, userId: string) {
@@ -293,16 +278,20 @@ export class ThreadComponent {
     }
     return userNames.length > 0 ? userNames.join(", ") : "Keine Reaktionen";
   }
+
   getRecentEmojis(answer: Answer): EmojiData[] {
     return answer.emojis
-    .filter(emojiData => emojiData.userIds.length > 0)
-    .sort((a, b) => b.userIds.length - a.userIds.length)
-    .slice(0, 2); 
+      .filter(emojiData => emojiData.userIds.length > 0)
+      .sort((a, b) => b.userIds.length - a.userIds.length)
+      .slice(0, 2);
   }
+
   toggleShowEmoji() { this.showEmoji = !this.showEmoji }
 
-  toggleEmojitoAnswer() {
-    this.showAnswerEmoji = !this.showAnswerEmoji;
+  toggleAllEmojitoAnswer(event: any, clickedAnswer: string) {
+    event.stopPropagation();
+    this.clickedAnswer = clickedAnswer
+    this.showAllAnswerEmoji = !this.showAllAnswerEmoji;
   }
 
   toggleEmojiPicker(event: MouseEvent) {
@@ -321,6 +310,17 @@ export class ThreadComponent {
     this.showEmojiPicker = false;
   }
 
+  addEmojiToAnswer(event: any, answer: Answer) {
+    const emoji = event.emoji.native;
+    answer.editedText += emoji;
+    this.showAnswerEmoji = false;
+  }
+
+  toggleEmojitoAnswer(event: MouseEvent) {
+    event.stopPropagation();
+    this.showAnswerEmoji = !this.showAnswerEmoji;
+  }
+
   onFileSelected(event: any): void {
     const file: File = event.target.files[0];
     if (file) {
@@ -331,14 +331,14 @@ export class ThreadComponent {
       }
 
       if (!this.fileService.isFileTypeAllowed(file)) {
-        this.errorMessage='Nur Bilder oder PDF-Dateien sind erlaubt.';
+        this.errorMessage = 'Nur Bilder oder PDF-Dateien sind erlaubt.';
         this.fileService.resetFile();
         return;
       }
       this.selectedFile = file;
       const objectUrl = URL.createObjectURL(file);
       this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
-      this.errorMessage = null;
+      this.resetErrorMessage();
     } else {
       this.resetErrorMessage();
     }
@@ -347,9 +347,11 @@ export class ThreadComponent {
   resetErrorMessage(): void {
     this.errorMessage = null;
   }
+
   closePreview() {
     this.fileUrl = null;
     this.selectedFile = null;
+    this.fileInput.nativeElement.value = '';
   }
 
   @HostListener('document:click', ['$event'])

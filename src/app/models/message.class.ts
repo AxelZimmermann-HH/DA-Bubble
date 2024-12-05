@@ -1,16 +1,15 @@
 import { Timestamp } from "@angular/fire/firestore";
-import { Answer } from "./answer.class";
 import { EmojiData } from './emoji-data.models';
 
 export interface MessageData {
   text?: string;
   user?: string;
   timestamp?: any; // Use a more specific type if applicable
-  answers?: Answer[];
   emojis?: EmojiData[];
   fileUrl?: string;
   fileType?: string;
   fileName?: string;
+  answersCount?: number;
 }
 
 
@@ -20,13 +19,14 @@ export class Message {
   user!: string;
   timestamp!: Date;
   fullDate!: string;
-  answers: Answer[] = [];
   emojis: EmojiData[] = [];
-  fileUrl?: string;
-  fileType?: string | null;
-  fileName?: string;
+  fileUrl?: string | null;  
+  fileType?: string | null; 
+  fileName?: string | null; 
   isEditing: boolean = false;
   editedText: string = '';
+  answersCount: number = 0;
+
 
 
   constructor(obj: MessageData = {}, messageId: string = '') {
@@ -36,7 +36,7 @@ export class Message {
     const date = obj.timestamp ? this.getDateFromTimestamp(obj.timestamp) : new Date();
     this.timestamp = date;
     this.fullDate = this.formatFullDate(date);
-    this.answers = Array.isArray(obj.answers) ? obj.answers.map(a => new Answer(a)) : []; // Initialize answers
+
     this.emojis = (obj.emojis || []).map(e =>
       typeof e === 'string' ? { emoji: e, userIds: [] } : e // Setze userId auf ein leeres Array
     );
@@ -44,16 +44,11 @@ export class Message {
     this.fileType = obj.fileType || '';
     this.fileName = obj.fileName || '';
     this.editedText = this.text;
+    this.answersCount = obj.answersCount || 0;
+
+
   }
 
-  public getLastAnswerTimestamp(): string | any {
-    if (this.answers.length === 0) {
-      return null; // Keine Antworten vorhanden
-    }
-
-    const lastAnswer = this.answers[this.answers.length - 1];
-    return lastAnswer.formatTimestamp(); // Formatierter Zeitstempel der letzten Antwort
-  }
   private getDateFromTimestamp(timestamp: any): Date {
     return timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp);
   }
@@ -80,8 +75,6 @@ export class Message {
     return new Intl.DateTimeFormat('de-DE', options).format(date);
   }
 
-
-
   public toJson() {
     return {
       messageId: this.messageId,
@@ -89,11 +82,13 @@ export class Message {
       user: this.user,
       timestamp: this.timestamp,
       fullDate: this.fullDate,
-      answers: this.answers,
       emojis: this.emojis,
       fileUrl: this.fileUrl,
       fileType: this.fileType,
-      fileName: this.fileName
+      fileName: this.fileName,
+      answersCount: this.answersCount,
     };
   }
+
+
 }

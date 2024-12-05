@@ -5,7 +5,7 @@ import { UserService } from './user.service';
 import { FileService } from './file.service';
 import { ChatService } from './chat.service';
 import { DatabaseService } from './database.service';
-import { deleteDoc } from 'firebase/firestore';
+import { deleteDoc, getDoc } from 'firebase/firestore';
 import { ChannelService } from './channel.service';
 import { SharedService } from './shared.service';
 
@@ -16,7 +16,7 @@ export class MessagesService {
     allMessages: any[] = [];
     message = new Message();
     emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-   
+
     constructor(
         public firestore: Firestore,
         public userService: UserService,
@@ -29,6 +29,7 @@ export class MessagesService {
 
 
     getAllMessages(channelId: string | null, callback: () => void) {
+
         const messagesQuery = query(
             collection(this.firestore, `channels/${channelId}/messages`),
             orderBy('timestamp', 'asc')
@@ -37,16 +38,18 @@ export class MessagesService {
         onSnapshot(messagesQuery, (snapshot) => {
             const messagesData = snapshot.docs.map(doc => {
                 const data = doc.data();
+
                 return new Message({
                     text: data['text'],
                     user: data['user'],
                     timestamp: data['timestamp'],
-                    answers: data['answers'] || [],
                     emojis: data['emojis'] || [],
                     fileUrl: data['fileUrl'] || null,
                     fileType: data['fileType'] || null,
-                    fileName: data['fileName'] || null
+                    fileName: data['fileName'] || null,
+                    answersCount: data['answersCount'] || 0,
                 }, doc.id);
+
             });
             const groupedMessages: { [date: string]: Message[] } = {};
 
@@ -67,27 +70,42 @@ export class MessagesService {
         });
     }
 
-    async saveMessageEdit(message: Message, channelId: string | null) {
+
+    async saveMessageEdit(message: Message, channelId: string | null): Promise<void> {
         if (!channelId || !message.messageId) return;
+      
         const messageRef = doc(this.firestore, `channels/${channelId}/messages/${message.messageId}`);
-
+      
         try {
-            await updateDoc(messageRef, { text: message.editedText });
-            message.text = message.editedText;
-            if (!message.text.trim() && !message.fileUrl) {
-                await this.deleteMessage(message.messageId, channelId);
-
-            }
-            else { message.isEditing = false; }
-
+          // Nachricht aktualisieren
+          const updateData: any = { text: message.editedText };
+          if (!message.fileUrl) {
+            updateData.fileUrl = null;
+            updateData.fileType = null;
+            updateData.fileName = null;
+          }
+      
+          await updateDoc(messageRef, updateData);
+      
+          message.text = message.editedText;
+          if (!message.text.trim() && !message.fileUrl) {
+            await this.deleteMessage(message.messageId, channelId);
+          } else {
+            message.isEditing = false;
+          }
         } catch (error) {
-            console.error('Fehler beim Speichern der Nachricht:', error);
+          console.error('Fehler beim Speichern der Nachricht:', error);
         }
-    }
+      }
+      
     cancelMessageEdit(message: Message) {
         message.isEditing = false;
         message.editedText = message.text;
     }
+    removeFile(message:Message){
+        message.fileName = null;
+        message.fileUrl = null;
+      }
 
     async sendChannelMessage(channelId: string | null, message: string, fileUrl: string | null, userId: string) {
         if (message.trim() === '' && !fileUrl) return;
@@ -96,7 +114,7 @@ export class MessagesService {
             user: this.userService.findUserNameById(userId),
             timestamp: Timestamp.now(),
             fullDate: new Date().toDateString(),
-            answers: [],
+            emojis: [],
             ...(fileUrl && { fileUrl, fileType: this.fileService.selectedFile?.type, fileName: this.fileService.selectedFile?.name })
         };
         try {
@@ -165,10 +183,7 @@ export class MessagesService {
                     this.deleteMessage(messageId, channelId);
                     return;
                 }
-
                 message.isEditing = false;
-
-
             }
         } catch (error) {
             console.error("Fehler beim Speichern der Nachricht: ", error);
@@ -212,11 +227,12 @@ export class MessagesService {
             console.error("Fehler beim Suchen des Benutzers: ", error);
         }
     }
-    async sendMessage(messageText: string, value: string, userId: string, isEditingOnMobile: boolean, selectedChannelId: string|null, editingMessageId: string|null) {
-        const fileUrl = await this.fileService.uploadFiles();
-        if (messageText.trim() === '' && !this.fileService.selectedFile && !isEditingOnMobile) return;
 
-        await this.editMessageForMobile(isEditingOnMobile, messageText, editingMessageId, selectedChannelId);
+    async sendMessage(messageText: string, value: string, userId: string, selectedChannelId: string | null, editingMessageId: string | null) {
+        const fileUrl = await this.fileService.uploadFiles();
+        if (messageText.trim() === '' && !this.fileService.selectedFile ) return;
+
+        await this.editMessageForMobile(messageText, editingMessageId, selectedChannelId);
         if (!fileUrl && !messageText.trim()) return;
         if (this.channelService.selectedChannel) {
             await this.sendChannelMessage(selectedChannelId, messageText, fileUrl, userId);
@@ -224,6 +240,7 @@ export class MessagesService {
             await this.handleDirectMessageOrEmail(fileUrl, value, messageText, userId);
         }
         await this.sendTaggedMessages(fileUrl, messageText, userId);
+        this.fileService.resetFile();
     }
 
     async sendTaggedMessages(fileUrl: string | null, newMessageText: string, userId: string) {
@@ -232,11 +249,9 @@ export class MessagesService {
             await this.sendDirectMessage(username, newMessageText, fileUrl, userId);
         }
     }
-    async editMessageForMobile(isEditingOnMobile: boolean, messageText: string, editingMessageId: string | null, selectedChannelId: string | null) {
-   
-        if (isEditingOnMobile) {
-            console.log('message:', messageText, 'filservice edit:', this.fileService.selectedFile);
 
+    async editMessageForMobile( messageText: string, editingMessageId: string | null, selectedChannelId: string | null) {
+        if (this.sharedService.isMobile) {
             if (!messageText.trim() && !this.fileService.selectedFile) {
                 await this.deleteMessage(editingMessageId, selectedChannelId);
             }
@@ -244,7 +259,6 @@ export class MessagesService {
                 await this.updateMessages(selectedChannelId, editingMessageId, messageText);
             }
             messageText = '';
-            isEditingOnMobile = false;
             editingMessageId = null;
             return;
         }
@@ -259,14 +273,20 @@ export class MessagesService {
         }
         return taggedUsernames;
     }
-
-    async editDirectMessage(message: Message, newMessage: string, isEditingOnMobile: boolean, editingMessageId: string|null) {
+    async editMessage(message: Message, newText: string, editingId: string | null, channelId: string | null) {
+        if (this.sharedService.isMobile) {
+            await this.editMessageForMobile(newText, editingId, channelId);
+        } else {
+            message.isEditing = true;
+            message.editedText = newText;
+        }
+    }
+    async editDirectMessage(message: Message, newMessage: string, editingMessageId: string | null) {
         if (!this.sharedService.isMobile) {
             message.isEditing = true;
             message.editedText = message.text;
         } else {
             newMessage = message.text;
-            isEditingOnMobile = true;
             editingMessageId = message.messageId;
 
             if (message.fileUrl) {
@@ -278,7 +298,6 @@ export class MessagesService {
             } else {
                 this.fileService.closePreview();
             }
-
         }
     }
 
