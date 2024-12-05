@@ -1,9 +1,5 @@
 import { CommonModule } from '@angular/common';
-<<<<<<< HEAD
-import { Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
-=======
 import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
->>>>>>> 7c04ed50b3bc37b190ce44b4e855c928a74b3801
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
