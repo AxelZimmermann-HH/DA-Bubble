@@ -36,38 +36,38 @@
     </button>
 
     <!-- Form for Editing -->
-    <form #profileForm="ngForm" (ngSubmit)="saveProfile(profileForm)" *ngIf="isEditMode" style="display: flex;flex-direction: column;gap:16px;width: 100%;">
+    <form #profileForm="ngForm" (ngSubmit)="saveProfile(profileForm)" *ngIf="isEditMode" style="display: flex;flex-direction: column;gap:24px;width: 100%;">
         <!-- Name Field with Validation -->
-        <label style="display: flex;align-items: center;gap:8px"><img src="./assets/icons/account_circle.png" alt="" style="width: 30px;height: 30px;"> Vollständiger Name</label>
+        <label style="display: flex;align-items: center;gap:8px"><img src="./assets/icons/account_circle.png" alt="" style="width: 20px;height: 20px;"> Vollständiger Name</label>
         <input type="text" name="name" [(ngModel)]="data.user.name" required minlength="3" #name="ngModel"  style="padding: 0 10px;
-    margin: 0 -10px;width: 100%;height: 52px;border-radius: 30px;border: 1px solid rgba(173, 176, 217, 1);"/>
+    margin: -15px -10px 0px -10px;width: 100%;height: 52px;border-radius: 30px;border: 1px solid rgba(173, 176, 217, 1);"/>
         <div *ngIf="name.invalid && (name.dirty || name.touched)" class="error">
             <div *ngIf="name.errors?.['required']">Name is required.</div>
             <div *ngIf="name.errors?.['minlength']">Name must be at least 3 characters long.</div>
         </div>
 
         <!-- Email Field with Validation -->
-        <label style="display: flex;align-items: center;gap:8px"><img src="./assets/icons/mail.png" alt="" style="width: 30px;height: 30px;object-fit: contain;"> E-Mail-Adresse</label>
-        <input type="email" name="email" [(ngModel)]="data.user.mail" required email #email="ngModel" style="padding: 0 10px;
-    margin: 0 -10px;width: 100%;height: 52px;border-radius: 30px;border: 1px solid rgba(173, 176, 217, 1);"/>
+        <label style="display: flex;align-items: center;gap:8px"><img src="./assets/icons/mail.png" alt="" style="width: 20px;height: 20px;object-fit: contain;"> E-Mail-Adresse</label>
+        <input type="email" name="email" [(ngModel)]="data.user.mail" required email (blur)="checkEmailBlur()" #email="ngModel" 
+        style="padding: 0 10px; margin: -15px -10px 0px -10px;width: 100%;height: 52px;border-radius: 30px;border: 1px solid rgba(173, 176, 217, 1);"/>
         <div *ngIf="email.invalid && (email.dirty || email.touched)" class="error">
             <div *ngIf="email.errors?.['required']">Email is required.</div>
             <div *ngIf="email.errors?.['email']">Please enter a valid email address.</div>
         </div>
 
         <!-- Password Field for Re-Authentication -->
-    <label style="display: flex;align-items: center;gap:8px"><img src="./assets/icons/lock.png" alt="" style="width: 30px;height: 30px;object-fit: contain;"> Aktuelles Passwort</label>
+    <label style="display: flex;align-items: center;gap:8px"> Bitte gebe dein Passwort ein, um die Änderungen zu bestätigen.</label>
     <input type="password" name="password" [(ngModel)]="currentPassword" required minlength="6" #password="ngModel"
-           style="padding: 0 10px;margin: 0 -10px;width: 100%;height: 52px;border-radius: 30px;border: 1px solid rgba(173, 176, 217, 1);"/>
-    <div *ngIf="password.invalid && (password.dirty || password.touched)" class="error">
+           style="padding: 0 10px;margin: -15px -10px 0px -10px;width: 100%;height: 52px;border-radius: 30px;border: 1px solid rgba(173, 176, 217, 1);"/>
+    <!-- <div *ngIf="password.invalid && (password.dirty || password.touched)" class="error">
         <div *ngIf="password.errors?.['required']">Passwort ist erforderlich.</div>
         <div *ngIf="password.errors?.['minlength']">Das Passwort muss mindestens 6 Zeichen lang sein.</div>
-    </div>
+    </div> -->
 
         <!-- Action Buttons -->
         <div class="button-group">
             <button type="button" (click)="toggleEditMode()" class="cancelBtn">Abbrechen</button>
-            <button type="submit" [disabled]="profileForm.invalid" class="saveBtn">Speichern</button>
+            <button type="submit" [disabled]="profileForm.invalid" [ngClass]="{'enabled': !profileForm.invalid}"  class="saveBtn">Speichern</button>
         </div>
     </form>
 </div>

@@ -22,9 +22,10 @@
 
         @if (currentUser) {
         <p>{{ currentUser.name }}</p>
-        @if (userService.isNumber(currentUser.avatar)) {
+         @if (userService.isNumber(currentUser.avatar)) {
             <div class="avatar-container" (click)="isMobile ? openDialogLogout() : null">
-                <img class="avatar" [src]="'./assets/avatars/avatar_' + currentUser.avatar + '.png'" alt="User Avatar">
+                <img class="avatar" [src]="getAvatarSrc()">
+                <!-- <img class="avatar" [src]="'./assets/avatars/avatar_' + currentUser.avatar + '.png'" alt="User Avatar"> -->
                 <div class="online-point"></div>
             </div>
         } @else {
@@ -32,7 +33,7 @@
                 <img class="avatar" [src]="currentUser.avatar" alt="Google User Avatar">
                 <div class="online-point"></div>
             </div>
-        }
+        } 
 
         } @else {
         <p>Gast</p>

@@ -21,7 +21,14 @@ export class UserService {
   constructor(private firestore: Firestore,
     public dialog: MatDialog,
     private route: ActivatedRoute,
-  ) { }
+  ) { 
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      this.setUser(new User(parsedUser));
+      console.log('User restored from localStorage:', parsedUser);
+  }
+  }
 
   ngOnInit() {
     this.route.params.subscribe(params => {
@@ -97,6 +104,7 @@ export class UserService {
 
   setUser(user: User) {
     this.currentUserSubject.next(user);
+    localStorage.setItem('currentUser', JSON.stringify(user));
   }
 
   getUser(): User | null {
@@ -122,20 +130,24 @@ export class UserService {
     });
   }
 
+
   updateUser(updatedUser: User): void {
     const currentUser = this.getUser();
     if (currentUser) {
       const userRef = doc(this.firestore, `users/${currentUser.userId}`);
 
+      console.log('Avatar in updatedUser before saving:', updatedUser.avatar);
+
+
       updateDoc(userRef, updatedUser.toJson())
         .then(() => {
 
           const updatedUserInstance = new User({
-            ...currentUser,
-            ...updatedUser
+            ...updatedUser,
+            ...currentUser
           });
           this.setUser(updatedUserInstance);
-          console.log('User profile updated in Firestore:', updatedUser);
+          console.log('User profile updated in Firestore:', updatedUserInstance);
         })
         .catch((error) => {
           console.error('Error updating user profile:', error);
@@ -143,6 +155,17 @@ export class UserService {
     } else {
       console.error('No current user to update');
     }
+  }
+
+  updateUserWithPromise(updatedUser: User): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        this.updateUser(updatedUser); // Originalmethode aufrufen
+        resolve(); // Erfolgreich beenden
+      } catch (error) {
+        reject(error); // Fehler weitergeben
+      }
+    });
   }
 
   findUserNameById(userId: string): string {
@@ -188,7 +211,4 @@ getUserNameById(userId: string): string | undefined {
     });
     console.log('add channel user ', member.name);
   }
-
-  
 }
-

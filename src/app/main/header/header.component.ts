@@ -12,6 +12,8 @@ import { User } from '../../models/user.class';
 import { collection, doc, Firestore, getDoc, onSnapshot } from '@angular/fire/firestore';
 import { ActivatedRoute } from '@angular/router';
 import { ChatService } from '../../services/chat.service';
+import { ChangeDetectorRef } from '@angular/core';
+
 
 @Component({
   selector: 'app-header',
@@ -32,7 +34,8 @@ export class HeaderComponent implements OnInit {
     public chatService: ChatService,
     public userService: UserService, 
     public firestore: Firestore, 
-    public route: ActivatedRoute) { }
+    public route: ActivatedRoute,
+    private cdr: ChangeDetectorRef) { }
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
@@ -42,6 +45,13 @@ export class HeaderComponent implements OnInit {
   ngOnInit() {
 
     this.isMobile = window.innerWidth <= 500;
+
+    const storedUser = localStorage.getItem('currentUser');
+      if (storedUser) {
+        this.currentUser = JSON.parse(storedUser);
+        this.cdr.detectChanges(); // Ansicht manuell aktualisieren
+
+      }
     
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
@@ -49,6 +59,8 @@ export class HeaderComponent implements OnInit {
     });
 
     this.getAllUsers();
+
+    
   }
 
   getAllUsers() {
@@ -93,6 +105,7 @@ export class HeaderComponent implements OnInit {
       data: { user: this.currentUser }
     })
   }
+  
 
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
@@ -111,5 +124,18 @@ export class HeaderComponent implements OnInit {
     this.chatService.showChat = false;
     this.chatService.showMenu = true;
     this.sharedService.goBackHeader = false;
+  }
+
+  getAvatarSrc(): string {
+    if (!this.currentUser) {
+      return './assets/avatars/avatar_1.png'; // Default Avatar
+    }
+  
+    // Konvertiere Avatar sicher in einen String
+    const avatar = this.currentUser.avatar.toString();
+  
+    return this.userService.isNumber(this.currentUser.avatar)
+      ? `./assets/avatars/avatar_${avatar}.png`
+      : avatar;
   }
 }

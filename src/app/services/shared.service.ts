@@ -63,4 +63,12 @@ export class SharedService {
 
     return `${dayOfWeek}, ${day}. ${month}`;
   }
+
+  private mailChangeSuccessSubject = new BehaviorSubject<boolean>(false);
+  mailChangeSuccess$ = this.mailChangeSuccessSubject.asObservable();
+
+  // Methode, um den Zustand des Erfolgsdialogs zu ändern
+  setMailChangeSuccess(state: boolean): void {
+    this.mailChangeSuccessSubject.next(state);
+  }
 }

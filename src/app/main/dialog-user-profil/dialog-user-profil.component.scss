@@ -148,8 +148,16 @@
     }
 
     .saveBtn {
-        background: rgba(68, 77, 242, 1);
+        background: #797EF3;
         color: rgba(255, 255, 255, 1);
+    }
+
+    .saveBtn.enabled {
+        background: #444DF2; 
+        color: #ffffff;
+        cursor: pointer;
+        border: none;
+        transition: background-color 0.3s ease; /* Sanfter Farbwechsel */
     }
 
     .cancelBtn {
@@ -159,6 +167,8 @@
 
     }
 }
+
+
 
 .edit-profil {
     top: 50%;

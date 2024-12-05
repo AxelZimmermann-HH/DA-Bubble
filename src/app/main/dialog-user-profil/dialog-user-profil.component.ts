@@ -10,8 +10,7 @@ import { SharedService } from '../../services/shared.service';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Auth, verifyBeforeUpdateEmail, updateEmail, sendEmailVerification, EmailAuthProvider, reauthenticateWithCredential } from '@angular/fire/auth';
 import { doc, setDoc } from '@angular/fire/firestore';
-
-
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-dialog-user-profil',
@@ -32,6 +31,8 @@ export class DialogUserProfilComponent {
   isEditMode: boolean = false;
   isEditable: boolean; 
 
+  emailChanged: boolean = false;
+
   @Output() chatSelected = new EventEmitter<void>();
 
   constructor(
@@ -41,6 +42,7 @@ export class DialogUserProfilComponent {
     public chatService: ChatService,
     public userService: UserService,
     public sharedService: SharedService,
+    private cdr: ChangeDetectorRef,
     @Inject(MAT_DIALOG_DATA) public data: { user: User, isEditable: boolean }) { 
     this.isEditable = data.isEditable; 
   }
@@ -69,15 +71,14 @@ export class DialogUserProfilComponent {
   }
 
   getAvatarForUser(user: any) {
-
     if (user) {
       if (this.userService.isNumber(user.avatar)) {
-        return './assets/avatars/avatar_' + user.avatar + '.png';  // Local asset avatar
+        return './assets/avatars/avatar_' + user.avatar + '.png'; 
       } else {
-        return user.avatar;  // External URL avatar
+        return user.avatar;  
       }
     }
-    return './assets/avatars/avatar_0.png';  // Default avatar when user not found
+    return './assets/avatars/avatar_0.png';  
   }
 
   async selectAvatar(avatar: string) {
@@ -86,121 +87,97 @@ export class DialogUserProfilComponent {
     this.data.user.avatar = avatarId;
   }
 
+
+  checkEmailBlur() {
+    const enteredEmail = this.data.user.mail; 
+    const currentEmail = this.auth.currentUser?.email; 
+  
+    if (enteredEmail === currentEmail) {
+      console.log('Die eingegebene E-Mail-Adresse stimmt mit der aktuellen überein.');
+      this.emailChanged = false;
+      console.log(this.emailChanged);
+    } else {
+      console.log('Die eingegebene E-Mail-Adresse ist anders als die aktuelle.');
+      this.emailChanged = true;
+      console.log(this.emailChanged);
+    }
+  }
+
   saveProfile(form: NgForm) {
-    if (form.valid) {
-      const user = this.auth.currentUser;
-  
-      if (user) {
-        const currentPassword = this.currentPassword; // Vom Benutzer eingegeben
-        const newEmail = this.data.user.mail; // Neue E-Mail-Adresse aus dem Formular
-  
-        // Schritt 1: Re-Authentifizierung
-        const credentials = EmailAuthProvider.credential(user.email!, currentPassword);
-  
-        reauthenticateWithCredential(user, credentials)
-          .then(() => {
-            console.log('Re-Authentifizierung erfolgreich.');
-  
-            // Schritt 2: Verifizierung vor E-Mail-Update
-            return verifyBeforeUpdateEmail(user, newEmail, {
-              url: 'http://localhost:4200/mail-changed',
-              handleCodeInApp: true,
-            });
-          })
-          .then(() => {
-            console.log('Verifizierungs-Mail an neue E-Mail-Adresse gesendet:', newEmail);
-            alert('Eine Verifizierungs-Mail wurde an Ihre neue E-Mail-Adresse gesendet. Bitte bestätigen Sie die Änderung.');
-          })
-          .catch((error) => {
-            console.error('Fehler beim Aktualisieren der E-Mail-Adresse:', error);
-  
-            if (error.code === 'auth/invalid-email') {
-              alert('Die eingegebene E-Mail-Adresse ist ungültig.');
-            } else if (error.code === 'auth/email-already-in-use') {
-              alert('Diese E-Mail-Adresse wird bereits verwendet.');
-            } else if (error.code === 'auth/wrong-password') {
-              alert('Das eingegebene Passwort ist falsch.');
-            } else if (error.code === 'auth/requires-recent-login') {
-              alert('Die Sitzung ist abgelaufen. Bitte loggen Sie sich erneut ein.');
-            } else {
-              alert('Ein unbekannter Fehler ist aufgetreten: ' + error.message);
-            }
-          });
-      } else {
-        console.error('Kein Benutzer angemeldet.');
-        alert('Sie müssen angemeldet sein, um diese Aktion auszuführen.');
-      }
+    if (this.emailChanged == true) {
+      this.handleMailChange(form) 
     } else {
-      alert('Formular ist ungültig.');
+      this.handleSmallChanges(form)
     }
   }
-  
-  
-  
 
-  saveProfile3(form: NgForm) {
+  handleSmallChanges(form: NgForm) {
     if (form.valid) {
-      const user = this.auth.currentUser;
-  
-      if (user && this.data.user.mail) {
-        const newEmail = this.data.user.mail; // Neue E-Mail-Adresse
-  
-        // Aktuelle Anmeldedaten vom Benutzer abfragen
-        const credentials = EmailAuthProvider.credential(
-          user.email!, // Aktuelle E-Mail-Adresse
-          this.currentPassword // Vom Benutzer eingegebenes Passwort
-        );
-  
-        // Schritt 1: Re-Authentifizierung
-        reauthenticateWithCredential(user, credentials)
-          .then(() => {
-            console.log('Re-Authentifizierung erfolgreich.');
-  
-            // Schritt 2: E-Mail-Adresse aktualisieren
-            return updateEmail(user, newEmail);
-          })
-          .then(() => {
-            console.log('E-Mail-Adresse erfolgreich geändert:', newEmail);
-  
-            // Schritt 3: Verifizierungs-Mail senden
-            return sendEmailVerification(user);
-          })
-          .then(() => {
-            console.log('Verifizierungs-Mail erfolgreich gesendet.');
-            alert('Eine Bestätigungs-E-Mail wurde an Ihre neue Adresse gesendet.');
-          })
-          .catch((error) => {
-            console.error('Fehler beim Speichern:', error);
-  
-            if (error.code === 'auth/wrong-password') {
-              alert('Das eingegebene Passwort ist falsch.');
-            } else if (error.code === 'auth/requires-recent-login') {
-              alert('Bitte loggen Sie sich erneut ein.');
-            } else {
-              alert('Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.');
-            }
-          });
-      } else {
-        console.error('Keine gültige E-Mail-Adresse angegeben.');
-      }
-    } else {
-      alert('Formular ist ungültig.');
-    }
-  }
-  
-  
+      this.data.user = new User({ ...this.data.user });
+      this.userService.updateUser(this.data.user);
 
+      localStorage.setItem('currentUser', JSON.stringify(this.data.user));
 
-  saveProfile2(form: NgForm) {
-    if (form.valid) {
-      this.userService.updateUser(this.data.user); // Pass the updated user to the service
-  
-      console.log('Profile successfully saved:', this.data.user);
-      this.toggleEditMode();  // Exit edit mode
+      this.toggleEditMode();
       this.dialogRef.close()
     } else {
       console.error('Form is invalid');
     }
+  }
+
+  handleMailChange(form: NgForm) {
+    if (!form.valid) {
+      alert('Formular ist ungültig.');
+      return;
+    }
+    const user = this.auth.currentUser;
+    if (!user) {
+      alert('Sie müssen angemeldet sein, um diese Aktion auszuführen.');
+      return;
+    }
+    this.reauthenticateUser(user, this.currentPassword)
+      .then(() => this.verifyEmailUpdate(user, this.data.user.mail))
+      .then(() => this.updateUserData())
+      .then(() => this.onEmailChangeSuccess())
+      .catch(error => this.handleEmailChangeError(error));
+  }
+
+  private reauthenticateUser(user: any, currentPassword: string): Promise<void> {
+    const credentials = EmailAuthProvider.credential(user.email!, currentPassword);
+    return reauthenticateWithCredential(user, credentials).then(() => undefined); 
+  }
+
+  private verifyEmailUpdate(user: any, newEmail: string): Promise<void> {
+    return verifyBeforeUpdateEmail(user, newEmail, {
+      url: 'http://localhost:4200/mail-changed',
+      handleCodeInApp: true,
+    });
+  }
+
+  private updateUserData(): Promise<void> {
+    this.data.user = new User({ ...this.data.user }); 
+    localStorage.setItem('currentUser', JSON.stringify(this.data.user)); 
+    return this.userService.updateUserWithPromise(this.data.user);
+  }
+  
+  private onEmailChangeSuccess(): void {
+    this.sharedService.setMailChangeSuccess(true);
+    this.toggleEditMode();
+    this.dialogRef.close();
+  }
+  
+  private handleEmailChangeError(error: any): void {
+    console.error('Fehler beim Aktualisieren der E-Mail-Adresse:', error);
+  
+    const errorMessages: { [key: string]: string } = {
+      'auth/invalid-email': 'Die eingegebene E-Mail-Adresse ist ungültig.',
+      'auth/email-already-in-use': 'Diese E-Mail-Adresse wird bereits verwendet.',
+      'auth/wrong-password': 'Das eingegebene Passwort ist falsch.',
+      'auth/requires-recent-login': 'Die Sitzung ist abgelaufen. Bitte loggen Sie sich erneut ein.',
+    };
+  
+    const message = errorMessages[error.code] || 'Ein unbekannter Fehler ist aufgetreten: ' + error.message;
+    alert(message);
   }
 
   toggleEditMode() {
