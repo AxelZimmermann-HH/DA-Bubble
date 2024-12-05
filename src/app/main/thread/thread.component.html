@@ -209,7 +209,7 @@
                     <img src="./assets/icons/alternate_email-1.png" alt="Email" class="add-mail" (click)="toggleAutoListe($event)">
                 </div>
                 <emoji-mart *ngIf="showEmojiPicker" (emojiSelect)="addEmoji($event)" class="emoji-picker"></emoji-mart>
-                <img src="./assets/icons/Send icon.png" alt="Send" class="send-icon" (click)="addAnswer(message!.messageId)">
+                <img src="./assets/icons/Send icon.png" alt="Send" class="send-icon" (click)="addAnswer(message.messageId)">
             </div>
 
             <div *ngIf="taggedUser" class="tagged-user-list">
