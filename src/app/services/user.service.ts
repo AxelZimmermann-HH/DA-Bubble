@@ -136,15 +136,18 @@ export class UserService {
     if (currentUser) {
       const userRef = doc(this.firestore, `users/${currentUser.userId}`);
 
+      console.log('Avatar in updatedUser before saving:', updatedUser.avatar);
+
+
       updateDoc(userRef, updatedUser.toJson())
         .then(() => {
 
           const updatedUserInstance = new User({
-            ...currentUser,
-            ...updatedUser
+            ...updatedUser,
+            ...currentUser
           });
           this.setUser(updatedUserInstance);
-          console.log('User profile updated in Firestore:', updatedUser);
+          console.log('User profile updated in Firestore:', updatedUserInstance);
         })
         .catch((error) => {
           console.error('Error updating user profile:', error);
@@ -152,6 +155,17 @@ export class UserService {
     } else {
       console.error('No current user to update');
     }
+  }
+
+  updateUserWithPromise(updatedUser: User): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        this.updateUser(updatedUser); // Originalmethode aufrufen
+        resolve(); // Erfolgreich beenden
+      } catch (error) {
+        reject(error); // Fehler weitergeben
+      }
+    });
   }
 
   findUserNameById(userId: string): string {

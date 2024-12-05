@@ -3,9 +3,9 @@ import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../app/services/user.service';
 import { User } from '../models/user.class';
-import { getAuth, updatePassword, applyActionCode } from '@angular/fire/auth';  // Firebase Auth importieren
+import { getAuth, updatePassword, applyActionCode } from '@angular/fire/auth'; 
 import { ActivatedRoute } from '@angular/router';
-import { Router } from '@angular/router';  // Router importieren
+import { Router } from '@angular/router';  
 import { Auth, confirmPasswordReset, verifyPasswordResetCode } from '@angular/fire/auth';
 import { Firestore, collection, getDocs } from '@angular/fire/firestore';
 
@@ -24,7 +24,7 @@ export class MailChangedComponent {
   isLoading = true;
   password1: string = '';  
   password2: string = '';
-  user: User | null = null;  // Der Benutzer, der sein Passwort ändern möchte
+  user: User | null = null;
   oobCode: string = '';
   mode: string = '';
 
@@ -32,11 +32,10 @@ export class MailChangedComponent {
   constructor(private firestore: Firestore, private userService: UserService, private route: ActivatedRoute, private auth: Auth, private router: Router) {}
 
   ngOnInit(): void {
-    // Query-Parameter auslesen
     this.route.queryParams.subscribe((params) => {
-      const oobCode = params['oobCode']; // Code von Firebase
+      const oobCode = params['oobCode']; 
       if (oobCode) {
-        this.verifyEmailChange(oobCode); // Verifizierung starten
+        this.verifyEmailChange(oobCode); 
       } else {
         console.error('Kein oobCode gefunden.');
         this.isLoading = false;
@@ -47,7 +46,9 @@ export class MailChangedComponent {
   private async verifyEmailChange(oobCode: string): Promise<void> {
     try {
         await applyActionCode(this.auth, oobCode); 
-        this.router.navigate(['/login']);
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+      }, 2000);
     } catch (error: any) {
         if (error.code === 'auth/user-token-expired') {
             console.error('Sitzungstoken ist abgelaufen. Weiterleitung zur Login-Seite.');
