@@ -39,12 +39,12 @@ export class HeaderComponent implements OnInit {
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
-    this.isMobile = window.innerWidth <= 500;
+    this.isMobile = window.innerWidth <= 600;
   }
 
   ngOnInit() {
 
-    this.isMobile = window.innerWidth <= 500;
+    this.isMobile = window.innerWidth <= 600;
 
     const storedUser = localStorage.getItem('currentUser');
       if (storedUser) {

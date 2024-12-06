@@ -190,7 +190,7 @@
     .dialog-user-profil {
         width: 80%;
         padding: 20px;
-        height: auto;
+        height: 550px;
     }
     
     .profilImg {
@@ -209,5 +209,20 @@
 
     .user-name {
         font-size: 18px;
+    }
+}
+
+@media (max-width: 550px) {
+    .profilImg {
+        width: 120px;
+        height: 120px;
+    }
+    .avatars {
+        > img {
+            width: 40px;
+            &:hover {
+                border: 4px solid lightgray;
+            }
+        }
     }
 }
