@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { addDoc, collection, deleteDoc, doc, Firestore, getDoc, getDocs, limit, onSnapshot, orderBy, query, Timestamp, updateDoc, where } from '@angular/fire/firestore';
+import {collection, deleteDoc, doc, Firestore,  onSnapshot, updateDoc } from '@angular/fire/firestore';
 import { Answer } from '../models/answer.class';
 import { SharedService } from './shared.service';
 import { FileService } from './file.service';
-import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 
 
 @Injectable({
@@ -14,6 +13,7 @@ export class AnswersService {
   answer = new Answer();
   allAnswers: any = [];
   latestAnswerTimes = new Map<string, string | null>();
+  selectedFile: File | null = null;
 
   constructor(public firestore: Firestore, public sharedService: SharedService, public fileService: FileService) { }
 
@@ -52,71 +52,48 @@ export class AnswersService {
     );
   }
 
-  // async saveAnswer(answer: Answer, channelId:string|null) {
-  //   if (!channelId || !answer.messageId || !answer.id) {
-  //     return;
-  //   }
-  //   const answerRef = doc(this.firestore, `channels/${channelId}/messages/${answer.messageId}/answers/${answer.id}`);
-  //   try {
-  //     await updateDoc(answerRef, { text: answer.editedText });
-  //     answer.text = answer.editedText;
-
-  //     if (!answer.text.trim() && !answer.fileUrl) {
-  //       await this.deleteAnswer(answer,channelId);
-  //     } else {
-  //       answer.isEditing = false;
-  //     }
-  //   } catch (error) {
-  //     console.error('Fehler beim Speichern der Nachricht:', error);
-  //   }
-  // }
-
-  async saveAnswer(answer: Answer, channelId: string | null, newAnswerText: string): Promise<void> {
+  async saveAnswer(answer: Answer, channelId:string|null) {
     if (!channelId || !answer.messageId || !answer.id) {
       return;
     }
-    if (this.sharedService.isMobile) {
-      if (!answer.id) {
-        if (!newAnswerText.trim() && !this.fileService.selectedFile) {
-          return;
-        }
-        const newAnswer = {
-          text: newAnswerText,
-          fileUrl: this.fileService.selectedFile ? await this.fileService.uploadFiles() : null,
-          fileName: this.fileService.selectedFile?.name || null,
-          fileType: this.fileService.selectedFile?.type || null,
-        };
-
-        const answerCollection = collection(this.firestore, `channels/${channelId}/messages/${answer.messageId}/answers`);
-        await addDoc(answerCollection, newAnswer);
-        newAnswerText = '';
-        this.fileService.resetFile();
-      } else {
-        const answerRef = doc(this.firestore, `channels/${channelId}/messages/${answer.messageId}/answers/${answer.id}`);
-        await updateDoc(answerRef, { text: newAnswerText || answer.text });
-        if (!newAnswerText.trim() && !this.fileService.selectedFile) {
-          await this.deleteAnswer(answer, channelId);
-        } else {
-          answer.isEditing = false;
-        }
+    const answerRef = doc(this.firestore, `channels/${channelId}/messages/${answer.messageId}/answers/${answer.id}`);
+    try {
+      const updateData: any = { text: answer.editedText };
+      if (!answer.fileUrl) {
+        updateData.fileUrl = null;
+        updateData.fileType = null;
+        updateData.fileName = null;
       }
-    } else {
-      const answerRef = doc(this.firestore, `channels/${channelId}/messages/${answer.messageId}/answers/${answer.id}`);
-      try {
-        await updateDoc(answerRef, { text: answer.editedText });
-        answer.text = answer.editedText;
-        if (!answer.text.trim() && !answer.fileUrl) {
-          await this.deleteAnswer(answer, channelId);
-        } else {
-          answer.isEditing = false;
-        }
-      } catch (error) {
-        console.error('Fehler beim Speichern der Antwort:', error);
+      await updateDoc(answerRef, updateData);
+      answer.text = answer.editedText;
+
+      if (!answer.text.trim() && !answer.fileUrl) {
+        await this.deleteAnswer(answer,channelId);
+      } else {
+        answer.isEditing = false;
+      }
+    } catch (error) {
+      console.error('Fehler beim Speichern der Nachricht:', error);
+    }
+  }
+
+  async editAnswerForMobile(answer: Answer, channelId: string | null, newAnswerText: string) {
+    if (this.sharedService.isMobile) {
+      if (!newAnswerText.trim() && !this.fileService.selectedFile) {
+        await this.deleteAnswer(answer, channelId);
+      }
+      else{
+
       }
     }
   }
 
-
+  resetFile(answer: Answer) {
+    this.selectedFile = null;
+    answer.fileUrl = '';
+    answer.fileName = '';
+    answer.fileType = '';
+  }
 
   async deleteAnswer(answer: string | any, channelId: string | null) {
     try {

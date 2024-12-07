@@ -18,9 +18,7 @@ import { MessagesService } from '../../services/messages.service';
 import { ChannelService } from '../../services/channel.service';
 import { FileService } from '../../services/file.service';
 import { EmojisService } from '../../services/emojis.service';
-import { DatabaseService } from '../../services/database.service';
 import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-channel.component';
-import { ReactionService } from '../../services/reaction.service';
 import { SafeResourceUrl } from '@angular/platform-browser';
 import { AnswersService } from '../../services/answers.service';
 
@@ -32,13 +30,13 @@ interface MessageGroup {
 @Component({
   selector: 'app-channel',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, ThreadComponent,PickerComponent],
+  imports: [CommonModule, FormsModule, MatDialogModule, ThreadComponent, PickerComponent],
   templateUrl: './channel.component.html',
   styleUrl: './channel.component.scss'
 })
 
-export class ChannelComponent implements AfterViewInit{
- 
+export class ChannelComponent implements AfterViewInit {
+
   userId!: string;
   newMessageText: string = '';
   isLoading = false;
@@ -170,7 +168,7 @@ export class ChannelComponent implements AfterViewInit{
   openDialogEditChannel(channel: Channel) {
     if (channel && this.userId) {
       this.dialog.open(DialogEditChannelComponent, {
-        data: {channel: channel, userId: this.userId}
+        data: { channel: channel, userId: this.userId }
       });
     } else {
       console.error('Cannot open dialog: Channel or userId is missing.');
@@ -198,7 +196,7 @@ export class ChannelComponent implements AfterViewInit{
       }))
       .filter(group => group.messages.length > 0);
   }
-  
+
   onInput(event: Event): void {
     const target = event.target as HTMLInputElement;
     const searchTerm = target.value;
@@ -211,9 +209,9 @@ export class ChannelComponent implements AfterViewInit{
   }
 
   selectValue(value: any): void {
-    if (this.inputValue.startsWith('@')) {this.inputValue = '@' + value;} 
-    else if (this.inputValue.startsWith('#')) { this.inputValue = '#' + value;} 
-    else {this.inputValue = value; }
+    if (this.inputValue.startsWith('@')) { this.inputValue = '@' + value; }
+    else if (this.inputValue.startsWith('#')) { this.inputValue = '#' + value; }
+    else { this.inputValue = value; }
     this.searchService.hideAutocompleteList();
   }
 
@@ -228,6 +226,7 @@ export class ChannelComponent implements AfterViewInit{
     this.scrollToBottom();
     this.resetInput();
   }
+
   async editDirectMessage(message: Message) {
     if (!this.sharedService.isMobile) {
       message.isEditing = true;
@@ -245,7 +244,14 @@ export class ChannelComponent implements AfterViewInit{
       } else {
         this.fileService.closePreview();
       }
-      this.scrollToBottom();
+ 
+    }
+  }
+
+  async saveMessage(message: Message) {
+    this.messagesService.saveMessageEdit(message, this.selectedChannelId);
+    if (this.selectedMessage.messageId === message.messageId) {
+      this.isThreadOpen = false;
     }
   }
 
@@ -290,15 +296,12 @@ export class ChannelComponent implements AfterViewInit{
     this.isThreadOpen = false;
   }
 
-  openThread(message: Message) {
-    if (!this.sharedService.isMobile) {
-      this.isThreadOpen = true;
-      this.selectedMessage = message;
-    }
-    else {
-      this.isThreadOpen = true;
-      this.selectedMessage = message;
-      this.dialog.closeAll()
+  openThread(message: Message) { 
+    this.isThreadOpen = true;
+    this.selectedMessage = message;
+  
+    if (this.sharedService.isMobile) {
+      this.dialog.closeAll();
     }
   }
 
@@ -345,6 +348,7 @@ export class ChannelComponent implements AfterViewInit{
       this.emojiService.showReactionContainer = false;
     }
   }
+
   onFileSelected(event: any): void {
     this.fileService.onFileSelected(event);
     this.selectedFile = this.fileService.selectedFile;
@@ -362,51 +366,21 @@ export class ChannelComponent implements AfterViewInit{
   }
 
   removeFile(message: any) {
-    message.fileUrl = '';
-    message.fileName = '';
-    message.fileType = '';
-    message.selectedFile = null;
-
+    this.fileService.removeFile(message);
     this.fileInput.nativeElement.value = '';
   }
 
-  handleEnterKey(event: KeyboardEvent, selectedChannelId: string | null, editingMessageId: string | null) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      if (this.newMessageText) {
-        this.sendMessage(selectedChannelId, editingMessageId);
-      } else {
-        event.preventDefault();
-      }
-    }
-    if (event.key === 'Enter' && event.shiftKey && event.location === 1) {
-      event.preventDefault();
-      this.newLine(event);
-    }
-  }
-
-  newLine(event: KeyboardEvent) {
-    const textarea = event.target as HTMLTextAreaElement;
-    // Füge einen Zeilenumbruch an der aktuellen Cursor-Position hinzu
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const value = textarea.value;
-    textarea.value = value.substring(0, start) + '\n' + value.substring(end);
-    textarea.selectionStart = textarea.selectionEnd = start + 1; // Setze den Cursor hinter den Zeilenumbruch
-  }
-
   @ViewChild('chatContainer') chatContainer!: ElementRef;
-    // scrollen, wenn die View aktualisiert wird
-    ngAfterViewInit() {
-      if (this.chatContainer?.nativeElement) {
-        const observer = new MutationObserver(() => {
-          this.scrollToBottom(); // Scrollt, wenn neue Nachrichten hinzugefügt werden
-        });
-    
-        observer.observe(this.chatContainer.nativeElement, { childList: true, subtree: true });
-      }
-    }
+  ngAfterViewInit() {
+    if (this.chatContainer?.nativeElement) {
+      const observer = new MutationObserver(() => {
+        this.scrollToBottom(); 
+      });
 
-  //scrollt das Chatfenster nach unten
+      observer.observe(this.chatContainer.nativeElement, { childList: true, subtree: true });
+    }
+  }
+
   scrollToBottom(): void {
     if (this.chatContainer?.nativeElement) {
       try {
@@ -415,7 +389,7 @@ export class ChannelComponent implements AfterViewInit{
         console.error('Scrollen fehlgeschlagen:', err);
       }
     }
-  };
+  }
 }
 
 

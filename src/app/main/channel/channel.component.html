@@ -52,21 +52,14 @@
                                             <div *ngIf="message.fileUrl" class="fileUrl">
                                                 <!-- Image Preview -->
                                                 <div *ngIf="message.fileType.startsWith('image/')">
-                                                    <img [src]="fileService.getSafeUrl(message.fileUrl)"
-                                                        alt="Image Preview">
+                                                    <img [src]="fileService.getSafeUrl(message.fileUrl)" alt="Image Preview">
                                                 </div>
                                                 <!-- PDF Preview -->
                                                 <div *ngIf="message.fileType === 'application/pdf'">
-                                                    <iframe [src]="fileService.getSafeUrl(message.fileUrl)" width="200"
-                                                        height="70px" style="border: none;"></iframe>
+                                                    <iframe [src]="fileService.getSafeUrl(message.fileUrl)" width="200" height="70px" style="border: none;"></iframe>
                                                 </div>
                                                 <!-- Other File Types -->
-                                                <div
-                                                    *ngIf="!message.fileType.startsWith('image/') && message.fileType != 'application/pdf'">
-                                                    {{message.fileName}}</div>
-                                                <!-- Download Link -->
-                                                <a [href]="fileService.getSafeUrl(message.fileUrl)"
-                                                    class="open-file-button" target="_blank">Anhang öffnen</a>
+                                                <a [href]="fileService.getSafeUrl(message.fileUrl)" class="open-file-button" target="_blank">Anhang öffnen</a>
                                             </div>
                                         </div>
                                     </div>
@@ -82,7 +75,6 @@
                                                     <img [src]="emojiService.getEmojiSrc(emojiData.emoji)"
                                                         [alt]="emojiData.emoji" />
                                                     <span>{{ emojiData.userIds.length }}</span>
-    
                                                     <div class="emoji-tooltip"
                                                         *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0">
                                                         <span class="emojiData">
@@ -110,31 +102,22 @@
                                             (click)="emojiService.toggleUserEmoji(message, 'heavy check mark', userId, selectedChannelId)" />
                                         <img src="./assets/icons/emoji _rocket_.png" alt="rocket"
                                             (click)="emojiService.toggleUserEmoji(message, 'rocket', userId, selectedChannelId)" />
-        
-                                        </div>
-                                        
+                                        </div>            
                                     </div>
-                                    <div class="label-answers" (click)="openThread(message)"
-                                 *ngIf="message.answersCount > 0" >
+                                    <div class="label-answers" (click)="openThread(message)" *ngIf="message.answersCount > 0" >
                                         {{message.answersCount}} Antworten
                                         <p class="time">Letzte Antwort {{lastAnswerTime}} </p>
-
-                                                                           </div>
-                                   
+                                    </div>     
                                 </div>
                                 <!-- edit message -->
                                 <div *ngIf="message.isEditing" class="textAreaContainer">
-                                    <textarea [(ngModel)]="message.editedText" class="textEditingArea">
-                                    </textarea>
+                                    <textarea [(ngModel)]="message.editedText" class="textEditingArea"></textarea>
                                     <div *ngIf="message.fileUrl" class="selectedFileStyle">
-                                        <div *ngIf="message.fileUrl && message.fileType?.startsWith('image/')"
-                                            class="file-preview">
+                                        <div *ngIf="message.fileUrl && message.fileType?.startsWith('image/')" class="file-preview">
                                             <img [src]="message.fileUrl" alt="Image Preview" class="image-preview">
                                         </div>
-                                        <div *ngIf="message.selectedFile?.type === 'application/pdf' && message.fileUrl"
-                                            class="file-preview">
-                                            <iframe [src]="message.fileUrl" width="200" height="200"
-                                                style="border: none;"></iframe>
+                                        <div *ngIf="message.selectedFile?.type === 'application/pdf' && message.fileUrl" class="file-preview">
+                                            <iframe [src]="message.fileUrl" width="200" height="200" style="border: none;"></iframe>
                                         </div>
                                         <img src="./../../../assets/icons/close.png" alt="Close" class="close-icon" (click)="removeFile(message)">
                                     </div>
@@ -145,7 +128,7 @@
                                             <button (click)="messagesService.cancelMessageEdit(message)"
                                                 class="cancelBtn">Abbrechen</button>
                                             <button
-                                                (click)="messagesService.saveMessageEdit(message, this.selectedChannelId)"
+                                                (click)="saveMessage(message)"
                                                 class="saveBtn">Speichern</button>
                                         </div>
                                     </div>
@@ -157,7 +140,6 @@
                             <div class="reaction-hover"
                                 [ngClass]="{'reaction-left': userService.isCurrentUser(message.user, userId)}"
                                 *ngIf="!message.isEditing">
-
                                 <ng-container *ngFor="let emojiData of emojiService.getRecentEmojis(message)">
                                     <img [src]="emojiService.getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji"
                                         (click)="emojiService.toggleUserEmoji(message, emojiData.emoji, userId, selectedChannelId)" />
@@ -176,7 +158,7 @@
         <div class="custom-input">
             <textarea #messageInput placeholder="Nachricht an #{{channelService.selectedChannel.channelName}}"
                 class="text-area" [(ngModel)]="newMessageText"
-                (keydown)="handleEnterKey($event, selectedChannelId, editingMessageId)">
+               (keydown.enter)="sendMessage(selectedChannelId,editingMessageId); $event.preventDefault()">
             </textarea>
             <div *ngIf="fileService.fileUrl" class="selectedFileStyle">                
                 <div *ngIf="fileService.fileUrl && fileService.selectedFile?.type?.startsWith('image/')"
@@ -228,7 +210,6 @@
         </div>
     </div>
 
-    
     <ng-template #loadingTemplate>
         <div class="channel-container">
             <div class="channel-template-header">
@@ -257,7 +238,7 @@
             </div>
             <div class="custom-input">
                 <textarea placeholder="Starte eine neue Nachricht" class="text-area" [(ngModel)]="newMessageText"
-                    placeholder="Nachricht eingeben"></textarea>
+                    placeholder="Nachricht eingeben" (keydown.enter)="sendMessage(selectedChannelId,editingMessageId); $event.preventDefault()"></textarea>
                 <div *ngIf="fileService.selectedFile" class="selectedFileStyle">
                     <div *ngIf="fileService.selectedFile.type.startsWith('image/') && fileService.fileUrl"
                         class="file-preview">
@@ -309,6 +290,6 @@
     </ng-template>
     <app-thread *ngIf="isThreadOpen" [selectedChannelId]="selectedChannelId"
         [channelName]="channelService.selectedChannel?.channelName" [message]="selectedMessage"
-        (threadClosed)="onThreadClosed()">
+        (threadClosed)="isThreadOpen = false">
     </app-thread>
 </div>

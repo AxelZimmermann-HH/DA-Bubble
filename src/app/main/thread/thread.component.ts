@@ -1,8 +1,7 @@
 import { Component, ElementRef, EventEmitter, HostListener, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { User } from '../../models/user.class';
-import { Channel } from '../../models/channel.class';
 import { Message } from '../../models/message.class';
-import { addDoc, collection, deleteDoc, doc, Firestore, getDoc, updateDoc } from '@angular/fire/firestore';
+import { addDoc, collection, deleteDoc, doc, Firestore, updateDoc } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Answer } from '../../models/answer.class';
@@ -13,7 +12,7 @@ import { ThreadService } from '../../services/thread.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PickerComponent } from '@ctrl/ngx-emoji-mart';
 import { EmojiData } from './../../models/emoji-data.models';
-import { deleteObject, getDownloadURL, getMetadata, getStorage, ref, uploadBytes } from '@angular/fire/storage';
+import { getDownloadURL, getStorage, ref, uploadBytes } from '@angular/fire/storage';
 import { AnswersService } from '../../services/answers.service';
 import { SharedService } from '../../services/shared.service';
 import { FileService } from '../../services/file.service';
@@ -28,10 +27,12 @@ import { EmojisService } from '../../services/emojis.service';
 })
 export class ThreadComponent {
   @ViewChild('fileInput') fileInput!: ElementRef;
+  @ViewChild('answersContainer') answersContainer!: ElementRef;
   user = new User();
   userId!: string;
 
   newAnswerText: string = "";
+  selectedFile: File | null = null;
 
   showEmoji: boolean = false;
   showAnswerEmoji: boolean = false;
@@ -39,10 +40,9 @@ export class ThreadComponent {
   clickedAnswer: string = '';
 
   fileUrl: SafeResourceUrl | null = null;
-  selectedFile: File | null = null;
   fileDownloadUrl!: string;
   showEmojiPicker: boolean = false;
-
+  editingAnswerId: string | null = null;
   taggedUser: boolean = false;
   errorMessage: string | null = null;
   filteredSearchAnswers: Answer[] = [];
@@ -100,6 +100,7 @@ export class ThreadComponent {
   }
 
   deleteFile(answer: Answer) {
+    if (!answer.fileUrl) return;
     answer.fileUrl = '';
     answer.fileName = '';
     answer.fileType = '';
@@ -122,7 +123,6 @@ export class ThreadComponent {
   async addAnswer(messageId: string) {
     const username = this.userService.findUserNameById(this.userId);
     const fileUrl = await this.uploadFileIfSelected();
-    if (!this.newAnswerText.trim() && !fileUrl) return;
     const answerData = {
       messageId,
       text: this.newAnswerText.trim(),
@@ -132,16 +132,64 @@ export class ThreadComponent {
       ...(fileUrl && { fileUrl, fileType: this.selectedFile?.type, fileName: this.selectedFile?.name }),
     };
 
+    if (this.editingAnswerId) {
+      await this.editAnswer(messageId);
+    } else {
+      await this.addNewAnswer(messageId, answerData);
+    }
+  }
+  async addNewAnswer(messageId: string, answerData: any) {
     try {
       const answersCollectionRef = collection(
         this.firestore,
         `channels/${this.selectedChannelId}/messages/${messageId}/answers`
       );
       await addDoc(answersCollectionRef, answerData);
-      this.newAnswerText = '';
-      this.selectedFile = null;
+      this.newAnswerText = '';  // Leeren des Antwort-Textes nach dem Hinzufügen
+      this.selectedFile = null;  // Zurücksetzen der Datei-Auswahl
     } catch (error) {
       console.error('Fehler beim Hinzufügen der Antwort:', error);
+    }
+  }
+  async editAnswer(messageId: string) {
+    const updateData: any = { text: this.newAnswerText.trim() };
+    if (!this.selectedFile) {
+      updateData.fileUrl = null;
+      updateData.fileType = null;
+      updateData.fileName = null;
+    }
+    try {
+      const answerRef = doc(
+        this.firestore,
+        `channels/${this.selectedChannelId}/messages/${messageId}/answers/${this.editingAnswerId}`
+      );
+      await updateDoc(answerRef, updateData);
+
+      // Aktualisieren der lokal gespeicherten Antwort in der Ansicht
+      const answer = this.selectedAnswers.find(a => a.id === this.editingAnswerId);
+      if (answer) {
+        answer.text = this.newAnswerText.trim();
+        answer.isEditing = false;
+        if (!answer.text && !answer.fileUrl) {
+          await this.deleteAnswer(messageId);
+        }
+      }
+      this.newAnswerText = '';
+      this.editingAnswerId = null;
+    } catch (error) {
+      console.error('Fehler beim Bearbeiten der Antwort:', error);
+    }
+  }
+
+  async deleteAnswer(messageId: string) {
+    try {
+      const answerRef = doc(
+        this.firestore,
+        `channels/${this.selectedChannelId}/messages/${messageId}/answers/${this.editingAnswerId}`
+      );
+      await deleteDoc(answerRef);  // Löschen der Antwort
+    } catch (error) {
+      console.error('Fehler beim Löschen der Antwort:', error);
     }
   }
 
@@ -157,23 +205,25 @@ export class ThreadComponent {
       throw error;
     }
   }
+
   editDirectAnswer(answer: Answer) {
     if (!this.sharedService.isMobile) {
       answer.isEditing = true;
       answer.editedText = answer.text;
-    }
-    else {
+    } else {
       this.newAnswerText = answer.text;
+      this.editingAnswerId = answer.id;
+      if (answer.fileUrl) {
+        this.fileUrl = this.fileService.getSafeUrl(answer.fileUrl);
+        const fakeFile = new File([''], answer.fileName || 'Unbenannte Datei', {
+          type: answer.fileType || 'application/octet-stream',
+        });
+        this.selectedFile = fakeFile;
+      } else {
+        this.fileService.closePreview();
+      }
     }
-    if (answer.fileUrl) {
-      this.fileService.fileUrl = this.fileService.getSafeUrl(answer.fileUrl);
-      const fakeFile = new File([''], answer.fileName || 'Unbenannte Datei', {
-        type: answer.fileType || 'application/octet-stream',
-      });
-      this.fileService.selectedFile = fakeFile;
-    } else { this.fileService.closePreview(); }
   }
-
 
   //messages
   toggleEmojiReaction(message: Message, emojiData: EmojiData) {
@@ -376,6 +426,25 @@ export class ThreadComponent {
     this.taggedUser = false;
   }
 
+  ngAfterViewInit() {
+    if (this.answersContainer?.nativeElement) {
+      const observer = new MutationObserver(() => {
+        this.scrollToBottom();
+      });
+
+      observer.observe(this.answersContainer.nativeElement, { childList: true, subtree: true });
+    }
+  }
+
+  scrollToBottom(): void {
+    if (this.answersContainer?.nativeElement) {
+      try {
+        this.answersContainer.nativeElement.scrollTop = this.answersContainer.nativeElement.scrollHeight;
+      } catch (err) {
+        console.error('Scrollen fehlgeschlagen:', err);
+      }
+    }
+  }
   closeThread() {
     this.threadClosed.emit();
   }

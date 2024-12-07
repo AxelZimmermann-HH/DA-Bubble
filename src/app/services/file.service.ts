@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SafeResourceUrl, DomSanitizer } from '@angular/platform-browser';
 import { getStorage, ref, deleteObject } from 'firebase/storage';
-import { Message } from '../models/message.class';
 import { getDownloadURL, uploadBytes } from '@angular/fire/storage';
 import { BehaviorSubject } from 'rxjs';
 
@@ -101,6 +100,13 @@ export class FileService {
       console.error('Fehler beim Hochladen der Datei:', error);
       return null;
     }
+  }
+
+  removeFile(message: any) {
+    message.fileUrl = '';
+    message.fileName = '';
+    message.fileType = '';
+    message.selectedFile = null;
   }
 
   //CHAT-FILE-UPLOAD

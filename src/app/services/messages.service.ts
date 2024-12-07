@@ -70,42 +70,37 @@ export class MessagesService {
         });
     }
 
-
     async saveMessageEdit(message: Message, channelId: string | null): Promise<void> {
         if (!channelId || !message.messageId) return;
-      
         const messageRef = doc(this.firestore, `channels/${channelId}/messages/${message.messageId}`);
-      
         try {
-          // Nachricht aktualisieren
-          const updateData: any = { text: message.editedText };
-          if (!message.fileUrl) {
-            updateData.fileUrl = null;
-            updateData.fileType = null;
-            updateData.fileName = null;
-          }
-      
-          await updateDoc(messageRef, updateData);
-      
-          message.text = message.editedText;
-          if (!message.text.trim() && !message.fileUrl) {
-            await this.deleteMessage(message.messageId, channelId);
-          } else {
-            message.isEditing = false;
-          }
+            // Nachricht aktualisieren
+            const updateData: any = { text: message.editedText };
+            if (!message.fileUrl) {
+                updateData.fileUrl = null;
+                updateData.fileType = null;
+                updateData.fileName = null;
+            }
+            await updateDoc(messageRef, updateData);
+            message.text = message.editedText;
+            if (!message.text.trim() && !message.fileUrl) {
+                await this.deleteMessage(message.messageId, channelId);
+            } else {
+                message.isEditing = false;
+            }
         } catch (error) {
-          console.error('Fehler beim Speichern der Nachricht:', error);
+            console.error('Fehler beim Speichern der Nachricht:', error);
         }
-      }
-      
+    }
+
     cancelMessageEdit(message: Message) {
         message.isEditing = false;
         message.editedText = message.text;
     }
-    removeFile(message:Message){
+    removeFile(message: Message) {
         message.fileName = null;
         message.fileUrl = null;
-      }
+    }
 
     async sendChannelMessage(channelId: string | null, message: string, fileUrl: string | null, userId: string) {
         if (message.trim() === '' && !fileUrl) return;
@@ -173,13 +168,20 @@ export class MessagesService {
     async updateMessages(channelId: string | null, messageId: string | null, newMessage: string) {
 
         const messageRef = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
-        if (!channelId || !messageId || !newMessage) return;
+        if (!channelId || !messageId) return;
         try {
-            await updateDoc(messageRef, { text: newMessage })
+            const updateData: any = { text: newMessage };
             const message = this.allMessages.find(m => m.messageId === messageId);
+            if (message && !message.fileUrl) {
+                updateData.fileUrl = null;
+                updateData.fileType = null;
+                updateData.fileName = null;
+            }
+            await updateDoc(messageRef, updateData)
+
             if (message) {
                 message.text = newMessage;
-                if (!message.text.trim()) {
+                if (!message.text.trim() && !message.fileUrl) {
                     this.deleteMessage(messageId, channelId);
                     return;
                 }
@@ -192,7 +194,7 @@ export class MessagesService {
     }
 
     async deleteMessage(messageId: string | null, channelId: string | null) {
-        if (!channelId) return;
+        if (!channelId || !messageId) return;
         await deleteDoc(doc(this.firestore, `channels/${channelId}/messages/${messageId}`))
     }
 
@@ -230,7 +232,7 @@ export class MessagesService {
 
     async sendMessage(messageText: string, value: string, userId: string, selectedChannelId: string | null, editingMessageId: string | null) {
         const fileUrl = await this.fileService.uploadFiles();
-        if (messageText.trim() === '' && !this.fileService.selectedFile ) return;
+        if (messageText.trim() === '' && !this.fileService.selectedFile) return;
 
         await this.editMessageForMobile(messageText, editingMessageId, selectedChannelId);
         if (!fileUrl && !messageText.trim()) return;
@@ -250,17 +252,38 @@ export class MessagesService {
         }
     }
 
-    async editMessageForMobile( messageText: string, editingMessageId: string | null, selectedChannelId: string | null) {
-        if (this.sharedService.isMobile) {
+    async editMessageForMobile(messageText: string, editingMessageId: string | null, selectedChannelId: string | null) {
+        if (!this.sharedService.isMobile) return;
+        try {
             if (!messageText.trim() && !this.fileService.selectedFile) {
                 await this.deleteMessage(editingMessageId, selectedChannelId);
             }
             else {
-                await this.updateMessages(selectedChannelId, editingMessageId, messageText);
+                const updateData: any = { text: messageText };
+                if (!this.fileService.selectedFile) {
+                    updateData.fileUrl = null;
+                    updateData.fileType = null;
+                    updateData.fileName = null;
+                }
+                // Nachricht aktualisieren
+                const messageRef = doc(this.firestore, `channels/${selectedChannelId}/messages/${editingMessageId}`);
+                await updateDoc(messageRef, updateData);
+                // Lokale Nachricht aktualisieren
+                const message = this.allMessages.find(m => m.messageId === editingMessageId);
+                if (message) {
+                    message.text = messageText;
+                    if (!message.text.trim() && !message.fileUrl) {
+                        // Lösche Nachricht, wenn sie leer ist
+                        await this.deleteMessage(editingMessageId, selectedChannelId);
+                    } else {
+                        message.isEditing = false;
+                    }
+                }
             }
             messageText = '';
             editingMessageId = null;
-            return;
+        } catch (error) {
+            console.error('Fehler beim Bearbeiten der Nachricht (Mobile):', error);
         }
     }
 
