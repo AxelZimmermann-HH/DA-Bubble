@@ -51,7 +51,6 @@ export class DialogAddUserComponent {
     }
   }
 
-
   updateChannelMembers() {
     if (this.userData.length === 0) return;
 
@@ -90,7 +89,7 @@ export class DialogAddUserComponent {
           await updateDoc(channelRef, { members: updatedMembers });   
         } 
 
-        this.selectedUsers = []; // Auswahl zurücksetzen
+        this.selectedUsers = [];
         this.dialogRef.close(true);
       }
 

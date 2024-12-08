@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { addDoc, collection, doc, Firestore, getDocs, query, setDoc, where } from '@angular/fire/firestore';
+import { addDoc, collection, doc, Firestore, setDoc} from '@angular/fire/firestore';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Channel } from '../models/channel.class';
 import { ChannelService } from '../services/channel.service';
@@ -8,8 +8,6 @@ import { ChatService } from '../services/chat.service';
 import { CommonModule } from '@angular/common';
 import { DialogAddUserComponent } from '../dialog-add-user/dialog-add-user.component';
 import { UserService } from '../services/user.service';
-
-
 
 @Component({
   selector: 'app-dialog-add-channel',
@@ -50,7 +48,6 @@ export class DialogAddChannelComponent {
       this.creatorName = this.userService.findUserNameById(this.data.userId);
       this.creator = this.userService.findUserByName(this.creatorName);
         console.log('Creator loaded:', this.creator);
-      
     });
   }
 
@@ -87,8 +84,6 @@ export class DialogAddChannelComponent {
     channelData = this.channel.toJson();
     await setDoc(doc(this.firestore, "channels", id), channelData)
   }
-
- 
 
   async validateChannelName() {
     const enteredName = this.channelName.value?.trim();

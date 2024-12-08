@@ -46,9 +46,7 @@ export class MailChangedComponent {
   private async verifyEmailChange(oobCode: string): Promise<void> {
     try {
         await applyActionCode(this.auth, oobCode); 
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-      }, 2000);
+        setTimeout(() => {this.router.navigate(['/login']);}, 2000);
     } catch (error: any) {
         if (error.code === 'auth/user-token-expired') {
             console.error('Sitzungstoken ist abgelaufen. Weiterleitung zur Login-Seite.');

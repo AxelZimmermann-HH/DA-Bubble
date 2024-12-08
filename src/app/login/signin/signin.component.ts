@@ -35,7 +35,6 @@ export class SigninComponent {
     this.getAllUsers();
   }
 
-
   getAllUsers() {
     const userCollection = collection(this.firestore, 'users');
     const readUsers = onSnapshot(userCollection, (snapshot) => {
@@ -84,7 +83,6 @@ export class SigninComponent {
   async onSubmit(ngForm: NgForm): Promise<void> {
     const enteredMail = this.user.mail.trim();
     const enteredPassword = this.user.password;
-  
     try {
       const userCredential = await signInWithEmailAndPassword(this.auth, enteredMail, enteredPassword);
       const firebaseUser = userCredential.user;
@@ -92,7 +90,6 @@ export class SigninComponent {
       this.emptyValue(); 
     } catch (error: any) {
       this.authError = true; this.user.mail = ''; this.user.password = '';
-  
       setTimeout(() => {
         this.authError = false;
       }, 2000);
@@ -137,7 +134,6 @@ export class SigninComponent {
     guestUser.mail = 'guest@example.com';
     guestUser.avatar = 1;  
     guestUser.userId = guestUserId;
-
     setDoc(guestUserDocRef, guestUser.toJson()).then(() => {
       this.handleSuccess(guestUser, guestUser.mail);
       this.deleteGuestChats();
@@ -187,7 +183,6 @@ export class SigninComponent {
         const googleUser = result.user;
         const googleMail = googleUser.email;
         const googleUserId = googleUser.uid;
-  
         if (googleMail && googleUserId) {
           await this.checkUserInFirestore(googleUserId, googleMail, googleUser);
         } else {

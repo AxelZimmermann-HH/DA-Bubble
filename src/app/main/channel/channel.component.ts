@@ -234,7 +234,6 @@ export class ChannelComponent implements AfterViewInit {
     } else {
       this.newMessageText = message.text;
       this.editingMessageId = message.messageId;
-
       if (message.fileUrl) {
         this.fileService.fileUrl = this.fileService.getSafeUrl(message.fileUrl);
         const fakeFile = new File([''], message.fileName || 'Unbenannte Datei', {
@@ -244,7 +243,6 @@ export class ChannelComponent implements AfterViewInit {
       } else {
         this.fileService.closePreview();
       }
- 
     }
   }
 
@@ -316,7 +314,7 @@ export class ChannelComponent implements AfterViewInit {
   }
 
   addEmojiToNewMessage(event: any) {
-    const emoji = event.emoji.native; // Das ausgewählte Emoji
+    const emoji = event.emoji.native; 
     this.newMessageText += emoji
     this.showEmojiPicker = false;
   }
@@ -391,8 +389,3 @@ export class ChannelComponent implements AfterViewInit {
     }
   }
 }
-
-
-
-
-

@@ -199,13 +199,13 @@ p {
 
 @keyframes slideUp {
     0% {
-        transform: translateY(70vh);  /* Startet am unteren Bildschirmrand */
+        transform: translateY(70vh);  
     }
     60% {
-        transform: translateY(-20px);  /* Etwas über das Ziel hinausschießen */
+        transform: translateY(-20px);  
     }
     100% {
-        transform: translateY(0);  /* Endposition */
+        transform: translateY(0);  
     }
 }
 

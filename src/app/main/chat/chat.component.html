@@ -34,8 +34,6 @@
         }
 
     </div>
-        <!-- Gruppierte Nachrichten anzeigen -->
-        <!-- <div *ngFor="let group of chatService.groupedMessages | keyvalue; let i = index"> -->
         <div  *ngFor="let group of filteredSearchMessages; let i = index">
             <div style="position: relative;" *ngIf="!chatService.chatIsEmpty">
                 <hr class="separator-line">

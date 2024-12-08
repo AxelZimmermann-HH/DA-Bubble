@@ -63,7 +63,6 @@ export class ChooseAvatarComponent {
 
   async uploadFile() {
     if (!this.selectedFile) return;
-
     try {
       const storage = getStorage();
       const storageRef = ref(storage, `avatars/${this.user.userId}`);

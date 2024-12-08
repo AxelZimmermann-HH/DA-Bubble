@@ -13,7 +13,6 @@ import { UserService } from '../../../services/user.service';
 import { DialogAddUserComponent } from '../../../dialog-add-user/dialog-add-user.component';
 import { ChannelService } from '../../../services/channel.service';
 
-
 @Component({
   selector: 'app-dialog-edit-channel',
   standalone: true,
@@ -37,6 +36,7 @@ export class DialogEditChannelComponent {
   newChannelName!: string;
   newChannelDescription!: string;
   errorMessage: string | null = null;
+  
   constructor(
     public dialogRef: MatDialogRef<DialogEditChannelComponent>,
     public firestore: Firestore,
@@ -159,5 +159,3 @@ export class DialogEditChannelComponent {
     this.dialogRef.close();
   }
 }
-
-

@@ -1,12 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Inject, Output } from '@angular/core';
-import { collection, Firestore, onSnapshot } from '@angular/fire/firestore';
+import { Component, Inject } from '@angular/core';
+import { Firestore } from '@angular/fire/firestore';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { User } from '../../../models/user.class';
 import { Channel } from '../../../models/channel.class';
 import { UserService } from '../../../services/user.service';
-import { DialogUserProfilComponent } from '../../dialog-user-profil/dialog-user-profil.component';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ChatService } from '../../../services/chat.service';
 import { DialogAddUserComponent } from '../../../dialog-add-user/dialog-add-user.component';
 
@@ -40,7 +39,6 @@ export class AddChannelUserComponent {
       const currentUser = params['userId'];
       console.log('Aktuelle userId:', currentUser);
     });
-
   } 
   
   openDialogAddUser() {
@@ -49,6 +47,4 @@ export class AddChannelUserComponent {
       data: { channel: this.channel, source: 'channelComponent' }
     });
   }
-
-
 }

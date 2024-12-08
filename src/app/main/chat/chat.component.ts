@@ -1,4 +1,4 @@
-import { AfterViewChecked, AfterViewInit, Component, ElementRef, ViewChild, HostListener, Renderer2, OnDestroy } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild, HostListener, Renderer2, OnDestroy } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
 import { CommonModule } from '@angular/common';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -75,7 +75,6 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
     this.listenToEmojiReactions(); // Listener auf das gesamte Dokument
   }
 
-  // scrollen, wenn die View aktualisiert wird
   ngAfterViewInit() {
     const chatContainer = document.querySelector('.chat-container');
     if (chatContainer) {
