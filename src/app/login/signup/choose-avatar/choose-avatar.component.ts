@@ -57,6 +57,8 @@ export class ChooseAvatarComponent {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       this.selectedFile = input.files[0];
+      console.log(this.selectedFile);
+      
       this.selectedFileName = this.selectedFile.name;
     }
   }
