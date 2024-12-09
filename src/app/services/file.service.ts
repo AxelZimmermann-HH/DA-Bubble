@@ -15,7 +15,7 @@ export class FileService {
   fileDownloadUrl: string = '';
   selectedFileName: string = '';  // Neuer Dateiname-String
   selectedFileType: string = '';
-  safeFileUrl: SafeResourceUrl | null = null;  // Sichere URL wird hier gespeichert
+  safeFileUrl: SafeResourceUrl | null = null;
   fileSize: boolean = false;
   fileType: boolean = false;
 
@@ -81,11 +81,16 @@ export class FileService {
     return fileUrl.split('/').pop() || 'Datei';
   }
 
+  // closePreview(key: string, fileInput: HTMLInputElement): void {
+  //   this.resetFileKey(key); 
+  //   if (fileInput) {
+  //     fileInput.value = ''; 
+  //   }
+  // }
   closePreview() {
     this.fileUrl = null; console.log('this fileurl', this.fileUrl);
     this.selectedFile = null; console.log('this fileurl', this.selectedFile);
   }
-
   async uploadFiles(): Promise<string | null> {
     if (!this.selectedFile) return null;
     const filePath = `files/${this.selectedFile.name}`;

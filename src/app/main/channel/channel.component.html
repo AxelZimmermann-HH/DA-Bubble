@@ -272,6 +272,10 @@
                             (click)="fileInput.click()">
                         <input type="file" #fileInput style="display: none"
                             (change)="onFileSelected($event)">
+                              <div *ngIf="fileService.errorMessage$ | async as errorMessage" class="error-message" >
+                        {{ errorMessage }}
+                    <img (click)="fileService.resetErrorMessage()" src="./assets/icons/close.png" class="close-icon" style="height: auto !important">
+                    </div>
                         <div style="height: 35px;width: 1px;background-color:  rgba(104, 104, 104, 1);"></div>
                         <img src="./assets/icons/sentiment_satisfied-1.png" alt="" class="add-emoji"
                             (click)="toggleEmojiPicker($event)">

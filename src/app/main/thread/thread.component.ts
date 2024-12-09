@@ -28,7 +28,7 @@ import { EmojisService } from '../../services/emojis.service';
 export class ThreadComponent {
   @ViewChild('fileInput') fileInput!: ElementRef;
   @ViewChild('answersContainer') answersContainer!: ElementRef;
-  user = new User();
+
   userId!: string;
 
   newAnswerText: string = "";
@@ -40,7 +40,6 @@ export class ThreadComponent {
   clickedAnswer: string = '';
 
   fileUrl: SafeResourceUrl | null = null;
-  fileDownloadUrl!: string;
   showEmojiPicker: boolean = false;
   editingAnswerId: string | null = null;
   taggedUser: boolean = false;
@@ -69,11 +68,8 @@ export class ThreadComponent {
   ) { }
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      this.userId = params['userId'];
-    });
+    this.route.params.subscribe(params => { this.userId = params['userId']; });
     this.subscribeToSearch();
-
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -82,7 +78,6 @@ export class ThreadComponent {
         this.selectedAnswers = answers;
       });
     }
-
     if (changes['selectedChannelId'] && !changes['selectedChannelId'].isFirstChange()) {
       this.selectedAnswers = [];
       this.closeThread();
@@ -100,11 +95,7 @@ export class ThreadComponent {
   }
 
   deleteFile(answer: Answer) {
-    if (!answer.fileUrl) return;
-    answer.fileUrl = '';
-    answer.fileName = '';
-    answer.fileType = '';
-    this.selectedFile = null;
+    this.answersService.deleteFile(answer);
     this.fileInput.nativeElement.value = '';
   }
 
@@ -131,26 +122,15 @@ export class ThreadComponent {
       emojis: [],
       ...(fileUrl && { fileUrl, fileType: this.selectedFile?.type, fileName: this.selectedFile?.name }),
     };
-
     if (this.editingAnswerId) {
-      await this.editAnswer(messageId);
+      await this.editAnswer(messageId)
     } else {
-      await this.addNewAnswer(messageId, answerData);
+      await this.answersService.addNewAnswer(messageId, answerData, this.selectedChannelId, this.newAnswerText);
+      this.newAnswerText = '';
+      this.selectedFile = null;
     }
   }
-  async addNewAnswer(messageId: string, answerData: any) {
-    try {
-      const answersCollectionRef = collection(
-        this.firestore,
-        `channels/${this.selectedChannelId}/messages/${messageId}/answers`
-      );
-      await addDoc(answersCollectionRef, answerData);
-      this.newAnswerText = '';  // Leeren des Antwort-Textes nach dem Hinzufügen
-      this.selectedFile = null;  // Zurücksetzen der Datei-Auswahl
-    } catch (error) {
-      console.error('Fehler beim Hinzufügen der Antwort:', error);
-    }
-  }
+
   async editAnswer(messageId: string) {
     const updateData: any = { text: this.newAnswerText.trim() };
     if (!this.selectedFile) {
@@ -159,40 +139,23 @@ export class ThreadComponent {
       updateData.fileName = null;
     }
     try {
-      const answerRef = doc(
-        this.firestore,
-        `channels/${this.selectedChannelId}/messages/${messageId}/answers/${this.editingAnswerId}`
-      );
+      const answerRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}/answers/${this.editingAnswerId}`);
       await updateDoc(answerRef, updateData);
-
-      // Aktualisieren der lokal gespeicherten Antwort in der Ansicht
       const answer = this.selectedAnswers.find(a => a.id === this.editingAnswerId);
       if (answer) {
         answer.text = this.newAnswerText.trim();
         answer.isEditing = false;
         if (!answer.text && !answer.fileUrl) {
-          await this.deleteAnswer(messageId);
+          await this.answersService.deleteEditedAnswer(messageId, this.selectedChannelId, this.editingAnswerId);
         }
       }
       this.newAnswerText = '';
+      this.selectedFile = null;
       this.editingAnswerId = null;
     } catch (error) {
       console.error('Fehler beim Bearbeiten der Antwort:', error);
     }
   }
-
-  async deleteAnswer(messageId: string) {
-    try {
-      const answerRef = doc(
-        this.firestore,
-        `channels/${this.selectedChannelId}/messages/${messageId}/answers/${this.editingAnswerId}`
-      );
-      await deleteDoc(answerRef);  // Löschen der Antwort
-    } catch (error) {
-      console.error('Fehler beim Löschen der Antwort:', error);
-    }
-  }
-
   async uploadFileIfSelected() {
     if (!this.selectedFile) return null;
     const filePath = `files/${this.selectedFile.name}`;
@@ -225,7 +188,6 @@ export class ThreadComponent {
     }
   }
 
-  //messages
   toggleEmojiReaction(message: Message, emojiData: EmojiData) {
     const currentUserId = this.userId; // Aktuelle Benutzer-ID
     const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
@@ -246,7 +208,6 @@ export class ThreadComponent {
 
   toggleUserEmoji(message: Message, emoji: string, userId: string) {
     const emojiData = message.emojis.find((e: EmojiData) => e.emoji === emoji);
-
     if (!emojiData) {
       message.emojis.push({ emoji, userIds: [userId] });
     } else {
@@ -260,15 +221,13 @@ export class ThreadComponent {
     this.updateEmojisInMessage(message);
   }
 
-  //answers
   toggleEmojiReactionForAnswer(answer: Answer, emojiData: EmojiData) {
     if (!emojiData || !emojiData.userIds) {
       console.error('Ungültige Emoji-Daten:', emojiData);
-      return;
+   return;
     }
     const currentUserId = this.userId;
     const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
-
     if (currentUserIndex > -1) {
       emojiData.userIds.splice(currentUserIndex, 1);
     } else {
@@ -278,9 +237,7 @@ export class ThreadComponent {
   }
 
   updateEmojisInAnswer(answer: Answer) {
-    if (!this.selectedChannelId || !answer.messageId || !answer.id) {
-      return;
-    }
+    if (!this.selectedChannelId || !answer.messageId || !answer.id) return;
     const answerRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${answer.messageId}/answers/${answer.id}`);
     updateDoc(answerRef, { emojis: answer.emojis });
   }
@@ -313,12 +270,10 @@ export class ThreadComponent {
   getEmojiReactionText(emojiData: EmojiData): string {
     const currentUserId = this.userId;
     const userNames = emojiData.userIds.map(userId => this.userService.findUserNameById(userId));
-
     const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
     if (currentUserIndex > -1) {
       const currentUserName = this.userService.findUserNameById(currentUserId);
       const filteredUserNames = userNames.filter(name => name !== currentUserName);
-
       let nameList = filteredUserNames.join(", ");
       if (nameList.length > 0) {
         return `Du und ${nameList}` + (filteredUserNames.length > 1 ? "..." : "");
@@ -379,7 +334,6 @@ export class ThreadComponent {
         this.fileService.resetFile();
         return;
       }
-
       if (!this.fileService.isFileTypeAllowed(file)) {
         this.errorMessage = 'Nur Bilder oder PDF-Dateien sind erlaubt.';
         this.fileService.resetFile();
@@ -409,12 +363,10 @@ export class ThreadComponent {
     const searchList = document.querySelector('.searchListe');
     const taggedUserDiv = document.querySelector('.tagged-user-list');
     const emojiPicker = document.querySelector('.emoji-picker');
-
     if (this.taggedUser && searchList && taggedUserDiv &&
       !searchList.contains(event.target as Node) && !taggedUserDiv.contains(event.target as Node)) {
       this.taggedUser = false;
     }
-
     if ((this.showEmojiPicker || this.showAnswerEmoji) && emojiPicker && !emojiPicker.contains(event.target as Node)) {
       this.showEmojiPicker = false;
       this.showAnswerEmoji = false;
@@ -428,10 +380,7 @@ export class ThreadComponent {
 
   ngAfterViewInit() {
     if (this.answersContainer?.nativeElement) {
-      const observer = new MutationObserver(() => {
-        this.scrollToBottom();
-      });
-
+      const observer = new MutationObserver(() => { this.scrollToBottom(); });
       observer.observe(this.answersContainer.nativeElement, { childList: true, subtree: true });
     }
   }
