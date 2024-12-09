@@ -1,7 +1,7 @@
 import { Component, ElementRef, EventEmitter, HostListener, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { User } from '../../models/user.class';
 import { Message } from '../../models/message.class';
-import { addDoc, collection, deleteDoc, doc, Firestore, updateDoc } from '@angular/fire/firestore';
+import {  doc, Firestore, updateDoc } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Answer } from '../../models/answer.class';
@@ -30,15 +30,12 @@ export class ThreadComponent {
   @ViewChild('answersContainer') answersContainer!: ElementRef;
 
   userId!: string;
-
   newAnswerText: string = "";
   selectedFile: File | null = null;
-
   showEmoji: boolean = false;
   showAnswerEmoji: boolean = false;
   showAllAnswerEmoji: boolean = false;
   clickedAnswer: string = '';
-
   fileUrl: SafeResourceUrl | null = null;
   showEmojiPicker: boolean = false;
   editingAnswerId: string | null = null;
@@ -394,6 +391,7 @@ export class ThreadComponent {
       }
     }
   }
+  
   closeThread() {
     this.threadClosed.emit();
   }

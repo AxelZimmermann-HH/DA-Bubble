@@ -3,7 +3,7 @@
     top: 50px;
     left: 18px;
     // transform: translate(-50%, -50%);
-    width: 500px;
+    width: auto;
     height: 500px;
     overflow-y: scroll;
     padding: 40px;
@@ -16,6 +16,7 @@
     align-items: center;
     justify-content: space-between;
     font-family: 'Nunito';
+    scrollbar-width: none;
 }
 
 button {
