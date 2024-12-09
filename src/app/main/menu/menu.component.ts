@@ -7,8 +7,7 @@ import { SharedService } from '../../services/shared.service';
 import { ChatService } from '../../services/chat.service';
 import { UserService } from '../../services/user.service';
 import { ActivatedRoute } from '@angular/router';
-import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-
+import { BreakpointObserver } from '@angular/cdk/layout';
 
 @Component({
   selector: 'app-menu',
@@ -17,6 +16,7 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss'
 })
+
 export class MenuComponent {
   constructor(
     public firestore: Firestore,
@@ -55,11 +55,22 @@ export class MenuComponent {
   @Output() channelSelected = new EventEmitter<any>();
   @Output() chatSelected = new EventEmitter<void>();
 
+
   async ngOnInit() {
     await this.getAllChannels('channels');
     await this.getAllUsers('users');
     this.subscribeToSearch();
+    this.aboUser();
+    this.aboRoute();
+    this.aboUnreadChatCount();
 
+    this.userService.getAllUsers().then(() => {
+      this.currentUser = this.userService.findUserNameById(this.userId);
+    });
+  }
+
+
+  aboUser(){
     // Benutzer abonnieren und in currentUser speichern
     this.userService.currentUser$.subscribe(user => {
       this.currentUser = user;
@@ -69,16 +80,18 @@ export class MenuComponent {
         this.chatService.initializeUnreadCounts(this.currentUserId); // Verschiebe hierher
       }
     });
+  }
 
+
+  aboRoute(){
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
       this.currentUserId = this.userId;
     });
+  }
 
-    this.userService.getAllUsers().then(() => {
-      this.currentUser = this.userService.findUserNameById(this.userId);
-    });
 
+  aboUnreadChatCount(){
     // Abonniere die ungelesenen Zähler für alle Chats
     this.chatService.unreadCount$.subscribe((counts) => {
       this.unreadCounts = counts;
@@ -144,7 +157,6 @@ export class MenuComponent {
 
         });
 
-        Standardmäßig:
         // this.filteredChannels = this.channelData;  
         this.filteredChannels = this.channelData.filter(channel => {
           return channel.members.some((member: any) =>
@@ -165,7 +177,7 @@ export class MenuComponent {
   async getAllUsers(users: string) {
     try {
       const usersCollectionRef = collection(this.firestore, users);
-      this.getUsersDataOnSnapshot(usersCollectionRef);
+      await this.getUsersDataOnSnapshot(usersCollectionRef);
     } catch (error) {
       console.error('Fehler beim Aktualisieren der Daten:', error);
     }
@@ -173,7 +185,7 @@ export class MenuComponent {
 
 
   //User-Daten abspeichern
-  getUsersDataOnSnapshot(usersCollectionRef: any) {
+  async getUsersDataOnSnapshot(usersCollectionRef: any) {
     onSnapshot(
       usersCollectionRef,
       (snapshot: { docs: any[] }) => {
@@ -191,14 +203,19 @@ export class MenuComponent {
         });
 
         this.filteredUsers = this.userData;
-        this.filteredUsers.forEach(user => {
-          user.chatId = this.chatService.createChatID(this.currentUserId, user.userId);
-        });
+        this.assignChatIds();
       },
       (error) => {
         console.error('Fehler beim laden der User-Daten:', error);
       }
     );
+  }
+
+
+  async assignChatIds() {
+    for (const user of this.filteredUsers) {
+      user.chatId = await this.chatService.createChatID(this.currentUserId, user.userId);
+    }
   }
 
 
@@ -220,7 +237,7 @@ export class MenuComponent {
     }
   }
 
-  
+
   //öffnet und schließt das Menü-Panel
   openCloseMenu() {
     if (this.showMenu) {
@@ -297,7 +314,7 @@ export class MenuComponent {
     this.chatSelected.emit();
   }
 
-
+  
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
     if (user) {

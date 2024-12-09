@@ -224,6 +224,7 @@ export class ChatService {
     return newDirectMessage.timestamp, newDirectMessage.time, newDirectMessage.dayDateMonth;
   }
 
+
   // Setze Daten für den editierten Chat
   async setEditedChatData(editedDM: string, message: any) {
     const chatId = message.chatId;
@@ -261,24 +262,20 @@ export class ChatService {
     }
   }
 
+
   //ungelesene Nachrichten
-
-
   // Initialisiere die Abfrage, um alle ungelesenen Nachrichten zu überwachen
   initializeUnreadCounts(currentUserId: string) {
     const chatsCollection = collection(this.firestore, 'chats');
-
     // Abfrage aller Chats für den aktuellen Benutzer
     const userChatsQuery = query(chatsCollection,where('users', 'array-contains', currentUserId));
-
     // Hole alle Chats des Benutzers
     onSnapshot(userChatsQuery, (snapshot) => {
       this.unreadCountMap.clear(); // Map zurücksetzen
-
-      snapshot.forEach(async (chatDoc) => {
+      
+      snapshot.forEach( (chatDoc) => {
         const chatId = chatDoc.id;
         const messagesCollection = collection(this.firestore, `chats/${chatId}/messages`);
-
         const unreadMessagesQuery = query(
           messagesCollection,
           where('receiverID', '==', currentUserId),
@@ -287,7 +284,9 @@ export class ChatService {
 
         // Abonniere die ungelesenen Nachrichten in diesem Chat
         onSnapshot(unreadMessagesQuery, (messageSnapshot) => {
+          
           const unreadCount = messageSnapshot.size; // Anzahl der ungelesenen Nachrichten
+          
           if (unreadCount > 0) {
             this.unreadCountMap.set(chatId, unreadCount);
           } else {
@@ -300,10 +299,10 @@ export class ChatService {
     });
   }
 
+
   // Ungelesene Nachrichten zählen, die an den aktuellen Benutzer gesendet wurden
   getUnreadCount(chatId: string) {
     const messagesCollection = collection(this.firestore, `chats/${chatId}/messages`);
-
     const unreadMessagesQuery = query(
       messagesCollection,
       where('isRead', '==', false),
@@ -318,6 +317,7 @@ export class ChatService {
     });
   }
 
+  
   // Setze alle Nachrichten als gelesen für den aktuellen Benutzer im geöffneten Chat
   markMessagesAsRead(chatId: string) {
     const messagesCollection = collection(this.firestore, `chats/${chatId}/messages`);
