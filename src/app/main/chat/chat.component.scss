@@ -620,6 +620,7 @@
         height: 100%;
         overflow-y: scroll;
         scrollbar-width: none;
+        resize: none;
         &:focus{
             outline: none;
             border: none; 
@@ -718,6 +719,7 @@
     gap: 16px;
     border-radius: 30px;
     cursor: pointer;
+    filter: opacity(0.5);
 
     img {
         display: inline-block;
@@ -733,6 +735,7 @@
         cursor: pointer;
         transform: scale(1.2);
         background: rgba(236, 238, 254, 1);
+        filter: opacity(1);
     }
 
     .audio-container{
@@ -747,6 +750,7 @@
         transform: scale(1.2);
         cursor: pointer;
         background: none;
+        filter: invert(25%) sepia(70%) saturate(560%) hue-rotate(215deg) brightness(94%) contrast(88%);
     }
 
     .letters{
