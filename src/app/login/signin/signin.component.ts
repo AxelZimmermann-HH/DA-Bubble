@@ -162,7 +162,6 @@ export class SigninComponent {
     if (doc.id.startsWith('12345guest') || doc.id.endsWith('12345guest')) {
       this.deleteSubcollections(doc.ref)
         .then(() => deleteDoc(doc.ref))
-        .then(() => console.log('Chat gelöscht:', doc.id))
         .catch((error) => console.error('Fehler beim Löschen:', error));
     }
   }

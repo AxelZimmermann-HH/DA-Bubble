@@ -32,6 +32,7 @@ export class DialogUserProfilComponent {
   isEditable: boolean; 
 
   emailChanged: boolean = false;
+  passwordPlaceholder: string = '';
 
   @Output() chatSelected = new EventEmitter<void>();
 
@@ -112,17 +113,51 @@ export class DialogUserProfilComponent {
   }
 
   handleSmallChanges(form: NgForm) {
-    if (form.valid) {
-      this.data.user = new User({ ...this.data.user });
-      this.userService.updateUser(this.data.user);
+    if (!this.isFormValid(form)) return;
+  
+    const user = this.getCurrentUser();
+    if (!user) return;
+  
+    this.reauthenticateAndUpdateUser(user).catch(() => this.handlePasswordError());
+  }
 
-      localStorage.setItem('currentUser', JSON.stringify(this.data.user));
-
-      this.toggleEditMode();
-      this.dialogRef.close()
-    } else {
-      console.error('Form is invalid');
+  private isFormValid(form: NgForm): boolean {
+    if (!form.valid) {
+      alert('Formular ist ungültig.');
+      return false;
     }
+    return true;
+  }
+
+  private getCurrentUser(): any {
+    const user = this.auth.currentUser;
+    if (!user) {
+      alert('Sie müssen angemeldet sein, um diese Aktion auszuführen.');
+    }
+    return user;
+  }
+
+  private reauthenticateAndUpdateUser(user: any): Promise<void> {
+    return this.reauthenticateUser(user, this.currentPassword)
+      .then(() => this.updateUserDataSmall())
+      .then(() => this.finalizeUpdate());
+  }
+
+  
+  private updateUserDataSmall(): void {
+    this.data.user = new User({ ...this.data.user });
+    this.userService.updateUser(this.data.user);
+    localStorage.setItem('currentUser', JSON.stringify(this.data.user));
+  }
+  
+  private finalizeUpdate(): void {
+    this.toggleEditMode();
+    this.dialogRef.close();
+  }
+  
+  private handlePasswordError(): void {
+    this.currentPassword = '';
+    this.passwordPlaceholder = 'Falsches Passwort!';
   }
 
   handleMailChange(form: NgForm) {

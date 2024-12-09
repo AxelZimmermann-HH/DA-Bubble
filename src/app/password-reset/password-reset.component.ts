@@ -25,24 +25,26 @@ export class PasswordResetComponent {
   user: User | null = null;  // Der Benutzer, der sein Passwort ändern möchte
   oobCode: string = '';
   mode: string = '';
+  passwordPlaceholder: string = 'Neues Passwort (min. 6 Zeichen)';
+  isPasswordError: boolean = false;
 
 
   constructor(private userService: UserService, private route: ActivatedRoute, private auth: Auth, private router: Router) {}
 
   ngOnInit(): void {
-    // Abonniere die Query-Parameter, um zu überprüfen, ob 'oobCode' und 'mode' korrekt empfangen werden
     this.route.queryParams.subscribe(params => {
       this.oobCode = params['oobCode'];  // Der einmalige Code von Firebase
       this.mode = params['mode'];        // Der Modus (z.B. 'resetPassword')
   
       console.log('Query-Parameter:', params);  // Debugging: Logge die Query-Parameter in der Konsole
+      this.verifyPasswordResetCode();
   
-      // Überprüfe, ob der Modus 'resetPassword' ist
-      if (this.mode === 'resetPassword') {
-        this.verifyPasswordResetCode();  // Verifiziere den Code
-      } else {
-        console.error('Ungültiger Modus:', this.mode);  // Falls der Modus nicht korrekt ist
-      }
+      // // Überprüfe, ob der Modus 'resetPassword' ist
+      // if (this.mode === 'resetPassword') {
+      //   this.verifyPasswordResetCode();  // Verifiziere den Code
+      // } else {
+      //   console.error('Ungültiger Modus:', this.mode);  // Falls der Modus nicht korrekt ist
+      // }
     });
   }
 
@@ -78,6 +80,19 @@ export class PasswordResetComponent {
       this.password1.length >= minLength && 
       this.password1 === this.password2;
   }
+
+  minLength(): void {
+    if (!this.password1 || this.password1.length < 6) {
+      console.log('ok');
+      
+      this.password1 = ''; // Eingabe zurücksetzen
+      this.passwordPlaceholder = 'Mindestens 6 Zeichen erforderlich'; // Placeholder setzen
+      this.isPasswordError = true;
+    } else {
+      this.passwordPlaceholder = 'Neues Passwort (min. 6 Zeichen)'; // Standard-Placeholder wiederherstellen
+      this.isPasswordError = false;
+    }
+  } 
 
   async changePassword() {
     const auth = getAuth();

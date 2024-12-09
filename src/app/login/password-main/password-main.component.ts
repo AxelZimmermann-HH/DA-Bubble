@@ -1,13 +1,12 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { SendMailComponent } from './send-mail/send-mail.component';
-import { ResetPwComponent } from "./reset-pw/reset-pw.component";
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-password-main',
   standalone: true,
-  imports: [SendMailComponent, ResetPwComponent, CommonModule],
+  imports: [SendMailComponent, CommonModule],
   templateUrl: './password-main.component.html',
   styleUrl: './password-main.component.scss'
 })
