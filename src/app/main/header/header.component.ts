@@ -43,24 +43,18 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit() {
-
     this.isMobile = window.innerWidth <= 600;
-
     const storedUser = localStorage.getItem('currentUser');
       if (storedUser) {
         this.currentUser = JSON.parse(storedUser);
-        this.cdr.detectChanges(); // Ansicht manuell aktualisieren
-
+        this.cdr.detectChanges(); 
       }
-    
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
       this.getUserById(this.userId);
     });
 
-    this.getAllUsers();
-
-    
+    this.getAllUsers(); 
   }
 
   getAllUsers() {
@@ -98,25 +92,22 @@ export class HeaderComponent implements OnInit {
     }
   }
 
-  openDialogLogout() {
-    console.log('go');
-    
+  openDialogLogout() {    
     this.dialog.open(DialogLogoutComponent, {
       data: { user: this.currentUser }
     })
   }
-  
 
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
     if (user) {
       if (this.userService.isNumber(user.avatar)) {
-        return './assets/avatars/avatar_' + user.avatar + '.png';  // Local asset avatar
+        return './assets/avatars/avatar_' + user.avatar + '.png'; 
       } else {
-        return user.avatar;  // External URL avatar
+        return user.avatar;  
       }
     }
-    return './assets/avatars/avatar_0.png';  // Default avatar when user not found
+    return './assets/avatars/avatar_0.png'; 
   }
 
   hideChatChannel(){
@@ -128,10 +119,9 @@ export class HeaderComponent implements OnInit {
 
   getAvatarSrc(): string {
     if (!this.currentUser) {
-      return './assets/avatars/avatar_1.png'; // Default Avatar
+      return './assets/avatars/avatar_1.png'; 
     }
   
-    // Konvertiere Avatar sicher in einen String
     const avatar = this.currentUser.avatar.toString();
   
     return this.userService.isNumber(this.currentUser.avatar)

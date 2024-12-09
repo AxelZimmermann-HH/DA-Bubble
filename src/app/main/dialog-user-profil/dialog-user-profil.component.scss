@@ -199,6 +199,10 @@ input {
     font-family: 'Nunito';
 }
 
+input::placeholder {
+    color: red; /* Farbe bei Fehler */
+}
+
 .edit-profil {
     top: 50px;
     right: 18px;
