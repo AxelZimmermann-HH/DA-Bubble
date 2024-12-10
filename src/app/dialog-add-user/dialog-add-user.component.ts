@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, Inject,  } from '@angular/core';
+import { Component, HostListener, Inject, } from '@angular/core';
 import { doc, Firestore, updateDoc } from '@angular/fire/firestore';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
@@ -53,7 +53,6 @@ export class DialogAddUserComponent {
 
   updateChannelMembers() {
     if (this.userData.length === 0) return;
-
     const currentMemberIds = this.channel.members.map((member: any) => member.userId);
     const updatedMembers = this.channel.members.filter((member: any) =>
       this.userData.some((user: User) => user.userId === member.userId)
@@ -86,8 +85,8 @@ export class DialogAddUserComponent {
 
         if (newMembers.length > 0) {
           const updatedMembers = [...currentMembers, ...newMembers.map((user: any) => user.toJson())];
-          await updateDoc(channelRef, { members: updatedMembers });   
-        } 
+          await updateDoc(channelRef, { members: updatedMembers });
+        }
 
         this.selectedUsers = [];
         this.dialogRef.close(true);
@@ -117,7 +116,7 @@ export class DialogAddUserComponent {
   }
 
   async addSelectedUsers(currentMembers: any[], channelRef: any) {
-   
+
     const newMembers = this.selectedUsers.filter(
       (user: any) => !currentMembers.some(member => member.userId === user.userId)
     );
@@ -166,7 +165,6 @@ export class DialogAddUserComponent {
     const clickedInsideDropdown = dropdown?.contains(event.target as Node);
     const clickedInsideSelected = dropdownSelected?.contains(event.target as Node);
 
-    // Schließe Dropdown nur, wenn der Klick außerhalb von Dropdown und Dropdown-Trigger erfolgte
     if (!clickedInsideDropdown && !clickedInsideSelected) {
       this.dropdownOpen = false;
     }
@@ -185,7 +183,16 @@ export class DialogAddUserComponent {
   //   this.showEditEmojiPicker = false;
   // }
 
+  ngOnInit(): void {
+    // Initial prüfen, ob es sich um eine mobile Ansicht handelt
+    this.sharedService.updateIsMobile();
+  }
 
+  @HostListener('window:resize', [])
+  onResize(): void {
+    // Beim Resizen den Status aktualisieren
+    this.sharedService.updateIsMobile();
+  }
 
   closeDialog() {
     this.dialogRef.close();

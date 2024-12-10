@@ -7,10 +7,10 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root'
 })
 export class SharedService {
-  
+
   //Variablen für Mobile Ansicht, word in der app.component gecheckt
-  isMobile:boolean = false;
-  goBackHeader:boolean = false;
+  isMobile: boolean = false;
+  goBackHeader: boolean = false;
 
   // Observable für den Suchbegriff
   private searchTermSubject = new BehaviorSubject<string>('');
@@ -20,7 +20,7 @@ export class SharedService {
   private logoutContainerActiveSubject = new BehaviorSubject<boolean>(false);
   logoutContainerActive$ = this.logoutContainerActiveSubject.asObservable();
 
-  constructor(public dialog: MatDialog){}
+  constructor(public dialog: MatDialog) { }
   // Aktuellen Suchbegriff verwenden -> wird in der header component bei input angewendet
   updateSearchTerm(term: string) {
     this.searchTermSubject.next(term);
@@ -70,5 +70,10 @@ export class SharedService {
   // Methode, um den Zustand des Erfolgsdialogs zu ändern
   setMailChangeSuccess(state: boolean): void {
     this.mailChangeSuccessSubject.next(state);
+  }
+
+  // Prüft und aktualisiert den mobilen Status
+  updateIsMobile(): void {
+    this.isMobile = window.innerWidth <= 768; // Schwellenwert für mobile Ansicht
   }
 }
