@@ -14,7 +14,6 @@ import { ActivatedRoute } from '@angular/router';
 import { ChatService } from '../../services/chat.service';
 import { ChangeDetectorRef } from '@angular/core';
 
-
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -34,6 +33,7 @@ export class HeaderComponent implements OnInit {
   searchTerm: string = '';
   channelData: any[] = [];
   filteredChannels: any[] = [];
+  initialChannels: any[] = [];
   selectedChannel: any = null;
 
   constructor(
@@ -52,7 +52,7 @@ export class HeaderComponent implements OnInit {
 
   async ngOnInit() {
     await this.getAllChannels('channels');
-
+    this.getAllUsers();
     this.isMobile = window.innerWidth <= 600;
     const storedUser = localStorage.getItem('currentUser');
       if (storedUser) {
@@ -63,8 +63,6 @@ export class HeaderComponent implements OnInit {
       this.userId = params['userId'];
       this.getUserById(this.userId);
     });
-
-    this.getAllUsers();
     this.filteredUserList = [];  
   }
 
@@ -97,38 +95,27 @@ export class HeaderComponent implements OnInit {
     const searchTerm = event.target.value;
   
     if (searchTerm.startsWith('@')) {
-      const query = searchTerm.slice(1); 
-      this.filterUsers(query); 
-      this.toggleUserList();
+      this.handleUsers(searchTerm);
     } else if (searchTerm.startsWith('#')) { 
-      const query = searchTerm.slice(1);
-
-      if (query === '') {
-        // Keine Eingabe nach `#` -> Zurücksetzen auf initiale Filterung
-        this.filteredChannels = this.channelData.filter(channel => {
-          return channel.members.some((member: any) =>
-          member.userId === this.currentUser?.userId ||
-          member.name === this.currentUser ||
-          channel.creatorName === this.currentUser);
-        });
-        console.log(this.filteredChannels);
-      
-      } else {
-        // Dynamisches Filtern basierend auf der aktuellen Eingabe
-        this.filterFurtherChannels(query);
-        
-      }
-      this.showChannels = true;
+      this.handleChannels(searchTerm);
     } else {
       this.onSearchInput(event);
     } 
 
-    if (!searchTerm.includes('@')) {
-      this.showUsers = false;
-    }
-    if (!searchTerm.includes('#')) {
-      this.showChannels = false;
-    }
+    this.hideSearchLayers(searchTerm);
+  }
+
+  handleUsers(searchTerm: string) {
+    const query = searchTerm.slice(1); 
+      this.filterUsers(query); 
+      this.toggleUserList();
+  }
+
+  filterUsers(searchTerm: string) {
+    const searchQuery = searchTerm.toLowerCase(); 
+    this.filteredUserList = this.userList.filter(user =>
+      user.name.toLowerCase().includes(searchQuery)
+    );
   }
 
   toggleUserList() {
@@ -147,52 +134,31 @@ export class HeaderComponent implements OnInit {
     }
   }
 
-  filterUsers(searchTerm: string) {
-    const searchQuery = searchTerm.toLowerCase(); 
-    this.filteredUserList = this.userList.filter(user =>
-      user.name.toLowerCase().includes(searchQuery)
-    );
+  handleChannels(searchTerm: string) {
+    const query = searchTerm.slice(1);
+    if (query === '') {
+      this.filterOwnChannels();
+    } else {
+      this.filterFurtherChannels(query);
+    }
+    this.showChannels = true;
   }
 
-  filterChannels(term: string) {
-    this.filteredChannels = this.channelData.filter((channel: any) =>
-      channel.channelName.toLowerCase().includes(term.toLowerCase())
-    );
+  filterOwnChannels() {
+    this.initialChannels = this.channelData.filter(channel => {
+      return channel.members.some((member: any) =>
+      member.userId === this.currentUser?.userId ||
+      member.name === this.currentUser ||
+      channel.creatorName === this.currentUser);
+    });
+    this.filteredChannels = [...this.initialChannels];
   }
 
   filterFurtherChannels(term: string) {
     const searchQuery = term.toLowerCase();
-    this.filteredChannels = this.channelData.filter(channel =>
+      this.filteredChannels = this.initialChannels.filter(channel =>
       channel.channelName.toLowerCase().includes(searchQuery)
     );
-  }
-
-  resetFilteredChannels() {
-    this.filteredChannels = this.channelData;
-  }
-
-  changeToUser(user: User) {
-    if (!this.currentUser?.userId) {
-      console.error('Fehler: Der aktuelle Benutzer ist nicht definiert.');
-      return;
-    }
-
-    this.userService.loadCurrentUser(this.currentUser.userId)
-
-    this.showUsers = false;
-    this.searchTerm = '';
-    // Chat mit dem Benutzer öffnen
-    const currentUserId = this.currentUser.userId; // Aktueller Benutzer
-    const userId = user.userId; // Ausgewählter Benutzer
-
-    this.chatService.openDirectMessage(currentUserId, userId)
-      .then(() => {
-        console.log(`Chat mit ${user.name} erfolgreich geöffnet.`);
-        this.chatService.onChatSelected();
-      })
-      .catch(error => {
-        console.error('Fehler beim Öffnen des Chats:', error);
-      });
   }
 
   onSearchInput(event: any) {
@@ -204,6 +170,35 @@ export class HeaderComponent implements OnInit {
       this.sharedService.updateSearchTerm('');
       this.resetFilteredChannels();
     }
+  }
+
+  resetFilteredChannels() {
+    this.filteredChannels = this.channelData;
+  }
+
+  hideSearchLayers(searchTerm: string) {
+    if (!searchTerm.includes('@')) {
+      this.showUsers = false;
+    }
+    if (!searchTerm.includes('#')) {
+      this.showChannels = false;
+    }
+  }
+
+  changeToUser(user: User) {
+    if (!this.currentUser?.userId) {
+      console.error('Fehler: Der aktuelle Benutzer ist nicht definiert.');
+      return;
+    }
+    this.userService.loadCurrentUser(this.currentUser.userId)
+    this.showUsers = false;
+    this.searchTerm = '';
+    const currentUserId = this.currentUser.userId; 
+    const userId = user.userId; 
+
+    this.chatService.openDirectMessage(currentUserId, userId)
+      .then(() => this.chatService.onChatSelected())
+      .catch(error => console.error('Fehler beim Öffnen des Chats:', error));
   }
 
   openDialogLogout() {    
@@ -254,40 +249,17 @@ export class HeaderComponent implements OnInit {
     }
   }
 
-
-  //Channel-Daten abrufen und speichern
   getChannelDataOnSnapshot(channelsCollectionRef: any) {
-    onSnapshot(
-      channelsCollectionRef,
-      (snapshot: { docs: any[] }) => {
-        console.log('Snapshot-Daten:', snapshot.docs); // Überprüfe, ob Firestore Daten liefert
-
-        this.channelData = [];
-
-        this.channelData = snapshot.docs.map((doc) => {
-          const channel = doc.data();
-          
-          return {
-            id: doc.id,
-            channelName: channel['channelName'],
-            creatorName: channel['creatorName'],
-            tagIcon: channel['tagIcon'],
-            members: channel['members'] || [],
-          };
-        });
-
-        this.filteredChannels = this.channelData;  
-        this.filteredChannels = this.channelData.filter(channel => {
-          return channel.members.some((member: any) =>
-            member.userId === this.currentUser?.userId ||
-            member.name === this.currentUser ||
-            channel.creatorName === this.currentUser);
-          }
-        );
+    onSnapshot(channelsCollectionRef,(snapshot: { docs: any[] }) => {
+        this.channelData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          channelName: doc.data()['channelName'],
+          creatorName: doc.data()['creatorName'],
+          tagIcon: doc.data()['tagIcon'],
+          members: doc.data()['members'] || [],
+        }));
       },
-      (error) => {
-        console.error('Fehler beim laden der Channel-Daten:', error);
-      }
+      error => console.error('Fehler beim Laden der Channel-Daten:', error)
     );
   }
 
