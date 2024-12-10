@@ -62,3 +62,14 @@
         }
     </div>
 }
+
+@if (showChannels) {
+    <div class="users-dialog">
+        @for (channel of filteredChannels; track channel.channelName) {
+            <div class="user-item" (click)="changeToChannel(channel)">
+                <img [src]="'./assets/icons/' + channel.tagIcon" alt="Channel Icon">
+                <span class="user-name">{{ channel.channelName }}</span>
+            </div>
+        }
+    </div>
+}
