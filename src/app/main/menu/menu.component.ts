@@ -43,6 +43,7 @@ export class MenuComponent {
   filteredUsers: any[] = [];
   channelData: any[] = [];
   filteredChannels: any[] = [];
+  initialChannels: any[] = [];
   showChannel: boolean = true;
   showUser: boolean = true;
   openChatWithID: string = '';
@@ -69,65 +70,6 @@ export class MenuComponent {
     });
   }
 
-
-  aboUser(){
-    // Benutzer abonnieren und in currentUser speichern
-    this.userService.currentUser$.subscribe(user => {
-      this.currentUser = user;
-      if (user) {
-        this.currentUserId = user.userId;
-        this.chatService.currentUserId = this.currentUserId;
-        this.chatService.initializeUnreadCounts(this.currentUserId); // Verschiebe hierher
-      }
-    });
-  }
-
-
-  aboRoute(){
-    this.route.params.subscribe(params => {
-      this.userId = params['userId'];
-      this.currentUserId = this.userId;
-    });
-  }
-
-
-  aboUnreadChatCount(){
-    // Abonniere die ungelesenen Zähler für alle Chats
-    this.chatService.unreadCount$.subscribe((counts) => {
-      this.unreadCounts = counts;
-    });
-  }
-
-
-
-  subscribeToSearch() {
-    this.sharedService.searchTerm$.subscribe((term) => {
-      if (term.length >= 3) {
-        this.filterData(term);
-      } else {
-        this.resetFilteredData(); // Setze gefilterte Daten auf Original zurück
-      }
-    });
-  }
-
-
-  filterData(term: string) {
-    this.filteredChannels = this.channelData.filter((channel: any) =>
-      channel.channelName.toLowerCase().includes(term.toLowerCase())
-    );
-    this.filteredUsers = this.userData.filter((user: any) =>
-      user.name.toLowerCase().includes(term.toLowerCase())
-    );
-  }
-
-
-  resetFilteredData() {
-    this.filteredChannels = this.channelData;
-    this.filteredUsers = this.userData;
-  }
-
-
-  //Channel-Abruf
   async getAllChannels(channels: string) {
     try {
       const channelsCollectionRef = collection(this.firestore, channels);
@@ -137,8 +79,6 @@ export class MenuComponent {
     }
   }
 
-
-  //Channel-Daten abrufen und speichern
   getChannelDataOnSnapshot(channelsCollectionRef: any) {
     onSnapshot(
       channelsCollectionRef,
@@ -157,15 +97,8 @@ export class MenuComponent {
           };
 
         });
-
-        // this.filteredChannels = this.channelData;  
-        this.filteredChannels = this.channelData.filter(channel => {
-          return channel.members.some((member: any) =>
-            member.userId === this.currentUserId ||
-            member.name === this.currentUser ||
-            channel.creatorName === this.currentUser);
-        }
-        );
+        this.filterOwnChannels();
+        this.initialChannels = this.filteredChannels;
       },
       (error) => {
         console.error('Fehler beim laden der Channel-Daten:', error);
@@ -173,8 +106,6 @@ export class MenuComponent {
     );
   }
 
-
-  //User-Abfruf
   async getAllUsers(users: string) {
     try {
       const usersCollectionRef = collection(this.firestore, users);
@@ -184,8 +115,6 @@ export class MenuComponent {
     }
   }
 
-
-  //User-Daten abspeichern
   async getUsersDataOnSnapshot(usersCollectionRef: any) {
     onSnapshot(
       usersCollectionRef,
@@ -212,6 +141,65 @@ export class MenuComponent {
     );
   }
 
+  aboUser(){
+    // Benutzer abonnieren und in currentUser speichern
+    this.userService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+      if (user) {
+        this.currentUserId = user.userId;
+        this.chatService.currentUserId = this.currentUserId;
+        this.chatService.initializeUnreadCounts(this.currentUserId); // Verschiebe hierher
+      }
+    });
+  }
+
+  aboRoute(){
+    this.route.params.subscribe(params => {
+      this.userId = params['userId'];
+      this.currentUserId = this.userId;
+    });
+  }
+
+  aboUnreadChatCount(){
+    // Abonniere die ungelesenen Zähler für alle Chats
+    this.chatService.unreadCount$.subscribe((counts) => {
+      this.unreadCounts = counts;
+    });
+  }
+
+  subscribeToSearch() {
+    this.sharedService.searchTerm$.subscribe((term) => {
+      if (term.length >= 3) {
+        this.filterData(term);
+      } else {
+        this.resetFilteredData();
+      }
+    });
+  }
+
+  filterData(term: string) {
+    this.filteredChannels = this.initialChannels.filter((channel: any) =>
+      channel.channelName.toLowerCase().includes(term.toLowerCase())
+    );
+    this.filteredUsers = this.userData.filter((user: any) =>
+      user.name.toLowerCase().includes(term.toLowerCase())
+    );
+  }
+
+  resetFilteredData() {
+    this.filterOwnChannels();
+    this.filteredUsers = this.userData;
+  }
+
+  filterOwnChannels() {
+      this.filteredChannels = this.channelData.filter(channel => {
+      return channel.members.some((member: any) =>
+        member.userId === this.currentUserId ||
+        member.name === this.currentUser ||
+        channel.creatorName === this.currentUser);
+    }
+    );
+  }
 
   async assignChatIds() {
     for (const user of this.filteredUsers) {
