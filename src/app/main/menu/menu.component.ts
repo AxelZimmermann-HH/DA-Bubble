@@ -99,6 +99,7 @@ export class MenuComponent {
   }
 
 
+
   subscribeToSearch() {
     this.sharedService.searchTerm$.subscribe((term) => {
       if (term.length >= 3) {

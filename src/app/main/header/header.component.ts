@@ -98,6 +98,13 @@ export class HeaderComponent implements OnInit {
   
     if (searchTerm.startsWith('@')) {
       const query = searchTerm.slice(1); 
+      this.filteredChannels = this.channelData.filter(channel => {
+        return channel.members.some((member: any) =>
+          member.userId === this.currentUser?.userId ||
+          member.name === this.currentUser ||
+          channel.creatorName === this.currentUser
+        );
+      });
       this.filterUsers(query); 
       this.toggleUserList();
     } else if (searchTerm.startsWith('#')) { 
@@ -112,9 +119,12 @@ export class HeaderComponent implements OnInit {
           channel.creatorName === this.currentUser
         );
       });
+      console.log(this.filteredChannels);
+      
       } else {
         // Dynamisches Filtern basierend auf der aktuellen Eingabe
         this.filterFurtherChannels(query);
+        
       }
       this.showChannels = true;
     } else {
