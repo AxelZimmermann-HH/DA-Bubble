@@ -14,7 +14,7 @@
 
     <div class="desktop-search">
         <div class="input">
-            <input id="search" type="text" placeholder="Devspace durchsuchen" (input)="onSearchInput($event)">
+            <input id="search" type="text" placeholder="Devspace durchsuchen" [(ngModel)]="searchTerm" (input)="handleInput($event)">
             <img src="./assets/icons/search-2.png" alt="">
         </div>
     </div>
@@ -50,5 +50,15 @@
                 (input)="onSearchInput($event)">
             <img src="./assets/icons/search-2.png" alt="">
         </div>
-    
 </div>
+
+@if (showUsers) {
+    <div class="users-dialog">
+        @for (user of filteredUserList; track user.mail) {
+            <div class="user-item" (click)="changeToUser(user)">
+                <img class="further-user-avatar" [src]="userService.getAvatarForUser(user.name)" alt="{{ user.name }}">
+                <span class="user-name">{{ user.name }}</span>
+            </div>
+        }
+    </div>
+}
