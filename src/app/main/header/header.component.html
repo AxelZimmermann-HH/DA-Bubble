@@ -55,22 +55,33 @@
 
 @if (showUsers) {
     <div class="users-dialog">
+        <div *ngIf="noUserResults" class="no-results">
+            <span>Kein Ergebnis</span>
+        </div>
+        <div *ngIf="!noUserResults">
         @for (user of filteredUserList; track user.mail) {
             <div class="user-item" (click)="changeToUser(user)">
                 <img class="further-user-avatar" [src]="userService.getAvatarForUser(user.name)" alt="{{ user.name }}">
                 <span class="user-name">{{ user.name }}</span>
             </div>
         }
+        </div>
     </div>
 }
 
 @if (showChannels) {
     <div class="users-dialog">
-        @for (channel of filteredChannels; track channel.channelName) {
-            <div class="user-item" (click)="changeToChannel(channel)">
-                <img [src]="'./assets/icons/' + channel.tagIcon" alt="Channel Icon">
-                <span class="user-name">{{ channel.channelName }}</span>
-            </div>
-        }
+        <div *ngIf="noChannelResults" class="no-results">
+            <span>Kein Ergebnis</span>
+        </div>
+        <div *ngIf="!noChannelResults">
+            @for (channel of filteredChannels; track channel.channelName) {
+                <div class="user-item" (click)="changeToChannel(channel)">
+                    <img [src]="'./assets/icons/' + channel.tagIcon" alt="Channel Icon">
+                    <span class="user-name">{{ channel.channelName }}</span>
+                </div>
+            }
+        </div>
     </div>
+    
 }
