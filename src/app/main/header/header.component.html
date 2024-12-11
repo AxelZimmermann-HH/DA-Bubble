@@ -46,8 +46,9 @@
 <div class="responsive-search" *ngIf="this.chatService.showMenu">
     
         <div class="input">
-            <input id="search" class="res-search" type="text" placeholder="Gehe zu..."
-                (input)="onSearchInput($event)">
+            <input id="search" class="res-search" type="text" placeholder="Gehe zu..." 
+                [(ngModel)]="searchTerm"
+                (input)="handleInput($event)">
             <img src="./assets/icons/search-2.png" alt="">
         </div>
 </div>
