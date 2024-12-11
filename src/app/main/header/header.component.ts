@@ -13,6 +13,7 @@ import { collection, doc, Firestore, getDoc, onSnapshot } from '@angular/fire/fi
 import { ActivatedRoute } from '@angular/router';
 import { ChatService } from '../../services/chat.service';
 import { ChangeDetectorRef } from '@angular/core';
+import { ChannelService } from '../../services/channel.service';
 
 @Component({
   selector: 'app-header',
@@ -40,7 +41,7 @@ export class HeaderComponent implements OnInit {
     public dialog: MatDialog, 
     public sharedService: SharedService, 
     public chatService: ChatService,
-    public userService: UserService, 
+    public userService: UserService,
     public firestore: Firestore, 
     public route: ActivatedRoute,
     private cdr: ChangeDetectorRef) { }

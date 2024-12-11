@@ -72,8 +72,5 @@ export class SharedService {
     this.mailChangeSuccessSubject.next(state);
   }
 
-  // Prüft und aktualisiert den mobilen Status
-  updateIsMobile(): void {
-    this.isMobile = window.innerWidth <= 768; // Schwellenwert für mobile Ansicht
-  }
+
 }

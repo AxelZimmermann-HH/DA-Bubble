@@ -171,29 +171,6 @@ export class DialogAddUserComponent {
   }
 
 
-  // const searchList = document.querySelector('.searchListe');
-  // const taggedUserDiv = document.querySelector('.tagged-user-list');
-  // const emojiPicker = document.querySelector('.emoji-picker');
-  // if (this.taggedUser && searchList && taggedUserDiv &&
-  //   !searchList.contains(event.target as Node) && !taggedUserDiv.contains(event.target as Node)) {
-  //   this.taggedUser = false;
-  // }
-  // if ((this.showEmojiPicker || this.showEditEmojiPicker) && emojiPicker && !emojiPicker.contains(event.target as Node)) {
-  //   this.showEmojiPicker = false;
-  //   this.showEditEmojiPicker = false;
-  // }
-
-  ngOnInit(): void {
-    // Initial prüfen, ob es sich um eine mobile Ansicht handelt
-    this.sharedService.updateIsMobile();
-  }
-
-  @HostListener('window:resize', [])
-  onResize(): void {
-    // Beim Resizen den Status aktualisieren
-    this.sharedService.updateIsMobile();
-  }
-
   closeDialog() {
     this.dialogRef.close();
   }

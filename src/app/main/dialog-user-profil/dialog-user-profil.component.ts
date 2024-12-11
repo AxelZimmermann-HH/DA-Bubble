@@ -8,7 +8,7 @@ import { ChatService } from '../../services/chat.service';
 import { UserService } from '../../services/user.service';
 import { SharedService } from '../../services/shared.service';
 import { FormsModule, NgForm } from '@angular/forms';
-import { Auth, verifyBeforeUpdateEmail, updateEmail, sendEmailVerification, EmailAuthProvider, reauthenticateWithCredential } from '@angular/fire/auth';
+import { Auth, verifyBeforeUpdateEmail, EmailAuthProvider, reauthenticateWithCredential } from '@angular/fire/auth';
 import { doc, setDoc } from '@angular/fire/firestore';
 import { ChangeDetectorRef } from '@angular/core';
 

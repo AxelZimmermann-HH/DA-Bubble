@@ -1,7 +1,7 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { User } from '../../models/user.class';
 import { Message } from '../../models/message.class';
-import {  doc, Firestore, updateDoc } from '@angular/fire/firestore';
+import { doc, Firestore, updateDoc } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Answer } from '../../models/answer.class';
@@ -42,7 +42,7 @@ export class ThreadComponent {
   taggedUser: boolean = false;
   errorMessage: string | null = null;
   filteredSearchAnswers: Answer[] = [];
-
+  originalAnswers: any[] = [];
   @Output() threadClosed = new EventEmitter<void>();
 
   @Input() selectedChannelId: string | null = null;
@@ -71,17 +71,31 @@ export class ThreadComponent {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['message'] && this.message && this.message.messageId) {
-      this.answersService.getAnswers(this.selectedChannelId, this.message.messageId, (answers) => {
-        this.selectedAnswers = answers;
-      });
+      this.loadAnswers();
     }
     if (changes['selectedChannelId'] && !changes['selectedChannelId'].isFirstChange()) {
-      this.selectedAnswers = [];
-      this.closeThread();
+      Promise.resolve().then(() => {
+        this.selectedAnswers = [];
+        this.originalAnswers = [];
+        this.closeThread();
+      }); 
+    }
+  }
+  
+  loadAnswers(): void {
+    if (this.selectedChannelId && this.message?.messageId) {
+      this.answersService.getAnswers(
+        this.selectedChannelId,
+        this.message.messageId,
+        (answers) => {
+          this.selectedAnswers = answers;
+          this.originalAnswers = [...answers]; // Originaldaten sichern
+        }
+      );
     }
   }
 
-  subscribeToSearch() {
+  subscribeToSearch(): void {
     this.sharedService.searchTerm$.subscribe((term) => {
       if (term.length >= 3) {
         this.filterAnswers(term);
@@ -91,21 +105,21 @@ export class ThreadComponent {
     });
   }
 
-  deleteFile(answer: Answer) {
-    this.answersService.deleteFile(answer);
-    this.fileInput.nativeElement.value = '';
-  }
-
-  filterAnswers(term: string) {
-    this.selectedAnswers = this.selectedAnswers.filter((answer: any) => {
-      const matchesUser = answer.user?.toLowerCase().includes(term.toLowerCase());
-      const matchesText = answer.text?.toLowerCase().includes(term.toLowerCase());
+  filterAnswers(term: string): void {
+    this.selectedAnswers = (this.originalAnswers || []).filter((answer: { user?: string; text?: string }) => {
+      const matchesUser = answer.user?.toLowerCase()?.includes(term.toLowerCase()) || false;
+      const matchesText = answer.text?.toLowerCase()?.includes(term.toLowerCase()) || false;
       return matchesUser || matchesText;
     });
   }
+  
+  resetFilteredAnswers(): void {
+    this.selectedAnswers = [...this.originalAnswers];
+  }
 
-  resetFilteredAnswers() {
-    this.filteredSearchAnswers = this.selectedAnswers;
+  deleteFile(answer: Answer) {
+    this.answersService.deleteFile(answer);
+    this.fileInput.nativeElement.value = '';
   }
 
   async addAnswer(messageId: string) {
@@ -221,7 +235,7 @@ export class ThreadComponent {
   toggleEmojiReactionForAnswer(answer: Answer, emojiData: EmojiData) {
     if (!emojiData || !emojiData.userIds) {
       console.error('Ungültige Emoji-Daten:', emojiData);
-   return;
+      return;
     }
     const currentUserId = this.userId;
     const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
@@ -391,7 +405,7 @@ export class ThreadComponent {
       }
     }
   }
-  
+
   closeThread() {
     this.threadClosed.emit();
   }
