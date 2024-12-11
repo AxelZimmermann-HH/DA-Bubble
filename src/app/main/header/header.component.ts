@@ -31,11 +31,13 @@ export class HeaderComponent implements OnInit {
   showChannels: boolean = false;
   userList: User[] = [];
   filteredUserList: User[] = [];
+  noUserResults: boolean = false;
   searchTerm: string = '';
   channelData: any[] = [];
   filteredChannels: any[] = [];
   initialChannels: any[] = [];
   selectedChannel: any = null;
+  noChannelResults: boolean = false;
 
   constructor(
     public dialog: MatDialog, 
@@ -113,10 +115,17 @@ export class HeaderComponent implements OnInit {
   }
 
   filterUsers(searchTerm: string) {
-    const searchQuery = searchTerm.toLowerCase(); 
-    this.filteredUserList = this.userList.filter(user =>
-      user.name.toLowerCase().includes(searchQuery)
-    );
+    const searchQuery = searchTerm.slice(1).toLowerCase(); 
+    
+    if (searchQuery.length === 0) {
+      this.filteredUserList = [...this.userList];
+      this.noUserResults = false; 
+    } else {
+      this.filteredUserList = this.userList.filter(user =>
+        user.name.toLowerCase().includes(searchQuery)
+      );
+      this.noUserResults = this.filteredUserList.length === 0;
+    }
   }
 
   toggleUserList() {
@@ -156,6 +165,25 @@ export class HeaderComponent implements OnInit {
   }
 
   filterFurtherChannels(term: string) {
+    const searchQuery = term.toLowerCase();
+  
+    if (searchQuery.length === 0) {
+      // Keine weitere Eingabe -> Zeige initiale Channels
+      this.filteredChannels = [...this.initialChannels];
+      this.noChannelResults = false; // Kein "no result" anzeigen
+    } else {
+      // Filtere die Channels basierend auf der Eingabe
+      this.filteredChannels = this.initialChannels.filter(channel =>
+        channel.channelName.toLowerCase().includes(searchQuery)
+      );
+  
+      // Setze noChannelResults auf true, wenn keine Ergebnisse gefunden wurden
+      this.noChannelResults = this.filteredChannels.length === 0;
+    }
+  }
+  
+
+  filterFurtherChannels2(term: string) {
     const searchQuery = term.toLowerCase();
       this.filteredChannels = this.initialChannels.filter(channel =>
       channel.channelName.toLowerCase().includes(searchQuery)
