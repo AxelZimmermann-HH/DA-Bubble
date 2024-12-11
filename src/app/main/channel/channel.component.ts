@@ -35,7 +35,7 @@ interface MessageGroup {
   styleUrl: './channel.component.scss'
 })
 
-export class ChannelComponent implements AfterViewInit {
+export class ChannelComponent {
 
   userId!: string;
   newMessageText: string = '';
@@ -123,6 +123,11 @@ export class ChannelComponent implements AfterViewInit {
       this.isLoading = false;
       this.focusInputField();
       this.loadAnswersForMessages();
+      if(this.channelService.enableScroll){
+        setTimeout(() => {
+          this.scrollToBottom();
+        }, 100);
+      }
     });
   }
 
@@ -369,23 +374,16 @@ export class ChannelComponent implements AfterViewInit {
   }
 
   @ViewChild('chatContainer') chatContainer!: ElementRef;
-  ngAfterViewInit() {
-    if (this.chatContainer?.nativeElement) {
-      const observer = new MutationObserver(() => {
-        this.scrollToBottom(); 
-      });
 
-      observer.observe(this.chatContainer.nativeElement, { childList: true, subtree: true });
-    }
-  }
-
+  //scrollt das Chatfenster nach unten
   scrollToBottom(): void {
     if (this.chatContainer?.nativeElement) {
       try {
         this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
+        this.channelService.enableScroll = false;
       } catch (err) {
         console.error('Scrollen fehlgeschlagen:', err);
       }
     }
-  }
+  };
 }

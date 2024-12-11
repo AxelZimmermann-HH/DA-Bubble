@@ -29,6 +29,8 @@ export class ChatService {
   currentOpenChatId: string | null = null; // Aktuell geöffneter Chat
   private unreadCountMap = new Map<string, number>(); // Map für ungelesene Nachrichten pro Chat
   unreadCount$ = new BehaviorSubject<Map<string, number>>(this.unreadCountMap); // Observable für die UI
+  enableScroll:boolean = true;
+  openedChat:string = '';
 
   constructor(public firestore: Firestore, private sanitizer: DomSanitizer, public sharedService: SharedService, public dbService: DatabaseService) {
     this.showChannel = true;
@@ -39,7 +41,6 @@ export class ChatService {
       this.showChat = false;
     }
   }
-
 
   onChannelSelected(channel: any) {
     if (channel) {
@@ -59,7 +60,6 @@ export class ChatService {
     } 
   }
 
-
   onChatSelected() {
     this.showChannel = false;
     this.showChat = true;
@@ -68,18 +68,18 @@ export class ChatService {
     }
   }
 
-
   changeToMobile(){
     this.showMenu = false;
     this.sharedService.goBackHeader = true;
   }
 
-
   //öffnet den privaten Chat
   async openDirectMessage(currentUserId: string, userId: string) {
+    this.openedChat = '';
     this.chatIsEmpty = true;
     this.chatMessages = [];
     const chatId = await this.createChatID(currentUserId, userId);
+    this.openedChat = chatId;
     const checkIfChatExists = query(collection(this.firestore, "chats"), where(documentId(), "==", chatId));
     const querySnapshot = await getDocs(checkIfChatExists);
 
@@ -91,24 +91,15 @@ export class ChatService {
         this.getChatData(chatId);
       });
       await this.markMessagesAsRead(chatId);
-      this.updateUnreadCounts(chatId);
+      //this.updateUnreadCounts(chatId);
     }
     this.getUserData(userId);
   };
-
-
-  // Methode zum Aktualisieren der ungelesenen Nachrichten-Zähler
-  updateUnreadCounts(chatId: string) {
-    this.unreadCountMap.set(chatId, 0);
-    this.unreadCount$.next(new Map(this.unreadCountMap));
-  }
-
 
   //erstellt eine Chat-ID aus den Nutzer ID's
   async createChatID(myUserId: string, userId: string) {
     return [myUserId, userId].sort().join('_');
   };
-
 
   // Benutzer-Daten abrufen
   async getUserData(userId: string) {
@@ -127,7 +118,6 @@ export class ChatService {
       this.userSubject.next(userData);
     });
   };
-
 
   // Chat-Daten abrufen
   async getChatData(chatId: string) {
@@ -179,7 +169,6 @@ export class ChatService {
     });
   };
 
-
   // Nachrichten nach Datum gruppieren
   groupMessagesByDate(): void {
     this.groupedMessages = this.chatMessages.reduce((groups: any, message: any) => {
@@ -198,7 +187,6 @@ export class ChatService {
     this.chatSubject.next(groupedMessagesArray);
   };
 
-
   // Nachricht senden
   async setChatData(newDm: string, fileDownloadUrl: string, selectedFileName: string, fileType: string, currentUserId: string, audioDownloadUrl:string) {
     const newDirectMessage = new directMessage();
@@ -216,14 +204,12 @@ export class ChatService {
     await this.getChatData(this.chatId)
   };
 
-
   async setChatTime(newDirectMessage: directMessage){
     newDirectMessage.timestamp = await this.sharedService.getTimeStamp();
     newDirectMessage.time = newDirectMessage.timestamp.split('T')[1].slice(0, 5);
     newDirectMessage.dayDateMonth = await this.sharedService.getFormattedDate();
     return newDirectMessage.timestamp, newDirectMessage.time, newDirectMessage.dayDateMonth;
   }
-
 
   // Setze Daten für den editierten Chat
   async setEditedChatData(editedDM: string, message: any) {
@@ -233,13 +219,11 @@ export class ChatService {
     this.dbService.saveEditedMessage(chatId, messageId, text);
   };
 
-
   async doesChatExist(chatId: string): Promise<boolean> {
     const checkIfChatExists = query(collection(this.firestore, "chats"), where(documentId(), "==", chatId));
     const querySnapshot = await getDocs(checkIfChatExists);
     return !querySnapshot.empty;
   }
-
 
   // Senden der Nachricht an mehrere User
   async sendMessageToChat(chatId: string, newDm: string, fileDownloadUrl: string | null, fileName: string | null, fileType: string | null, currentUserId: string) {
@@ -262,10 +246,9 @@ export class ChatService {
     }
   }
 
-
   //ungelesene Nachrichten
   // Initialisiere die Abfrage, um alle ungelesenen Nachrichten zu überwachen
-  initializeUnreadCounts(currentUserId: string) {
+  async initializeUnreadCounts(currentUserId: string) {
     const chatsCollection = collection(this.firestore, 'chats');
     // Abfrage aller Chats für den aktuellen Benutzer
     const userChatsQuery = query(chatsCollection,where('users', 'array-contains', currentUserId));
@@ -273,53 +256,40 @@ export class ChatService {
     onSnapshot(userChatsQuery, (snapshot) => {
       this.unreadCountMap.clear(); // Map zurücksetzen
       
-      snapshot.forEach( (chatDoc) => {
+      snapshot.forEach( async (chatDoc) => {
         const chatId = chatDoc.id;
-        const messagesCollection = collection(this.firestore, `chats/${chatId}/messages`);
-        const unreadMessagesQuery = query(
-          messagesCollection,
-          where('receiverID', '==', currentUserId),
-          where('isRead', '==', false)
-        );
-
-        // Abonniere die ungelesenen Nachrichten in diesem Chat
-        onSnapshot(unreadMessagesQuery, (messageSnapshot) => {
-          
-          const unreadCount = messageSnapshot.size; // Anzahl der ungelesenen Nachrichten
-          
-          if (unreadCount > 0) {
-            this.unreadCountMap.set(chatId, unreadCount);
-          } else {
-            this.unreadCountMap.delete(chatId); // Entferne den Zähler, wenn keine ungelesenen Nachrichten vorhanden sind
-          }
-          // Aktualisiere die Map, damit alle Abonnenten benachrichtigt werden
-          this.unreadCount$.next(new Map(this.unreadCountMap));
-        });
+        await this.getUnreadCount(chatId, currentUserId)
       });
     });
   }
 
-
   // Ungelesene Nachrichten zählen, die an den aktuellen Benutzer gesendet wurden
-  getUnreadCount(chatId: string) {
+  async getUnreadCount(chatId: string, currentUserId: string) {
     const messagesCollection = collection(this.firestore, `chats/${chatId}/messages`);
     const unreadMessagesQuery = query(
       messagesCollection,
-      where('isRead', '==', false),
-      where('receiverID', '==', this.currentUserId)
+      where('receiverID', '==', currentUserId),
+      where('isRead', '==', false)
     );
 
-    // Echtzeit-Listener für ungelesene Nachrichten
-    onSnapshot(unreadMessagesQuery, (snapshot) => {
-      const unreadCount = snapshot.size;
-      this.unreadCountMap.set(chatId, unreadCount);
-      this.unreadCount$.next(this.unreadCountMap);
+    // Abonniere die ungelesenen Nachrichten in diesem Chat
+    onSnapshot(unreadMessagesQuery, (messageSnapshot) => {
+
+      const unreadCount = messageSnapshot.size; // Anzahl der ungelesenen Nachrichten
+      if (unreadCount > 0) {
+        this.unreadCountMap.set(chatId, unreadCount);
+      }
+      if(this.openedChat == chatId){
+        this.unreadCountMap.set(chatId, 0); // Entferne den Zähler, wenn keine ungelesenen Nachrichten vorhanden sind
+      }
+      // Aktualisiere die Map, damit alle Abonnenten benachrichtigt werden
+      this.unreadCount$.next(new Map(this.unreadCountMap));
     });
   }
 
   
   // Setze alle Nachrichten als gelesen für den aktuellen Benutzer im geöffneten Chat
-  markMessagesAsRead(chatId: string) {
+  async markMessagesAsRead(chatId: string) {
     const messagesCollection = collection(this.firestore, `chats/${chatId}/messages`);
     const unreadMessagesQuery = query(
       messagesCollection,
@@ -327,18 +297,22 @@ export class ChatService {
       where('receiverID', '==', this.currentUserId)
     );
 
-    onSnapshot(unreadMessagesQuery, (snapshot) => {
-      snapshot.forEach((messageDoc) => {
+    try {
+      const snapshot = await getDocs(unreadMessagesQuery); // Einmalige Abfrage der ungelesenen Nachrichten
+      const updatePromises = snapshot.docs.map((messageDoc) => {
         const messageRef = doc(this.firestore, `chats/${chatId}/messages/${messageDoc.id}`);
-
-        updateDoc(messageRef, { isRead: true })
-          .catch((error) => {
-            console.error(`Fehler beim Aktualisieren von Nachricht ${messageDoc.id}:`, error);
-          });
+        return updateDoc(messageRef, { isRead: true });
       });
-      // Zähler zurücksetzen, nachdem alle Nachrichten als gelesen markiert wurden
-      this.unreadCountMap.set(chatId, 0);
-      this.unreadCount$.next(this.unreadCountMap);
-    });
+  
+      await Promise.all(updatePromises); // Warte, bis alle Nachrichten aktualisiert sind
+    } catch (error: any) {
+      console.error(`Fehler beim Markieren von Nachrichten als gelesen für Chat ${chatId}:`, error);
+    }
+  }
+
+  // Methode zum Aktualisieren der ungelesenen Nachrichten-Zähler
+  updateUnreadCounts(chatId: string) {
+    this.unreadCountMap.set(chatId, 0);
+    this.unreadCount$.next(new Map(this.unreadCountMap));
   }
 }

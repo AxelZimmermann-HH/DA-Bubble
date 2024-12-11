@@ -30,7 +30,7 @@ interface MessageGroup {
   styleUrls: ['./chat.component.scss']
 })
 
-export class ChatComponent implements AfterViewInit, OnDestroy {
+export class ChatComponent implements OnDestroy {
   private documentClickListener?: () => void;
   directMessage = new FormControl('', [Validators.required, Validators.minLength(2)]);
   editedMessage = new FormControl('', [Validators.required, Validators.minLength(2)]);
@@ -75,16 +75,33 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
     this.listenToEmojiReactions(); // Listener auf das gesamte Dokument
   }
 
-  ngAfterViewInit() {
-    const chatContainer = document.querySelector('.chat-container');
-    if (chatContainer) {
-      const observer = new MutationObserver(() => {
-        this.scrollToBottom(); // Wird nur ausgeführt, wenn sich etwas ändert
-      });
-  
-      observer.observe(chatContainer, { childList: true, subtree: true });
-    }
+  aboChat(){
+    this.chatService.chat$.subscribe((chatSubject) => {
+      if (chatSubject && chatSubject.length > 0) {
+        this.chatService.chatIsEmpty = false;
+        this.chat = chatSubject;
+        this.filteredSearchMessages = chatSubject;
+      }
+      this.focusInputField();
+      if(this.chatService.enableScroll){
+        setTimeout(() => {
+          this.scrollToBottom();
+        }, 100);
+      }
+    });
   }
+
+    //scrollt das Chatfenster nach unten
+    scrollToBottom(): void {
+      if (!this.chatService.chatIsEmpty && this.chatContainer?.nativeElement) {
+        try {
+          this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
+          this.chatService.enableScroll = false;
+        } catch (err) {
+          console.error('Scrollen fehlgeschlagen:', err);
+        }
+      }
+    };
 
   getAvatarForUser(userName: string): any {
     if (!this.user || !this.user.name) {
@@ -123,17 +140,6 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
       if (userData) {
         this.user = userData;
       }
-    });
-  }
-
-  aboChat(){
-    this.chatService.chat$.subscribe((chatSubject) => {
-      if (chatSubject && chatSubject.length > 0) {
-        this.chatService.chatIsEmpty = false;
-        this.chat = chatSubject;
-        this.filteredSearchMessages = chatSubject;
-      }
-      this.focusInputField();
     });
   }
 
@@ -207,17 +213,25 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
   }
 
   async sendDirectMessage() {
-    const newDm = this.directMessage.value!;
-    console.log('Raw Message:', JSON.stringify(this.directMessage.value));
-    const fileDownloadUrl = this.fileService.fileDownloadUrl;
-    const fileName = this.fileService.selectedFileName;
-    const fileType = this.fileService.selectedFileType;
-    const audioDownloadUrl = this.audioService.audioDownloadUrl;
-    await this.chatService.setChatData(newDm, fileDownloadUrl, fileName, fileType, this.currentUserId, audioDownloadUrl);
-    await this.resetDirectMessage();
-    await this.sendMessagesToMultipleUsers(newDm, fileDownloadUrl, fileName, fileType);  
-    this.selectedNames = [];
-    this.hasNames = false;
+    try {
+      const newDm = this.directMessage.value!;
+      const fileDownloadUrl = this.fileService.fileDownloadUrl;
+      const fileName = this.fileService.selectedFileName;
+      const fileType = this.fileService.selectedFileType;
+      const audioDownloadUrl = this.audioService.audioDownloadUrl;
+  
+      await Promise.all([
+        this.chatService.setChatData(newDm, fileDownloadUrl, fileName, fileType, this.currentUserId, audioDownloadUrl),
+        this.sendMessagesToMultipleUsers(newDm, fileDownloadUrl, fileName, fileType)
+      ]);
+  
+      await this.resetDirectMessage();
+      this.selectedNames = [];
+      this.hasNames = false;
+      this.chatService.enableScroll = true;
+    } catch (error) {
+      console.error('Fehler beim Senden der Nachricht:', error);
+    }
   }
   
   async resetDirectMessage(){
@@ -238,17 +252,6 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
       await this.chatService.sendMessageToChat(chatId, newDm, fileDownloadUrl, fileName, fileType, this.currentUserId);
     }
   }
-  
-  //scrollt das Chatfenster nach unten
-  scrollToBottom(): void {
-    if (!this.chatService.chatIsEmpty && this.chatContainer) {
-      try {
-        this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
-      } catch (err) {
-        console.error('Scrollen fehlgeschlagen:', err);
-      }
-    }
-  };
 
   //öffnet das User Profil im Chatfenster
   openUserProfil(user: any) {

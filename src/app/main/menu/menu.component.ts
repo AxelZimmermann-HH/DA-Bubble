@@ -8,6 +8,7 @@ import { ChatService } from '../../services/chat.service';
 import { UserService } from '../../services/user.service';
 import { ActivatedRoute } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
+import { ChannelService } from '../../services/channel.service';
 
 @Component({
   selector: 'app-menu',
@@ -25,6 +26,7 @@ export class MenuComponent {
     public sharedService: SharedService,
     public chatService: ChatService,
     public userService: UserService,
+    public channelService: ChannelService,
     private breakpointObserver: BreakpointObserver
   ) { }
 
@@ -207,7 +209,6 @@ export class MenuComponent {
     }
   }
 
-
   //öffnet und schließt die Untermenüs im Menü-Panel
   openCloseDiv(div: string) {
     if (div == 'showChannel') {
@@ -226,7 +227,6 @@ export class MenuComponent {
     }
   }
 
-
   //öffnet und schließt das Menü-Panel
   openCloseMenu() {
     if (this.showMenu) {
@@ -244,19 +244,16 @@ export class MenuComponent {
     }
   };
 
-
   get containerClass() {
     return this.sharedService.isMobile ? 'mobile-menu-container menu-container gap-25' : 'menu-container gap-25';
   }
   
-
   get animationClass() {
     if (this.sharedService.isMobile) {
       return ''; // Keine Animationen für Mobilgeräte
     }
     return !this.closeMenu ? 'open-menu' : 'close-menu';
   }
-
 
   //öffnet den Channel hinzufügen Dialog
   openDialogAddChannel() {
@@ -274,14 +271,13 @@ export class MenuComponent {
     });
   }
 
-
   //öffnet einen ausgewählten channel
   onChannelClick(channel: any) {
     this.selectedChannel = channel;
     this.channelSelected.emit(channel);
     this.selectedChannel.id = channel.id;
+    this.channelService.enableScroll = true;
   }
-
 
   //Öffnet eine neue Nachricht
   onNewMessageClick() {
@@ -293,17 +289,15 @@ export class MenuComponent {
     this.channelSelected.emit(null);
   }
 
-
   trackByChannelId(channel: any): string {
     return channel.id;  // Optimiert die Performance von *ngFor
   }
 
-
   selectChat() {
     this.chatSelected.emit();
+    this.chatService.enableScroll = true
   }
 
-  
   getAvatarForUser(userName: string) {
     const user = this.userData.find((u: { name: string; }) => u.name === userName);
     if (user) {

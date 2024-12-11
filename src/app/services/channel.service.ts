@@ -20,11 +20,10 @@ export class ChannelService {
     userId!: string;
     channelMembers: any = [];
     message = new Message();
-
-
     channel = new Channel();
     channelData: Channel[] = [];
     filteredChannels: Channel[] = [];
+    enableScroll:boolean = true;
 
     @Input() selectedChannelId: string | null = null;
 
@@ -125,6 +124,5 @@ export class ChannelService {
         const q = query(channelsCollection, where('channelName', '==', channelName));
         const querySnapshot = await getDocs(q);
         return !querySnapshot.empty;
-      }
-      
+      }  
 }
