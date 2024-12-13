@@ -211,4 +211,7 @@ getUserNameById(userId: string): string | undefined {
     });
     console.log('add channel user ', member.name);
   }
+  findUserById(userId: string): User | undefined {
+    return this.userData.find(user => user.userId === userId);
+}
 }

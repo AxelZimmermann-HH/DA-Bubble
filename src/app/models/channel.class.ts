@@ -16,7 +16,7 @@ export class Channel {
         this.members = Array.isArray(obj?.members) ? obj.members : []; 
         this.creatorName = obj ? obj.creatorName : '';
     }
-
+  
     public toJson() {
         return {
             channelName:this.channelName,

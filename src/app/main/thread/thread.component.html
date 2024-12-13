@@ -10,16 +10,16 @@
     <div class="thread-content" [ngClass]="sharedService.isMobile ? 'thread-content-mobile' : 'thread-content'"
         #answersContainer>
         <!-- Main message section -->
-        <div class="message-main" [ngClass]="{'current-user':userService.isCurrentUser(message!.user, userId)}">
-            <img [src]="userService.getAvatarForUser(message.user)" alt="Avatar" class="avatar">
+        <div class="message-main" [ngClass]="{'current-user':userService.isCurrentUser(message.user.name,userId)}">
+            <img [src]="userService.getAvatarForUser(message.user.name)" alt="Avatar" class="avatar">
             <div class="message-content" *ngIf="!message.isEditing"
-                [ngClass]="{'a-flex': userService.isCurrentUser(message.user, userId)}">
-                <div class="name-time" [ngClass]="{'current-user': userService.isCurrentUser(message!.user, userId)}">
-                    {{ message.user }}
+                [ngClass]="{'a-flex': userService.isCurrentUser(message.user.name, userId)}">
+                <div class="name-time" [ngClass]="{'current-user': userService.isCurrentUser(message.user.name, userId)}">
+                    {{ message.user.name }}
                     <p class="time">{{ message.formatTimestamp() }}</p>
                 </div>
                 <div class="speech-bubble"
-                    [ngClass]="{'border-radius': userService.isCurrentUser(message.user, userId)}">
+                    [ngClass]="{'border-radius': userService.isCurrentUser(message.user.name, userId)}">
                     {{ message.text }}
                     <div *ngIf="message.fileUrl" class="fileUrl">
                         <div *ngIf="message.fileType?.startsWith('image/')">
@@ -68,7 +68,7 @@
                 </div>
             </div>
             <div class="reaction-hover" *ngIf="!message.isEditing && emojiService.getRecentEmojis(message).length>0"
-                [ngClass]="{'reaction-left': userService.isCurrentUser(message.user, userId)}">
+                [ngClass]="{'reaction-left': userService.isCurrentUser(message.user.name, userId)}">
                 <ng-container *ngFor="let emojiData of emojiService.getRecentEmojis(message)">
                     <img [src]="getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji"
                         (click)="toggleUserEmoji(message, emojiData.emoji, userId)" />
@@ -83,17 +83,17 @@
             <hr>
         </div>
         <!-- Answer list -->
-        <div class="message-main" [ngClass]="{'current-user': userService.isCurrentUser(answer.user,userId)}"
-            *ngFor="let answer of selectedAnswers">
-            <img [src]="userService.getAvatarForUser(answer.user)" alt="Avatar" class="avatar">
+        <div class="message-main" [ngClass]="{'current-user': userService.isCurrentUser(answer.user.name,userId)}"
+            *ngFor="let answer of selectedAnswers" #answersContainer>
+            <img [src]="userService.getAvatarForUser(answer.user.name)" alt="Avatar" class="avatar">
             <div class="message-content" *ngIf="!answer.isEditing"
-                [ngClass]="{'a-flex': userService.isCurrentUser(answer.user,userId)}">
-                <div class="name-time" [ngClass]="{'current-user': userService.isCurrentUser(answer.user,userId)}">
-                    {{ answer.user }}
+                [ngClass]="{'a-flex': userService.isCurrentUser(answer.user.name,userId)}">
+                <div class="name-time" [ngClass]="{'current-user': userService.isCurrentUser(answer.user.name,userId)}">
+                    {{ answer.user.name }}
                     <p class="time">{{ answer.formatTimestamp() }}</p>
                 </div>
                 <div class="speech-bubble"
-                    [ngClass]="{'border-radius': userService.isCurrentUser(answer.user, userId)}">
+                    [ngClass]="{'border-radius': userService.isCurrentUser(answer.user.name, userId)}">
                     <div style="display: flex;flex-direction: column;gap: 20px;">
                         {{ answer.text }}
                         <div *ngIf="answer.fileUrl" class="fileUrl">
@@ -150,10 +150,10 @@
                 </div>
             </div>
             <div class="reaction-hover"
-                *ngIf="!answer.isEditing && answer.emojis.length>0 || userService.isCurrentUser(answer.user, userId)"
-                [ngClass]="{'reaction-left': userService.isCurrentUser(answer.user, userId)}">
-                <img src="./assets/icons/more_vert.png" alt="" *ngIf="userService.isCurrentUser(answer.user, userId)"
-                    (click)="editDirectAnswer(answer)">
+                *ngIf="!answer.isEditing && answer.emojis.length>0 || userService.isCurrentUser(answer.user.name, userId)"
+                [ngClass]="{'reaction-left': userService.isCurrentUser(answer.user.name, userId)}">
+                <img src="./assets/icons/more_vert.png" alt="" *ngIf="userService.isCurrentUser(answer.user.name, userId)"
+                    (click)=" editDirectAnswer(answer)">
                 <div style="display: flex;">
                     <ng-container *ngFor="let emojiData of getRecentEmojis(answer)">
                         <img [src]="getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji"

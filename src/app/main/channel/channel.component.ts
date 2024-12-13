@@ -43,8 +43,10 @@ export class ChannelComponent {
   editingMessageId: string | null = null;
 
   inputValue: string = '';
-
+  selectedChannel!: Channel;
   filteredUsers: User[] = [];
+  userData: User[] = [];
+
   filteredMessages: Message[] = [];
   filteredSearchMessages: MessageGroup[] = [];
   showAutocomplete: boolean = false;
@@ -87,51 +89,79 @@ export class ChannelComponent {
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
     });
-    this.userService.getAllUsers().then(() => {
-      this.userService.findUserNameById(this.userId);
-    });
     this.subscribeToSearch();
-    this.channelService.getAllChannels();
     this.subscribeToFilteredData();
     this.loadAnswersForMessages();
+    this.userService.currentUser$.subscribe(updatedUser => {
+      if (updatedUser) {
+        this.updateUserInMessages();
+      }
+    });
   }
 
   ngOnChanges(): void {
     this.isLoading = true;
     if (this.selectedChannelId) {
       this.loadChannelData();
-
+      this.updateUserInMessages();
     } else {
       this.resetChannelState();
     }
   }
 
-  loadChannelData() {
+  async loadChannelData(): Promise<void> {
     if (this.selectedChannelId) {
-      this.channelService.loadChannel(this.selectedChannelId)
-        .then(() => this.loadMessages())
-        .catch(error => {
-          console.error('Fehler beim Laden des Channels:', error);
-          this.isLoading = false;
-        })
+      try {
+        await this.channelService.loadChannel(this.selectedChannelId);
+        this.selectedChannel = this.channelService.selectedChannel;
+        await this.userService.getAllUsers();
+        this.channelService.updateMembers();
+        this.loadMessages();
+      } catch (error) {
+        console.error('Fehler beim Laden der Daten:', error);
+        this.isLoading = false;
+      }
+      this.isLoading = false;  
     }
   }
 
   loadMessages() {
     this.messagesService.getAllMessages(this.selectedChannelId, () => {
       this.filteredSearchMessages = this.messagesService.allMessages;
+      this.updateUserInMessages();
       this.isLoading = false;
       this.focusInputField();
       this.loadAnswersForMessages();
-      if(this.channelService.enableScroll){
+      if (this.channelService.enableScroll) {
         setTimeout(() => {
           this.scrollToBottom();
         }, 100);
       }
     });
   }
-
-  loadAnswersForMessages() {
+  updateUserInMessages(): void {
+    this.filteredSearchMessages.forEach(group => {
+      group.messages.forEach(message => {
+        if (typeof message.user === 'string') {
+          const updatedUser = this.userService.userData.find(
+            user => user.name === message.user
+          );
+          if (updatedUser) {
+            message.user = updatedUser;
+          }
+        } else if (message.user && message.user.userId) {
+          const updatedUser = this.userService.userData.find(
+            user => user.userId === message.user.userId
+          );
+          if (updatedUser) {
+            message.user = updatedUser;
+          }
+        }
+      });
+    });
+  }
+  
+  async loadAnswersForMessages() {
     this.filteredSearchMessages.forEach(group => {
       group.messages.forEach(message => {
         this.loadAnswers(message);
@@ -140,7 +170,8 @@ export class ChannelComponent {
   }
 
   loadAnswers(message: any) {
-    this.answerService.getAnswers(this.selectedChannelId, message.messageId, (answers) => {
+    this.answerService.getAnswers(this.selectedChannelId, message.messageId, () => {
+      const answers = this.answerService.allAnswers; 
       message.answersCount = answers.length;
       if (answers.length > 0) {
         const lastAnswer = answers[answers.length - 1];
@@ -150,7 +181,7 @@ export class ChannelComponent {
   }
 
   resetChannelState() {
-    this.channelService.selectedChannel = null;
+    this.channelService.selectedChannel = null!;
     this.messagesService.allMessages = [];
     this.isLoading = false;
   }
@@ -299,10 +330,10 @@ export class ChannelComponent {
     this.isThreadOpen = false;
   }
 
-  openThread(message: Message) { 
+  openThread(message: Message) {
     this.isThreadOpen = true;
     this.selectedMessage = message;
-  
+
     if (this.sharedService.isMobile) {
       this.dialog.closeAll();
     }
@@ -319,7 +350,7 @@ export class ChannelComponent {
   }
 
   addEmojiToNewMessage(event: any) {
-    const emoji = event.emoji.native; 
+    const emoji = event.emoji.native;
     this.newMessageText += emoji
     this.showEmojiPicker = false;
   }

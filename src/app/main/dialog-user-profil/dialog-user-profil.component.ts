@@ -11,6 +11,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { Auth, verifyBeforeUpdateEmail, EmailAuthProvider, reauthenticateWithCredential } from '@angular/fire/auth';
 import { doc, setDoc } from '@angular/fire/firestore';
 import { ChangeDetectorRef } from '@angular/core';
+import { ChannelService } from '../../services/channel.service';
 
 @Component({
   selector: 'app-dialog-user-profil',
@@ -43,6 +44,7 @@ export class DialogUserProfilComponent {
     public chatService: ChatService,
     public userService: UserService,
     public sharedService: SharedService,
+    public channelService:ChannelService,
     private cdr: ChangeDetectorRef,
     @Inject(MAT_DIALOG_DATA) public data: { user: User, isEditable: boolean }) { 
     this.isEditable = data.isEditable; 
@@ -148,6 +150,7 @@ export class DialogUserProfilComponent {
     this.data.user = new User({ ...this.data.user });
     this.userService.updateUser(this.data.user);
     localStorage.setItem('currentUser', JSON.stringify(this.data.user));
+
   }
   
   private finalizeUpdate(): void {

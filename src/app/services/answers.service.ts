@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { addDoc, collection, deleteDoc, doc, Firestore, onSnapshot, updateDoc } from '@angular/fire/firestore';
+import { addDoc, collection, deleteDoc, doc, Firestore, onSnapshot, orderBy, query, updateDoc } from '@angular/fire/firestore';
 import { Answer } from '../models/answer.class';
 import { SharedService } from './shared.service';
 import { FileService } from './file.service';
-import { SafeResourceUrl } from '@angular/platform-browser';
+import { UserService } from './user.service';
 
 
 @Injectable({
@@ -11,64 +11,46 @@ import { SafeResourceUrl } from '@angular/platform-browser';
 })
 export class AnswersService {
 
-  answer = new Answer();
-  allAnswers: any = [];
+  answer!: Answer;
+  allAnswers: Answer[] = [];
   latestAnswerTimes = new Map<string, string | null>();
   selectedFile: File | null = null;
+  enableScroll: boolean = true;
+  constructor(public firestore: Firestore, public sharedService: SharedService, public fileService: FileService, public userService: UserService) { }
 
-  constructor(public firestore: Firestore, public sharedService: SharedService, public fileService: FileService) { }
 
-  editDirectAnswer(answer: Answer, newAnswerText: string, editingAnswerId: string | null, fileUrl: SafeResourceUrl | null) {
-    if (!this.sharedService.isMobile) {
-      answer.isEditing = true;
-      answer.editedText = answer.text;
-    } else {
-      newAnswerText = answer.text;
-      editingAnswerId = answer.id;
-      if (answer.fileUrl) {
-        fileUrl = this.fileService.getSafeUrl(answer.fileUrl);
-        const fakeFile = new File([''], answer.fileName || 'Unbenannte Datei', {
-          type: answer.fileType || 'application/octet-stream',
-        });
-        this.selectedFile = fakeFile;
-      } else {
-        this.fileService.closePreview();
-      }
-    }
-  }
-
-  getAnswers(channelId: string | null, messageId: string, callback: (answers: Answer[]) => void) {
+  getAnswers(channelId: string | null, messageId: string, callback: () => void) {
     if (!channelId || !messageId) return;
+    const answersCollectionRef = collection(this.firestore, `channels/${channelId}/messages/${messageId}/answers`);
+    const answersQuery = query(answersCollectionRef, orderBy('timestamp'));
 
-    const answersCollectionRef = collection(
-      this.firestore,
-      `channels/${channelId}/messages/${messageId}/answers`
-    );
+    this.allAnswers = [];
+    onSnapshot(answersQuery, (snapshot) => {
+      const answersData = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        const userId = data['user']?.userId;
+        const user = this.userService.userData.find(u => u.userId === userId);
 
-    onSnapshot(
-      answersCollectionRef,
-      (querySnapshot) => {
-        const answers = querySnapshot.docs
-          .map((doc) => {
-            const data = doc.data();
-            if (data) {
-              return new Answer({ ...data, id: doc.id }); // ID hinzufügen
-            }
-            return null;
-          })
-          .filter((answer): answer is Answer => answer !== null) // Entfernt ungültige Antworten
-          .sort((a, b) => (a.timestamp && b.timestamp ? a.timestamp.getTime() - b.timestamp.getTime() : 0)); // Sortierung nach Zeit
-
-        callback(answers);
-      },
-      (error) => {
-        console.error('Fehler beim Abrufen der Antworten:', error);
-      }
-    );
+        return new Answer({
+          id: doc.id,
+          messageId: data['messageId'],
+          text: data['text'],
+          user: user,
+          timestamp: data['timestamp'],
+          emojis: data['emojis'] || [],
+          fileUrl: data['fileUrl'] || null,
+          fileType: data['fileType'] || null,
+          fileName: data['fileName'] || null,
+        });
+      });
+      this.allAnswers = answersData.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+      callback();
+    });
   }
 
   async saveAnswer(answer: Answer, channelId: string | null) {
     if (!channelId || !answer.messageId || !answer.id) {
+      console.error('Fehlende erforderliche Parameter: ', { channelId, messageId: answer.messageId, answerId: answer.id });
       return;
     }
     const answerRef = doc(this.firestore, `channels/${channelId}/messages/${answer.messageId}/answers/${answer.id}`);
@@ -79,10 +61,14 @@ export class AnswersService {
         updateData.fileType = null;
         updateData.fileName = null;
       }
+      console.log('Update-Daten:', updateData);
+
       await updateDoc(answerRef, updateData);
       answer.text = answer.editedText;
 
       if (!answer.text.trim() && !answer.fileUrl) {
+        console.log('Antwort löschen, da Text und Datei fehlen');
+
         await this.deleteAnswer(answer, channelId);
       } else {
         answer.isEditing = false;
@@ -112,12 +98,14 @@ export class AnswersService {
     answer.editedText = answer.text;
   }
 
-  async addNewAnswer(messageId: string, answerData: any, channelId: string | null, newAnswerText: string) {
+  async addNewAnswer(messageId: string, channelId: string | null, newAnswerText: string, userId: string, answerData:any) {
     try {
-      const answersCollectionRef = collection(
-        this.firestore,
-        `channels/${channelId}/messages/${messageId}/answers`
-      );
+      const user = this.userService.userData.find(u => u.userId === userId);
+
+      if (!user) return;
+      const userJson = user.toJson();
+      const answersCollectionRef = collection(this.firestore, `channels/${channelId}/messages/${messageId}/answers`);
+      
       await addDoc(answersCollectionRef, answerData);
       newAnswerText = '';
       this.selectedFile = null;
@@ -127,6 +115,10 @@ export class AnswersService {
   }
 
   async deleteEditedAnswer(messageId: string, channelId: string | null, editingAnswerId: string | null) {
+    if (!channelId || !messageId || !editingAnswerId) {
+      console.error('Fehlende Parameter beim Löschen der Antwort');
+      return;
+    }
     try {
       const answerRef = doc(
         this.firestore,
@@ -138,7 +130,7 @@ export class AnswersService {
     }
   }
 
-  async editAnswer(messageId: string, newAnswerText: string, ChannelId: string | null, editingAnswerId: string | null) {
+  async editAnswer(messageId: string, newAnswerText: string, channelId: string|null, selectedAnswers: Answer[], editingAnswerId: string | null) {
     const updateData: any = { text: newAnswerText.trim() };
     if (!this.selectedFile) {
       updateData.fileUrl = null;
@@ -146,27 +138,24 @@ export class AnswersService {
       updateData.fileName = null;
     }
     try {
-      const answerRef = doc(
-        this.firestore,
-        `channels/${ChannelId}/messages/${messageId}/answers/${editingAnswerId}`
-      );
+      const answerRef = doc(this.firestore, `channels/${channelId}/messages/${messageId}/answers/${editingAnswerId}`);
       await updateDoc(answerRef, updateData);
-      const answer = this.allAnswers.find((a: any) => a.id === editingAnswerId);
+      const answer = selectedAnswers.find(a => a.id === editingAnswerId);
       if (answer) {
         answer.text = newAnswerText.trim();
         answer.isEditing = false;
         if (!answer.text && !answer.fileUrl) {
-          await this.deleteEditedAnswer(messageId, ChannelId, editingAnswerId);
+          await this.deleteEditedAnswer(messageId, channelId, editingAnswerId);
         }
       }
       newAnswerText = '';
-      this.selectedFile = null;
+      this.selectedFile = null
       editingAnswerId = null;
-
     } catch (error) {
       console.error('Fehler beim Bearbeiten der Antwort:', error);
     }
   }
+
   deleteFile(answer: Answer) {
     if (!answer.fileUrl) return;
     answer.fileUrl = '';
@@ -175,6 +164,24 @@ export class AnswersService {
     this.selectedFile = null;
   }
 
+  updateUserInAnswers(answers: Answer[], userId: string): void {
+    answers.forEach(answer => {
+      const updatedUser = this.userService.userData.find(
+        user => user.userId === userId
+      );
+      if (updatedUser) {
+        answer.user = updatedUser;
+      }
+      else if (answer.user && answer.user.userId) {
+        const updatedUser = this.userService.userData.find(
+          user => user.userId === answer.user.userId
+        );
+        if (updatedUser) {
+          answer.user = updatedUser;
+        }
+      }
+    });
+  }
 }
 
 

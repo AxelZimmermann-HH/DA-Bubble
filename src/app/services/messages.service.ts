@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Message } from '../models/message.class';
-import { addDoc, collection, doc, Firestore, onSnapshot, orderBy, query, Timestamp, updateDoc } from '@angular/fire/firestore';
+import { addDoc, collection, doc, Firestore, getDocs, onSnapshot, orderBy, query, Timestamp, updateDoc, writeBatch } from '@angular/fire/firestore';
 import { UserService } from './user.service';
 import { FileService } from './file.service';
 import { ChatService } from './chat.service';
@@ -38,10 +38,11 @@ export class MessagesService {
         onSnapshot(messagesQuery, (snapshot) => {
             const messagesData = snapshot.docs.map(doc => {
                 const data = doc.data();
-
+                const userId = data['user']; // Benutzer-ID aus der Nachricht
+                const user = this.userService.userData.find(u => u.userId === userId); // Benutzer anhand der ID finden
                 return new Message({
                     text: data['text'],
-                    user: data['user'],
+                    user: user ? user : data['user'], // Füge die Benutzerdaten statt nur der ID hinzu
                     timestamp: data['timestamp'],
                     emojis: data['emojis'] || [],
                     fileUrl: data['fileUrl'] || null,
@@ -104,9 +105,13 @@ export class MessagesService {
 
     async sendChannelMessage(channelId: string | null, message: string, fileUrl: string | null, userId: string) {
         if (message.trim() === '' && !fileUrl) return;
+        const user = this.userService.findUserById(userId);
+
+        if (!user) return;
+        const userJson = user.toJson();
         const messageData = {
             text: message,
-            user: this.userService.findUserNameById(userId),
+            user: userJson,
             timestamp: Timestamp.now(),
             fullDate: new Date().toDateString(),
             emojis: [],
@@ -195,7 +200,20 @@ export class MessagesService {
 
     async deleteMessage(messageId: string | null, channelId: string | null) {
         if (!channelId || !messageId) return;
-        await deleteDoc(doc(this.firestore, `channels/${channelId}/messages/${messageId}`))
+        const messageRef = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
+        const answersCollectionRef = collection(this.firestore, `channels/${channelId}/messages/${messageId}/answers`);
+        const batch = writeBatch(this.firestore);
+        const answersSnapshot = await getDocs(answersCollectionRef);
+        answersSnapshot.forEach((answerDoc) => {
+            batch.delete(answerDoc.ref); // Antwort löschen
+        });
+        batch.delete(messageRef);
+        try {
+            await batch.commit();
+            console.log('Nachricht und alle zugehörigen Antworten wurden gelöscht.');
+        } catch (error) {
+            console.error('Fehler beim Löschen der Nachricht und Antworten:', error);
+        }
     }
 
     findMessageById(messageId: string) {

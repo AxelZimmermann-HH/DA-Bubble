@@ -35,18 +35,18 @@
                         </td>
                     </tr>
                     <tr *ngFor="let message of group.messages" style="height: auto;">
-                        <td [ngClass]="{'current-user':userService.isCurrentUser(message.user, userId)}">
+                        <td [ngClass]="{'current-user':userService.isCurrentUser(message.user.name, userId)}">
                             <div class="message-main"
-                                [ngClass]="{'current-user':userService.isCurrentUser(message.user, userId)}">
-                                <img [src]="userService.getAvatarForUser(message.user)" alt="" class="avatar">
+                                [ngClass]="{'current-user':userService.isCurrentUser(message.user.name, userId)}">
+                                <img [src]="userService.getAvatarForUser(message.user.name)" alt="" class="avatar">
                                 <div class="message-content" *ngIf="!message.isEditing">
                                     <div class="name-time"
-                                        [ngClass]="{'current-user': userService.isCurrentUser(message.user, userId)}">
-                                        {{ message.user }}
+                                        [ngClass]="{'current-user': userService.isCurrentUser(message.user.name, userId)}">
+                                        {{ message.user.name }}
                                         <p class="time">{{ message.formatTimestamp() }}</p>
                                     </div>
                                     <div class="speech-bubble"
-                                        [ngClass]="{'b-radius': userService.isCurrentUser(message.user, userId)}">
+                                        [ngClass]="{'b-radius': userService.isCurrentUser(message.user.name, userId)}">
                                         <div class="speech-bubble-content">
                                             <span [innerHTML]="message.text?.replace('\n', '<br>')">{{ message.text }}</span>
                                             <div *ngIf="message.fileUrl" class="fileUrl">
@@ -138,7 +138,7 @@
                                 </emoji-mart>
                             </div>
                             <div class="reaction-hover"
-                                [ngClass]="{'reaction-left': userService.isCurrentUser(message.user, userId)}"
+                                [ngClass]="{'reaction-left': userService.isCurrentUser(message.user.name, userId)}"
                                 *ngIf="!message.isEditing">
                                 <ng-container *ngFor="let emojiData of emojiService.getRecentEmojis(message)">
                                     <img [src]="emojiService.getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji"
@@ -146,7 +146,7 @@
                                 </ng-container>
                                 <img src="./assets/icons/comment.png" alt="" (click)="openThread(message)">
                                 <img src="./assets/icons/more_vert.png" alt=""
-                                    *ngIf="userService.isCurrentUser(message.user, userId)"
+                                    *ngIf="userService.isCurrentUser(message.user.name, userId)"
                                     (click)="editDirectMessage(message)">
                             </div>
                         </td>

@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { User } from '../../models/user.class';
 import { Message } from '../../models/message.class';
-import { doc, Firestore, updateDoc } from '@angular/fire/firestore';
+import { doc, Firestore, Timestamp, updateDoc } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Answer } from '../../models/answer.class';
@@ -43,12 +43,11 @@ export class ThreadComponent {
   errorMessage: string | null = null;
   filteredSearchAnswers: Answer[] = [];
   originalAnswers: any[] = [];
-  @Output() threadClosed = new EventEmitter<void>();
 
+  @Output() threadClosed = new EventEmitter<void>();
   @Input() selectedChannelId: string | null = null;
   @Input() channelName: string | undefined;
   @Input() message!: Message;
-
   selectedAnswers: Answer[] = []
 
   constructor(
@@ -67,11 +66,16 @@ export class ThreadComponent {
   ngOnInit(): void {
     this.route.params.subscribe(params => { this.userId = params['userId']; });
     this.subscribeToSearch();
+    this.userService.currentUser$.subscribe(updatedUser => {
+      if (updatedUser) {
+        this.answersService.updateUserInAnswers(this.selectedAnswers,this.userId);
+      }
+    });
   }
-
+ 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['message'] && this.message && this.message.messageId) {
-      this.loadAnswers();
+      this.loadAnswers();    
     }
     if (changes['selectedChannelId'] && !changes['selectedChannelId'].isFirstChange()) {
       Promise.resolve().then(() => {
@@ -87,9 +91,9 @@ export class ThreadComponent {
       this.answersService.getAnswers(
         this.selectedChannelId,
         this.message.messageId,
-        (answers) => {
-          this.selectedAnswers = answers;
-          this.originalAnswers = [...answers]; // Originaldaten sichern
+        () => {
+          this.selectedAnswers = this.answersService.allAnswers; 
+          this.originalAnswers = [...this.selectedAnswers];
         }
       );
     }
@@ -123,50 +127,34 @@ export class ThreadComponent {
   }
 
   async addAnswer(messageId: string) {
-    const username = this.userService.findUserNameById(this.userId);
     const fileUrl = await this.uploadFileIfSelected();
-    const answerData = {
-      messageId,
-      text: this.newAnswerText.trim(),
-      user: username,
-      timestamp: new Date(),
-      emojis: [],
-      ...(fileUrl && { fileUrl, fileType: this.selectedFile?.type, fileName: this.selectedFile?.name }),
-    };
+    const user = this.userService.userData.find(u => u.userId === this.userId);
+    const userJson = user?.toJson();
+
     if (this.editingAnswerId) {
-      await this.editAnswer(messageId)
-    } else {
-      await this.answersService.addNewAnswer(messageId, answerData, this.selectedChannelId, this.newAnswerText);
+      await this.answersService.editAnswer(messageId, this.newAnswerText,this.selectedChannelId,this.selectedAnswers, this.editingAnswerId);
       this.newAnswerText = '';
       this.selectedFile = null;
+      this.editingAnswerId = null; 
+      this.scrollToBottom()
+    } else {
+       const answerData = {
+              messageId,
+              text: this.newAnswerText,
+              user: userJson,
+              timestamp: Timestamp.now(),
+              fullDate: new Date().toDateString(),
+              emojis: [],
+              ...(fileUrl && { fileUrl, fileType: this.selectedFile?.type, fileName: this.selectedFile?.name })
+            };
+      await this.answersService.addNewAnswer(messageId, this.selectedChannelId, this.newAnswerText, this.userId,answerData);
+      this.newAnswerText = '';
+      this.selectedFile = null;
+      this.editingAnswerId = null; 
+      this.scrollToBottom()
     }
   }
 
-  async editAnswer(messageId: string) {
-    const updateData: any = { text: this.newAnswerText.trim() };
-    if (!this.selectedFile) {
-      updateData.fileUrl = null;
-      updateData.fileType = null;
-      updateData.fileName = null;
-    }
-    try {
-      const answerRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${messageId}/answers/${this.editingAnswerId}`);
-      await updateDoc(answerRef, updateData);
-      const answer = this.selectedAnswers.find(a => a.id === this.editingAnswerId);
-      if (answer) {
-        answer.text = this.newAnswerText.trim();
-        answer.isEditing = false;
-        if (!answer.text && !answer.fileUrl) {
-          await this.answersService.deleteEditedAnswer(messageId, this.selectedChannelId, this.editingAnswerId);
-        }
-      }
-      this.newAnswerText = '';
-      this.selectedFile = null;
-      this.editingAnswerId = null;
-    } catch (error) {
-      console.error('Fehler beim Bearbeiten der Antwort:', error);
-    }
-  }
   async uploadFileIfSelected() {
     if (!this.selectedFile) return null;
     const filePath = `files/${this.selectedFile.name}`;
@@ -197,8 +185,10 @@ export class ThreadComponent {
         this.fileService.closePreview();
       }
     }
+  
   }
 
+  
   toggleEmojiReaction(message: Message, emojiData: EmojiData) {
     const currentUserId = this.userId; // Aktuelle Benutzer-ID
     const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
@@ -400,6 +390,7 @@ export class ThreadComponent {
     if (this.answersContainer?.nativeElement) {
       try {
         this.answersContainer.nativeElement.scrollTop = this.answersContainer.nativeElement.scrollHeight;
+        this.answersService.enableScroll = false;
       } catch (err) {
         console.error('Scrollen fehlgeschlagen:', err);
       }

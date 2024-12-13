@@ -1,9 +1,10 @@
 import { Timestamp } from "@angular/fire/firestore";
 import { EmojiData } from './emoji-data.models';
+import { User } from "./user.class";
 
 export interface MessageData {
   text?: string;
-  user?: string;
+  user?: User;
   timestamp?: any; // Use a more specific type if applicable
   emojis?: EmojiData[];
   fileUrl?: string;
@@ -16,7 +17,7 @@ export interface MessageData {
 export class Message {
   messageId!: string;
   text!: string;
-  user!: string;
+  user!: User;  
   timestamp!: Date;
   fullDate!: string;
   emojis: EmojiData[] = [];
@@ -32,7 +33,7 @@ export class Message {
   constructor(obj: MessageData = {}, messageId: string = '') {
     this.messageId = messageId;
     this.text = obj.text || '';
-    this.user = obj.user || '';
+    this.user = obj.user ? new User(obj.user) : new User();  // User-Objekt instanziieren, falls vorhanden
     const date = obj.timestamp ? this.getDateFromTimestamp(obj.timestamp) : new Date();
     this.timestamp = date;
     this.fullDate = this.formatFullDate(date);

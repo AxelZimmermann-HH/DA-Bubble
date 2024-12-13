@@ -1,38 +1,34 @@
 import { Timestamp } from "@angular/fire/firestore";
 import { EmojiData } from './emoji-data.models';
+import { User } from "./user.class";
 
 export class Answer {
     id!: string;
     messageId!: string;
     text!: string;
-    user!: string;
+    user!: User
     timestamp!: Date;
     isEditing: boolean = false;
     editedText: string = '';
     emojis: EmojiData[] = [];
-    fileUrl?: string;
-    fileType?: string;
-    fileName?: string;
-
+    fileUrl?: string | null;
+    fileType?: string | null;
+    fileName?: string | null;
 
     constructor(obj?: any) {
         this.id = obj?.id;
         this.messageId = obj?.messageId; // ID der zugehörigen Nachricht
-
         this.text = obj ? obj.text : '';
-        this.user = obj ? obj.user : '';
-
+        this.user = obj.user ? new User(obj.user) : new User();
         const date = obj && obj.timestamp ? this.getDateFromTimestamp(obj.timestamp) : new Date();
         this.timestamp = date;
-
         this.editedText = this.text;
-
         this.emojis = (obj?.emojis || []).map((e: any) =>
             typeof e === 'string' ? { emoji: e, userIds: [] } : e
         );
-        this.fileUrl = obj?.fileUrl;
-        this.fileType = obj?.fileType;
-        this.fileName = obj?.fileName;
+        this.fileUrl = obj?.fileUrl || null;
+        this.fileType = obj?.fileType || null;
+        this.fileName = obj?.fileName || null;
     }
 
     private getDateFromTimestamp(timestamp: any): Date {
@@ -55,18 +51,13 @@ export class Answer {
             user: this.user,
             timestamp: this.timestamp,
             emojis: this.emojis,
+            fileUrl: this.fileUrl,
+            fileType: this.fileType,
+            fileName: this.fileName,
         };
-
-        if (this.fileUrl) json.fileUrl = this.fileUrl;
-        if (this.fileType) json.fileType = this.fileType;
-        if (this.fileName) json.fileName = this.fileName;
-
         return json;
     }
     public hasFile(): boolean {
         return !!this.fileUrl;
     }
-
-
-
 }
