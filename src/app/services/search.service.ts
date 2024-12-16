@@ -51,7 +51,7 @@ export class SearchService {
     }
 
 
-    filterByType(searchTerm: string, users: User[], channels: Channel[], messages: Message[]) {
+    filterByType(searchTerm: string, users: User[], channels: Channel[], messages: Message[], currentUserId:string) {
         const query = searchTerm.toLowerCase();
         if (searchTerm.startsWith('@')) {
             const filteredUsers = users.filter(user =>
@@ -59,9 +59,11 @@ export class SearchService {
             );
             this.filteredUsersSubject.next(filteredUsers);
         } else if (searchTerm.startsWith('#')) {
-            const filteredChannels = channels.filter(channel =>
-                channel.channelName.toLowerCase().includes(query.slice(1))
-            );
+            const filteredChannels = channels.filter(channel => {
+                const isCreator = channel.members.some(member => member.userId === currentUserId && member.name === channel.creatorName);
+                const isMember = channel.members.some(member => member.userId === currentUserId);
+                return (isCreator || isMember) && channel.channelName.toLowerCase().includes(query.slice(1));
+            });
             this.filteredChannelsSubject.next(filteredChannels);
         } else {
 

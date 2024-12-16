@@ -9,6 +9,7 @@ import { DialogAddUserComponent } from '../dialog-add-user/dialog-add-user.compo
 import { UserService } from './user.service';
 import { SharedService } from './shared.service';
 import { AddChannelUserComponent } from '../main/channel/add-channel-user/add-channel-user.component';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
     providedIn: 'root'
@@ -38,23 +39,23 @@ export class ChannelService {
     async loadChannel(id: string): Promise<void> {
         const channelDocRef = doc(this.firestore, `channels/${id}`);
         try {
-            const docSnapshot = await getDoc(channelDocRef); // Verwende getDoc für synchrone Datenabfrage
-            if (docSnapshot.exists()) {
-                const data = docSnapshot.data();
-                this.selectedChannel = new Channel({ ...data, id });
-                console.log('Channel geladen:', this.selectedChannel); // Debugging-Ausgabe
-            } else {
-                console.log('Channel nicht gefunden');
-                this.selectedChannel = null;
-            }
+            onSnapshot(channelDocRef, (docSnapshot) => {
+                if (docSnapshot.exists()) {
+                    const data = docSnapshot.data();
+                    this.selectedChannel = new Channel({ ...data, id });
+                } else {
+                    this.selectedChannel = null;
+                }
+            });
         } catch (error) {
             console.error('Fehler beim Laden des Channels:', error);
             this.selectedChannel = null;
         }
     }
+
     updateMembers(): void {
         if (this.selectedChannel && this.selectedChannel.members) {
-            const updatedMembers = this.selectedChannel.members.map((member:any) => {
+            const updatedMembers = this.selectedChannel.members.map((member: any) => {
                 const user = this.userService.userData.find(
                     (user) => user.userId === member.userId
                 );
@@ -69,39 +70,33 @@ export class ChannelService {
     }
 
     async updateChannelMembers() {
-        if (this.selectedChannel && this.userData?.length > 0) {
+        if (this.selectedChannel && this.userService.userData?.length > 0) {
             const currentMemberIds = this.selectedChannel.members.map((member: any) => member.userId);
             const updatedMembers = this.selectedChannel.members.filter((member: any) =>
-                this.userData.some((user: User) => user.userId === member.userId)
+                this.userService.userData.some((user: User) => user.userId === member.userId)
             );
             if (updatedMembers.length !== currentMemberIds.length) {
                 try {
                     const channelRef = doc(this.firestore, 'channels', this.selectedChannelId!);
                     await updateDoc(channelRef, { members: updatedMembers });
                     this.selectedChannel.members = updatedMembers;
+                    console.log('updated members,', updatedMembers);
+                    
                 } catch (error) {
                     console.error('Error updating channel members:', error);
                 }
             }
         }
     }
-    // async updateChannelMembers2(channelId: string, updatedMembers: User[]): Promise<void> {
-    //     try {
-    //       const channelRef = doc(this.firestore, 'channels', channelId);
 
-    //       // Wandeln Sie die Mitglieder in ein Array von JSON-Objekten um
-    //       const membersJson = updatedMembers.map(user => user.toJson());
+    filterOwnChannels(channels:Channel |any, currentUserId: string, currentUserName: string): Channel[] {
+        return channels.filter((channel:any) => {
+            const isCreator = channel.creatorName === currentUserName;
+            const isMember = channel.members?.some((member:any) => member.userId === currentUserId);
+            return isCreator || isMember;
+        });
+    }
 
-    //       // Aktualisiere die Mitglieder im Channel-Dokument
-    //       await updateDoc(channelRef, {
-    //         members: membersJson
-    //       });
-
-    //       console.log('Mitglieder erfolgreich aktualisiert!');
-    //     } catch (error) {
-    //       console.error('Fehler beim Aktualisieren der Mitglieder:', error);
-    //     }
-    //   }
     getAllChannels() {
         const channelCollection = collection(this.firestore, 'channels');
         onSnapshot(channelCollection, (snapshot) => {
@@ -142,13 +137,13 @@ export class ChannelService {
         }
     }
 
-    getChannelMembers(channelId: string) {
-        const channelRef = doc(this.firestore, 'channels', channelId);
+    getChannelMembers(channelId: string|null) {
+        const channelRef = doc(this.firestore, `channels/${channelId}`);
         onSnapshot(channelRef, (doc) => {
             if (doc.exists()) {
                 this.channel.members = doc.data()?.['members'] || [];
                 console.log('Aktualisierte Mitglied Liste', this.channel.members);
-                this.updateChannelMembers();
+              this.updateChannelMembers();
             }
             else {
                 console.log('channel-Dokument existiert nicht ');
@@ -162,4 +157,6 @@ export class ChannelService {
         const querySnapshot = await getDocs(q);
         return !querySnapshot.empty;
     }
+
+   
 }

@@ -217,22 +217,30 @@
                 <input class="inputChannel" type="text" placeholder="An #channel, oder @jemand oder E-Mail Adresse"
                     (input)="onInput($event)" [(ngModel)]="inputValue" />
                 <div *ngIf="showAutocomplete">
-                    <ul class="searchListe"  *ngIf="filteredChannels.length || filteredUsers.length || inputValue.startsWith('@')" >
-                        <li *ngFor="let channel of filteredChannels" (click)="selectValue(channel.channelName)">
-                            <div *ngIf="inputValue.startsWith('#')" class="channel_liste">{{
-                                channel.channelName }}
-                            </div>
-                        </li>
-                        <li *ngFor="let user of userService.userData" (click)="selectValue(user.name)">
-                            <div class="d-flex" *ngIf="inputValue.startsWith('@')" class="channel_liste">
-                                <img [src]="userService.getAvatarForUser(user.name)" alt="" />
-                                {{ user.name }}
-                            </div>
-                        </li>
-                        <li *ngFor="let user of filteredUsers" (click)="selectValue(user.mail)">
-                            <div *ngIf="!inputValue.startsWith('@') && !inputValue.startsWith('#')"
-                                class="channel_liste"> {{user.mail}}</div>
-                        </li>
+                    <ul class="searchListe"  *ngIf=" filteredChannels.length || filteredUsers.length || inputValue.startsWith('@')" >
+                        <ng-container *ngIf="inputValue.startsWith('#')" class="channel_liste">
+                            <li *ngFor="let channel of filteredChannels" (click)="selectValue(channel.channelName)">
+                                <div >{{
+                                    channel.channelName }}
+                                </div>
+                            </li>
+                        </ng-container>
+                      
+                        <ng-container *ngIf="inputValue.startsWith('@')" class="channel_liste">
+                            <li *ngFor="let user of userService.userData" (click)="selectValue(user.name)">
+                                <div class="d-flex" >
+                                    <img [src]="userService.getAvatarForUser(user.name)" alt="" />
+                                    {{ user.name }}
+                                </div>
+                            </li>
+                        </ng-container>
+                     
+                        <ng-container *ngIf="!inputValue.startsWith('@') && !inputValue.startsWith('#')">
+                            <li *ngFor="let user of filteredUsers" (click)="selectValue(user.mail)" >
+                                <div  class="channel_liste"> {{user.mail}}</div>
+                            </li>
+                        </ng-container>
+                        
                     </ul>
                 </div>
             </div>

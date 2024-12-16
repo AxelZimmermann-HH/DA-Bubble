@@ -47,7 +47,8 @@ export class DialogAddChannelComponent {
     this.userService.getAllUsers().then(() => {
       this.creatorName = this.userService.findUserNameById(this.data.userId);
       this.creator = this.userService.findUserByName(this.creatorName);
-        console.log('Creator loaded:', this.creator);
+      console.log('creator',this.creator);
+      
     });
   }
 
@@ -55,6 +56,7 @@ export class DialogAddChannelComponent {
     const enteredName = this.channelName.value?.trim();
     if (!enteredName || await this.channelService.checkChannelExists(enteredName)) return;
     this.setChannelData(enteredName);
+    console.log('Creator loaded',this.channel.toJson(), this.creator.name);
     await this.saveNewChannel(this.channel.toJson());
     this.channelCreated.emit(this.channel);
     this.resetAndCloseDialog();
@@ -65,8 +67,8 @@ export class DialogAddChannelComponent {
     this.channel.channelName = channelName;
     this.channel.channelDescription = this.channelDescription.value!;
     this.channel.tagIcon = 'tag.png';
-    this.channel.creatorName = this.creatorName;
-    this.creatorId = this.data.userId;
+    this.channel.creatorName = this.creator.name;
+    this.channel.creator = this.creator;
     this.channel.members.push(this.creator.toJson())
   }
 

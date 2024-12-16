@@ -164,23 +164,29 @@ export class AnswersService {
     this.selectedFile = null;
   }
 
-  updateUserInAnswers(answers: Answer[], userId: string): void {
+  updateUserInAnswers(answers: Answer[], channelId: string|null, messageId: string): void {
     answers.forEach(answer => {
       const updatedUser = this.userService.userData.find(
-        user => user.userId === userId
+        user => user.userId === answer.user?.userId
       );
+  
       if (updatedUser) {
         answer.user = updatedUser;
-      }
-      else if (answer.user && answer.user.userId) {
-        const updatedUser = this.userService.userData.find(
-          user => user.userId === answer.user.userId
-        );
-        if (updatedUser) {
-          answer.user = updatedUser;
-        }
+        this.saveUpdatedAnswer(answer, channelId, messageId); // Speichern in Firebase
       }
     });
+  }
+  async saveUpdatedAnswer(answer: Answer, channelId: string|null, messageId: string): Promise<void> {
+    try {
+      const answerRef = doc(
+        this.firestore,
+        `channels/${channelId}/messages/${messageId}/answers/${answer.id}`
+      );
+      await updateDoc(answerRef, { user: answer.user.toJson() });
+      console.log('Antwort erfolgreich aktualisiert:', answer);
+    } catch (error) {
+      console.error('Fehler beim Aktualisieren der Antwort:', error);
+    }
   }
 }
 

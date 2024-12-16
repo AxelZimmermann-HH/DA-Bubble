@@ -7,6 +7,7 @@ export class Channel {
     tagIcon!: string;
     members!: User[];
     creatorName!: string; 
+    creator: User|undefined; 
 
     constructor(obj?: any) {
         this.channelName = obj ? obj.channelName : '';
@@ -15,6 +16,7 @@ export class Channel {
         this.tagIcon = obj ? obj.tagIcon : '';
         this.members = Array.isArray(obj?.members) ? obj.members : []; 
         this.creatorName = obj ? obj.creatorName : '';
+        this.creator = obj?.creator ? new User(obj.creator) : new User(); // Vollständige Benutzerdaten
     }
   
     public toJson() {
@@ -24,7 +26,8 @@ export class Channel {
             id:this.id,
             tagIcon:this.tagIcon,
             members: this.members,
-            creatorName: this.creatorName
+            creatorName: this.creatorName,
+            creator: this.creator?.toJson()// Vollständige Benutzerdaten
         }
     }
 } 

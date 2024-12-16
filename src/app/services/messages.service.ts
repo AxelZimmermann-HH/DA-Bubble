@@ -5,7 +5,6 @@ import { UserService } from './user.service';
 import { FileService } from './file.service';
 import { ChatService } from './chat.service';
 import { DatabaseService } from './database.service';
-import { deleteDoc, getDoc } from 'firebase/firestore';
 import { ChannelService } from './channel.service';
 import { SharedService } from './shared.service';
 
@@ -339,6 +338,35 @@ export class MessagesService {
             } else {
                 this.fileService.closePreview();
             }
+        }
+    }
+
+    updateUserInMessages(message: any,channelId:string|any) {
+        if (typeof message.user === 'string') {
+            const updatedUser = this.userService.userData.find(
+                user => user.name === message.user
+            );
+            if (updatedUser) {
+                message.user = updatedUser;
+                this.saveUpdatedMessage(message,channelId)
+            }
+        } else if (message.user && message.user.userId) {
+            const updatedUser = this.userService.userData.find(
+                user => user.userId === message.user.userId
+            );
+            if (updatedUser) {
+                message.user = updatedUser;
+                this.saveUpdatedMessage(message,channelId)
+            }
+        }
+    }
+    async saveUpdatedMessage(message: any, channelId: string): Promise<void> {
+        try {
+            const messageRef = doc(this.firestore, `channels/${channelId}/messages/${message.messageId}`);
+            await updateDoc(messageRef, { user: message.user.toJson() });
+            console.log('Nachricht erfolgreich aktualisiert:', message);
+        } catch (error) {
+            console.error('Fehler beim Aktualisieren der Nachricht:', error);
         }
     }
 

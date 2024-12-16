@@ -35,12 +35,15 @@ export class AddChannelUserComponent {
   ) {
     this.userService.getAllUsers();
     this.channel = new Channel(data.channel);
-    this.route.params.subscribe(params => {
-      const currentUser = params['userId'];
-      console.log('Aktuelle userId:', currentUser);
+
+  }
+  ngOnInit() {
+   this.userService.getAllUsers().then(() => {
+      const currentUser = this.userService.findUserNameById(this.userId);
+      console.log('current user,', currentUser);
+      
     });
-  } 
-  
+  }
   openDialogAddUser() {
     this.dialogRef.close()
     this.dialog.open(DialogAddUserComponent, {

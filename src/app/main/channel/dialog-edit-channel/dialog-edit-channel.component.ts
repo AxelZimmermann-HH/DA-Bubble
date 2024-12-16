@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { collection, deleteDoc, doc, Firestore, getDoc, getDocs, query, updateDoc, where } from '@angular/fire/firestore';
+import { collection, deleteDoc, doc, Firestore, getDoc, getDocs, query, setDoc, updateDoc, where } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Channel } from '../../../models/channel.class';
@@ -36,7 +36,11 @@ export class DialogEditChannelComponent {
   newChannelName!: string;
   newChannelDescription!: string;
   errorMessage: string | null = null;
-  
+
+
+  creatorName!: string;
+  creator!: any;
+
   constructor(
     public dialogRef: MatDialogRef<DialogEditChannelComponent>,
     public firestore: Firestore,
@@ -45,20 +49,54 @@ export class DialogEditChannelComponent {
     public dialog: MatDialog,
     public channelService: ChannelService,
     public userService: UserService) {
-
     this.channel = data.channel;
     this.userId = data.userId;
-
     if (this.channel && this.channel.channelName) {
       this.newChannelName = this.channel.channelName;
     }
     this.channelService.getAllChannels();
-
   }
 
   ngOnInit() {
-    this.currentUser = this.userService.findUserNameById(this.userId);
+    this.userService.getAllUsers()
+      .then(() => {
+        this.creatorName = this.userService.findUserNameById(this.data.userId);
+        this.creator = this.userService.findUserByName(this.creatorName);
+        if (!this.creator || !this.creatorName) return;
+        this.channel.creatorName = this.creator.name;
+        this.refreshChannelMembers();
+        this.updateChannelInFirebase();
+      })
+      .catch(error => {
+        console.error('Fehler beim Laden der Benutzerdaten:', error);
+      });
   }
+
+  async updateChannelInFirebase() {
+    if (!this.channel.id)   return;
+    
+    try {
+      const channelRef = doc(this.firestore, `channels/${this.channel.id}`);
+      const updatedChannel = {
+        creatorName: this.creatorName,
+        creator: this.creator ? this.creator.toJson() : null, // Falls Creator fehlt, null setzen
+        members: this.channel.members || [],
+      };
+      await updateDoc(channelRef, updatedChannel);
+    } catch (error) {
+      console.error('Fehler beim Aktualisieren des Channels:', error);
+    }
+  }
+
+  refreshChannelMembers() {
+    if (!this.channelService.selectedChannel)       return;
+
+    this.channelService.selectedChannel.members = this.channel.members.map((member: { name: string }) => {
+      const user = this.userService.findUserByName(member.name);
+      return user ? user.toJson() : member; // Wenn Benutzer gefunden, aktualisiere Daten
+    });
+  }
+
 
   toggleInputName() {
     this.isEditing = true;
@@ -69,7 +107,7 @@ export class DialogEditChannelComponent {
 
     if (this.newChannelName.trim() === this.channel.channelName) {
       this.errorMessage = null;
-      this.isEditing = false; 
+      this.isEditing = false;
       return;
     }
 

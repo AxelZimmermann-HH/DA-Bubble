@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { User } from '../../models/user.class';
 import { Channel } from '../../models/channel.class';
@@ -21,6 +21,7 @@ import { EmojisService } from '../../services/emojis.service';
 import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-channel.component';
 import { SafeResourceUrl } from '@angular/platform-browser';
 import { AnswersService } from '../../services/answers.service';
+import { user } from '@angular/fire/auth';
 
 interface MessageGroup {
   date: string;
@@ -36,7 +37,6 @@ interface MessageGroup {
 })
 
 export class ChannelComponent {
-
   userId!: string;
   newMessageText: string = '';
   isLoading = false;
@@ -62,15 +62,14 @@ export class ChannelComponent {
 
   @Input() selectedChannelId: string | null = null;
   @Output() chatSelected = new EventEmitter<void>();
-
   @ViewChild('messageInput') messageInput: any;
   @ViewChild('fileInput') fileInput!: ElementRef;
+  @ViewChild('chatContainer') chatContainer!: ElementRef;
 
   isThreadOpen: boolean = false;
   selectedMessage = new Message();
   selectedAnswers: Answer[] = [];
   lastAnswerTime!: string;
-
   constructor(public dialog: MatDialog,
     public firestore: Firestore,
     public sharedService: SharedService,
@@ -88,40 +87,56 @@ export class ChannelComponent {
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
+      if (this.selectedChannelId) {
+        this.channelService.loadChannel(this.selectedChannelId);
+      }
     });
     this.subscribeToSearch();
     this.subscribeToFilteredData();
     this.loadAnswersForMessages();
-    this.userService.currentUser$.subscribe(updatedUser => {
-      if (updatedUser) {
-        this.updateUserInMessages();
-      }
-    });
+    this.channelService.getAllChannels()
   }
 
-  ngOnChanges(): void {
+  async ngOnChanges(): Promise<void> {
     this.isLoading = true;
     if (this.selectedChannelId) {
-      this.loadChannelData();
-      this.updateUserInMessages();
+      await this.loadChannelData(); // Stelle sicher, dass die Daten vollständig geladen sind
+      this.userService.currentUser$.subscribe(updatedUser => {
+        if (updatedUser) {
+          this.updateUserInMessages();
+          this.channelService.updateMembers();
+          this.refreshChannelMembers();
+        }
+      });
     } else {
       this.resetChannelState();
     }
   }
 
+
   async loadChannelData(): Promise<void> {
     if (this.selectedChannelId) {
       try {
         await this.channelService.loadChannel(this.selectedChannelId);
-        this.selectedChannel = this.channelService.selectedChannel;
         await this.userService.getAllUsers();
-        this.channelService.updateMembers();
         this.loadMessages();
+        this.updateUserInMessages();
+        this.channelService.updateMembers()
+        this.refreshChannelMembers();
+
       } catch (error) {
         console.error('Fehler beim Laden der Daten:', error);
+      } finally {
         this.isLoading = false;
       }
-      this.isLoading = false;  
+    }
+  }
+
+  refreshChannelMembers() {
+    if (this.channelService.selectedChannel) {
+      this.channelService.selectedChannel.members = this.channelService.selectedChannel.members.map((member: { name: string; }) => {
+        return this.userService.findUserByName(member.name) || member;
+      });
     }
   }
 
@@ -142,25 +157,11 @@ export class ChannelComponent {
   updateUserInMessages(): void {
     this.filteredSearchMessages.forEach(group => {
       group.messages.forEach(message => {
-        if (typeof message.user === 'string') {
-          const updatedUser = this.userService.userData.find(
-            user => user.name === message.user
-          );
-          if (updatedUser) {
-            message.user = updatedUser;
-          }
-        } else if (message.user && message.user.userId) {
-          const updatedUser = this.userService.userData.find(
-            user => user.userId === message.user.userId
-          );
-          if (updatedUser) {
-            message.user = updatedUser;
-          }
-        }
+      this.messagesService.updateUserInMessages(message,this.selectedChannelId)
       });
     });
   }
-  
+
   async loadAnswersForMessages() {
     this.filteredSearchMessages.forEach(group => {
       group.messages.forEach(message => {
@@ -171,7 +172,7 @@ export class ChannelComponent {
 
   loadAnswers(message: any) {
     this.answerService.getAnswers(this.selectedChannelId, message.messageId, () => {
-      const answers = this.answerService.allAnswers; 
+      const answers = this.answerService.allAnswers;
       message.answersCount = answers.length;
       if (answers.length > 0) {
         const lastAnswer = answers[answers.length - 1];
@@ -203,11 +204,7 @@ export class ChannelComponent {
 
   openDialogEditChannel(channel: Channel) {
     if (channel && this.userId) {
-      this.dialog.open(DialogEditChannelComponent, {
-        data: { channel: channel, userId: this.userId }
-      });
-    } else {
-      console.error('Cannot open dialog: Channel or userId is missing.');
+      this.dialog.open(DialogEditChannelComponent, { data: { channel: channel, userId: this.userId } });
     }
   }
 
@@ -226,7 +223,7 @@ export class ChannelComponent {
       .map(group => ({
         ...group,
         messages: group.messages.filter((message: any) =>
-          (message.user && message.user.toLowerCase().includes(term.toLowerCase())) ||
+          (message.user.name && message.user.name.toLowerCase().includes(term.toLowerCase())) ||
           (message.text && message.text.toLowerCase().includes(term.toLowerCase()))
         )
       }))
@@ -241,7 +238,7 @@ export class ChannelComponent {
       this.searchService.clearFilters();
       return;
     }
-    this.searchService.filterByType(searchTerm, this.userService.userData, this.channelService.channelData, this.messagesService.allMessages);
+    this.searchService.filterByType(searchTerm, this.userService.userData, this.channelService.channelData, this.messagesService.allMessages, this.userId);
   }
 
   selectValue(value: any): void {
@@ -404,9 +401,6 @@ export class ChannelComponent {
     this.fileInput.nativeElement.value = '';
   }
 
-  @ViewChild('chatContainer') chatContainer!: ElementRef;
-
-  //scrollt das Chatfenster nach unten
   scrollToBottom(): void {
     if (this.chatContainer?.nativeElement) {
       try {
