@@ -246,48 +246,44 @@ export class ChatService {
     }
   }
 
-  //ungelesene Nachrichten
-  // Initialisiere die Abfrage, um alle ungelesenen Nachrichten zu überwachen
+  //Counter ungelesene Nachrichten
   async initializeUnreadCounts(currentUserId: string) {
+    console.log('initializeUnreadCounts aufgerufen');
     const chatsCollection = collection(this.firestore, 'chats');
-    // Abfrage aller Chats für den aktuellen Benutzer
-    const userChatsQuery = query(chatsCollection,where('users', 'array-contains', currentUserId));
-    // Hole alle Chats des Benutzers
-    onSnapshot(userChatsQuery, (snapshot) => {
-      this.unreadCountMap.clear(); // Map zurücksetzen
-      
-      snapshot.forEach( async (chatDoc) => {
+    const userChatsQuery = query(chatsCollection, where('users', 'array-contains', currentUserId));
+  
+    // Überwache die Chats und Nachrichten
+    onSnapshot(userChatsQuery, (chatSnapshot) => {
+      this.unreadCountMap.clear(); // Zurücksetzen der Map
+  
+      chatSnapshot.forEach(async (chatDoc) => {
         const chatId = chatDoc.id;
-        await this.getUnreadCount(chatId, currentUserId)
+        const messagesCollection = collection(this.firestore, `chats/${chatId}/messages`);
+        const unreadMessagesQuery = query(
+          messagesCollection,
+          where('receiverID', '==', currentUserId),
+          where('isRead', '==', false)
+        );
+  
+        onSnapshot(unreadMessagesQuery, (messageSnapshot) => {
+          const unreadCount = messageSnapshot.size; // Anzahl ungelesener Nachrichten
+          
+          if (unreadCount > 0) {
+            this.unreadCountMap.set(chatId, unreadCount);
+          } else {
+            this.unreadCountMap.delete(chatId); // Entferne Chats ohne ungelesene Nachrichten
+          }
+
+          if (this.openedChat === chatId) {
+            this.unreadCountMap.set(chatId, 0); // Wenn der aktuelle Chat geöffnet ist, setze den Zähler auf 0
+          }
+  
+          this.unreadCount$.next(new Map(this.unreadCountMap)); // Aktualisiere die Map, um Abonnenten zu benachrichtigen
+        });
       });
     });
   }
 
-  // Ungelesene Nachrichten zählen, die an den aktuellen Benutzer gesendet wurden
-  async getUnreadCount(chatId: string, currentUserId: string) {
-    const messagesCollection = collection(this.firestore, `chats/${chatId}/messages`);
-    const unreadMessagesQuery = query(
-      messagesCollection,
-      where('receiverID', '==', currentUserId),
-      where('isRead', '==', false)
-    );
-
-    // Abonniere die ungelesenen Nachrichten in diesem Chat
-    onSnapshot(unreadMessagesQuery, (messageSnapshot) => {
-
-      const unreadCount = messageSnapshot.size; // Anzahl der ungelesenen Nachrichten
-      if (unreadCount > 0) {
-        this.unreadCountMap.set(chatId, unreadCount);
-      }
-      if(this.openedChat == chatId){
-        this.unreadCountMap.set(chatId, 0); // Entferne den Zähler, wenn keine ungelesenen Nachrichten vorhanden sind
-      }
-      // Aktualisiere die Map, damit alle Abonnenten benachrichtigt werden
-      this.unreadCount$.next(new Map(this.unreadCountMap));
-    });
-  }
-
-  
   // Setze alle Nachrichten als gelesen für den aktuellen Benutzer im geöffneten Chat
   async markMessagesAsRead(chatId: string) {
     const messagesCollection = collection(this.firestore, `chats/${chatId}/messages`);

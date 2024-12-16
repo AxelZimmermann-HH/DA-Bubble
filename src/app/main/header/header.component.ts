@@ -67,6 +67,9 @@ export class HeaderComponent implements OnInit {
       this.getUserById(this.userId);
     });
     this.filteredUserList = [];  
+    if (this.userData) {
+      this.chatService.initializeUnreadCounts(this.userId);
+    }
   }
 
   getAllUsers() {

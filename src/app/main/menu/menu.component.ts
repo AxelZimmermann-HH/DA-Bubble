@@ -53,23 +53,26 @@ export class MenuComponent {
   currentUser: any;
   userId!: string;
   selectedChannel: any = null;
-  public unreadCounts = new Map<string, number>();
+  unreadCounts = new Map<string, number>();
 
   @Output() channelSelected = new EventEmitter<any>();
   @Output() chatSelected = new EventEmitter<void>();
 
 
   async ngOnInit() {
+
     await this.getAllChannels('channels');
     await this.getAllUsers('users');
+
     this.subscribeToSearch();
     this.aboUser();
     this.aboRoute();
-    this.aboUnreadChatCount();
-
     this.userService.getAllUsers().then(() => {
       this.currentUser = this.userService.findUserNameById(this.userId);
     });
+    this.chatService.initializeUnreadCounts(this.currentUserId); // Verschiebe hierher
+    this.aboUnreadChatCount();
+
   }
 
   async getAllChannels(channels: string) {
@@ -150,7 +153,7 @@ export class MenuComponent {
       if (user) {
         this.currentUserId = user.userId;
         this.chatService.currentUserId = this.currentUserId;
-        this.chatService.initializeUnreadCounts(this.currentUserId); // Verschiebe hierher
+        
       }
     });
   }
@@ -163,9 +166,11 @@ export class MenuComponent {
   }
 
   aboUnreadChatCount(){
+    
     // Abonniere die ungelesenen Zähler für alle Chats
     this.chatService.unreadCount$.subscribe((counts) => {
       this.unreadCounts = counts;
+      console.log(this.unreadCounts)
     });
   }
 

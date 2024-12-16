@@ -88,20 +88,25 @@ export class ChatComponent implements OnDestroy {
           this.scrollToBottom();
         }, 100);
       }
+      if(chatSubject){
+        setTimeout(() => {
+          this.scrollToBottom();
+        }, 100);
+      }
     });
   }
 
-    //scrollt das Chatfenster nach unten
-    scrollToBottom(): void {
-      if (!this.chatService.chatIsEmpty && this.chatContainer?.nativeElement) {
-        try {
-          this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
-          this.chatService.enableScroll = false;
-        } catch (err) {
-          console.error('Scrollen fehlgeschlagen:', err);
-        }
+  //scrollt das Chatfenster nach unten
+  scrollToBottom(): void {
+    if (!this.chatService.chatIsEmpty && this.chatContainer?.nativeElement) {
+      try {
+        this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
+        this.chatService.enableScroll = false;
+      } catch (err) {
+        console.error('Scrollen fehlgeschlagen:', err);
       }
-    };
+    }
+  };
 
   getAvatarForUser(userName: string): any {
     if (!this.user || !this.user.name) {
