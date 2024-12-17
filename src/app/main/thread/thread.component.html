@@ -34,7 +34,7 @@
                             target="_blank">Anhang öffnen</a>
                     </div>
                 </div>
-                <div style="display: flex;align-items: center;gap: 8px;">
+                <div style="display: flex;align-items: center;gap: 8px;flex-direction: row-reverse;">
                     <div *ngFor="let emojiData of message.emojis">
                         <span class="emoji-container"
                             *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0"
@@ -113,15 +113,14 @@
                         </div>
                     </div>
                 </div>
-                <div style="display: flex;align-items: center;gap: 8px;">
+                <div style="display: flex;align-items: center;gap: 8px;flex-direction:row-reverse;" [ngClass]="{
+                    'row-unset': userService.isCurrentUser(answer.user.name, userId)}">
                     <div *ngFor="let emojiData of answer.emojis">
-                        <span class="emoji-container"
-                            *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0"
+                        <span class="emoji-container" *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0"
                             (click)="toggleEmojiReactionForAnswer(answer, emojiData)">
                             <img [src]="emojiService.getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" />
                             <span>{{ emojiData.userIds.length }}</span>
-                            <div class="emoji-tooltip"
-                                *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0">
+                            <div class="emoji-tooltip"  *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0">
                                 <span style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
                                     <img [src]="emojiService.getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" width="30px" />
                                     <span class="emoji-reaction-text">
@@ -134,24 +133,21 @@
                             </div>
                         </span>
                     </div>
-                    <img src="./assets/icons/add_reaction.png" alt=""
-                        (click)="toggleAllEmojitoAnswer($event, answer.text)">
-                    <div *ngIf="showAllAnswerEmoji && clickedAnswer == answer.text" class="allEmojis">
-                        <img src="./assets/icons/emoji _nerd face_.png" alt="nerd face"
-                            (click)="toggleUserEmojiAnswer(answer, 'nerd face', userId)" />
-                        <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png"
-                            alt="raising both hands"
-                            (click)="toggleUserEmojiAnswer(answer, 'raising both hands', userId)" />
-                        <img src="./assets/icons/emoji _white heavy check mark_.png" alt="heavy check mark"
-                            (click)="toggleUserEmojiAnswer(answer, 'heavy check mark', userId)" />
-                        <img src="./assets/icons/emoji _rocket_.png" alt="rocket"
-                            (click)="toggleUserEmojiAnswer(answer, 'rocket', userId)" />
+                    <img src="./assets/icons/add_reaction.png" (click)="toggleAllEmojitoAnswer($event, answer.text)">
+                    <div *ngIf="showAllAnswerEmoji && clickedAnswer == answer.text" class="allEmojis" [ngClass]="{' b-radius-right': userService.isCurrentUser(answer.user.name, userId)}">
+                        <img src="./assets/icons/emoji _nerd face_.png" (click)="toggleUserEmojiAnswer(answer, 'nerd face', userId)" />
+                        <img src="./assets/icons/🦆 emoji _person raising both hands in celebration_.png" (click)="toggleUserEmojiAnswer(answer, 'raising both hands', userId)" />
+                        <img src="./assets/icons/emoji _white heavy check mark_.png" (click)="toggleUserEmojiAnswer(answer, 'heavy check mark', userId)" />
+                        <img src="./assets/icons/emoji _rocket_.png" (click)="toggleUserEmojiAnswer(answer, 'rocket', userId)" />
                     </div>
                 </div>
             </div>
             <div class="reaction-hover"
-                *ngIf="!answer.isEditing && answer.emojis.length>0 || userService.isCurrentUser(answer.user.name, userId)"
-                [ngClass]="{'reaction-left': userService.isCurrentUser(answer.user.name, userId)}">
+                *ngIf="!answer.isEditing && answer.emojis.length>0 "
+                [ngClass]="{
+                    'reaction-left': userService.isCurrentUser(answer.user.name, userId),
+                    'b-radius': !userService.isCurrentUser(answer.user.name, userId)
+                  }">
                 <img src="./assets/icons/more_vert.png" alt="" *ngIf="userService.isCurrentUser(answer.user.name, userId)"
                     (click)=" editDirectAnswer(answer)">
                 <div style="display: flex;">

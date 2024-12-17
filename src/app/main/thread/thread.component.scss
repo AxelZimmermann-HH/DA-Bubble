@@ -215,7 +215,9 @@
 .current-user {
     flex-direction: row-reverse;
 }
-
+.row-unset{
+    flex-direction: row !important;
+}
 .current-user:hover .border-radius {
     background-color: rgba(121, 126, 243, 1) !important;
     color: rgba(255, 255, 255, 1);
@@ -229,7 +231,15 @@
     background: rgba(121, 126, 243, 1);
     color: rgba(255, 255, 255, 1);
 }
+.b-radius{
+    border-radius: 25px 25px 25px 0 !important;
+}
 
+.b-radius-right{
+    border-radius: 25px 25px 0 25px !important;
+    left: 180px !important;
+
+}
 .a-flex {
     align-items: flex-end;
 }
@@ -567,13 +577,13 @@
     display: flex;
     width: max-content;
     height: 46px;
-    border-radius: 25px 25px 0 25px;
+    border-radius: 25px 25px 25px 0;
     padding: 3px 20px;
     background: rgb(255, 255, 255);
     border: 1px solid rgb(173, 176, 217);
     position: absolute;
     bottom: 45px;
-    right: 100px;
+    left: 100px;
     img {
         border-radius: 30px;
         width: 20px;

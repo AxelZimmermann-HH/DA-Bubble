@@ -228,16 +228,16 @@
                       
                         <ng-container *ngIf="inputValue.startsWith('@')" class="channel_liste">
                             <li *ngFor="let user of userService.userData" (click)="selectValue(user.name)">
-                                <div class="d-flex" >
+                                <div class="d-flex"  style="cursor: pointer;">
                                     <img [src]="userService.getAvatarForUser(user.name)" alt="" class="img-avatar"/>
                                     {{ user.name }}
                                 </div>
                             </li>
                         </ng-container>
                      
-                        <ng-container *ngIf="!inputValue.startsWith('@') && !inputValue.startsWith('#')">
+                        <ng-container *ngIf="!inputValue.startsWith('@') && !inputValue.startsWith('#')" >
                             <li *ngFor="let user of filteredUsers" (click)="selectValue(user.mail)" >
-                                <div  class="channel_liste"> {{user.mail}}</div>
+                                <div  class="channel_liste" style="cursor: pointer;"> {{user.mail}}</div>
                             </li>
                         </ng-container>
                         
