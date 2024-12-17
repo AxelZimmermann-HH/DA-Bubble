@@ -209,7 +209,6 @@ export class MessagesService {
         batch.delete(messageRef);
         try {
             await batch.commit();
-            console.log('Nachricht und alle zugehörigen Antworten wurden gelöscht.');
         } catch (error) {
             console.error('Fehler beim Löschen der Nachricht und Antworten:', error);
         }
@@ -364,7 +363,6 @@ export class MessagesService {
         try {
             const messageRef = doc(this.firestore, `channels/${channelId}/messages/${message.messageId}`);
             await updateDoc(messageRef, { user: message.user.toJson() });
-            console.log('Nachricht erfolgreich aktualisiert:', message);
         } catch (error) {
             console.error('Fehler beim Aktualisieren der Nachricht:', error);
         }

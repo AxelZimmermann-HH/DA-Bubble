@@ -58,6 +58,11 @@ export class FileService {
     }
   }
 
+
+
+
+
+
   resetErrorMessage(): void {
     this._errorMessage.next(null);
   }
@@ -106,6 +111,27 @@ export class FileService {
       return null;
     }
   }
+
+
+  async uploadFileIfSelected(type: 'message' | 'answer') {
+    if (!this.selectedFile) return null;
+  
+    const uniqueFileName = `${Date.now()}_${this.selectedFile.name}`;
+    const filePath = `${type === 'answer' ? 'answers' : 'messages'}/${uniqueFileName}`;
+    const storageRef = ref(getStorage(), filePath);
+  
+    try {
+      const snapshot = await uploadBytes(storageRef, this.selectedFile);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      console.log('Firebase-Datei-URL:', downloadURL);
+      return downloadURL;
+    } catch (error) {
+      console.error('Fehler beim Hochladen der Datei:', error);
+      throw error;
+    }
+  }
+  
+
 
   removeFile(message: any) {
     message.fileUrl = '';

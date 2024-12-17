@@ -61,14 +61,10 @@ export class AnswersService {
         updateData.fileType = null;
         updateData.fileName = null;
       }
-      console.log('Update-Daten:', updateData);
-
       await updateDoc(answerRef, updateData);
       answer.text = answer.editedText;
 
       if (!answer.text.trim() && !answer.fileUrl) {
-        console.log('Antwort löschen, da Text und Datei fehlen');
-
         await this.deleteAnswer(answer, channelId);
       } else {
         answer.isEditing = false;
@@ -183,7 +179,6 @@ export class AnswersService {
         `channels/${channelId}/messages/${messageId}/answers/${answer.id}`
       );
       await updateDoc(answerRef, { user: answer.user.toJson() });
-      console.log('Antwort erfolgreich aktualisiert:', answer);
     } catch (error) {
       console.error('Fehler beim Aktualisieren der Antwort:', error);
     }

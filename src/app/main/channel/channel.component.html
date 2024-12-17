@@ -229,7 +229,7 @@
                         <ng-container *ngIf="inputValue.startsWith('@')" class="channel_liste">
                             <li *ngFor="let user of userService.userData" (click)="selectValue(user.name)">
                                 <div class="d-flex" >
-                                    <img [src]="userService.getAvatarForUser(user.name)" alt="" />
+                                    <img [src]="userService.getAvatarForUser(user.name)" alt="" class="img-avatar"/>
                                     {{ user.name }}
                                 </div>
                             </li>
@@ -268,7 +268,7 @@
                     <ul class="searchListe">
                         <li *ngFor="let user of userService.userData">
                             <div class="selectedUser" (click)="selectUser(user)">
-                                <img [src]="userService.getAvatarForUser(user.name)" alt="">
+                                <img [src]="userService.getAvatarForUser(user.name)" alt="" >
                                 {{user.name}}
                             </div>
                         </li>

@@ -599,12 +599,12 @@ td:hover .b-radius {
     font-size: 18px;
     font-weight: 400;
     max-height: 150px;
-    width:-webkit-fill-available;
+    width: -webkit-fill-available;
     box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.2);
     border-radius: 0px 20px 20px 20px;
     padding: 10px 20px;
     position: absolute;
-    top:100px;
+    top: 100px;
 
     &:empty {
         display: none;
@@ -665,6 +665,13 @@ td:hover .b-radius {
         height: 30px;
         border-radius: 30px;
     }
+}
+
+.img-avatar {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    border-radius: 40px;
 }
 
 .error-message {
@@ -794,9 +801,11 @@ td:hover .b-radius {
 .mobile-channel-content {
     height: calc(100% - 300px);
 }
-app-thread{
+
+app-thread {
     width: 485px;
 }
+
 @media (max-width:1280px) {
 
     app-thread {
