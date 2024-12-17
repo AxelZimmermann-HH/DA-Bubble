@@ -57,7 +57,7 @@
 
     </div>
 
-    <div class="dm-container">
+    <div class="dm-container" [ngClass]="this.sharedService.isMobile ? 'dm-container-mobile' : 'dm-container'">
         <div class="dm-header-container">
 
             <div class="dm-header" (click)="openCloseDiv('showUser')"
