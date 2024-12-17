@@ -51,15 +51,15 @@ export class DialogUserProfilComponent {
   }
 
   avatars: string[] = [
-    '../../../assets/avatars/avatar_0.png',
-    '../../../assets/avatars/avatar_1.png',
-    '../../../assets/avatars/avatar_2.png',
-    '../../../assets/avatars/avatar_3.png',
-    '../../../assets/avatars/avatar_4.png',
-    '../../../assets/avatars/avatar_5.png'
+    './assets/avatars/avatar_0.png',
+    './assets/avatars/avatar_1.png',
+    './assets/avatars/avatar_2.png',
+    './assets/avatars/avatar_3.png',
+    './assets/avatars/avatar_4.png',
+    './assets/avatars/avatar_5.png'
   ];
 
-  selectedAvatar: string = '../../../assets/avatars/avatar_6.png';  
+  selectedAvatar: string = './assets/avatars/avatar_6.png';  
   originalAvatar: string | number = '';
 
   selectedChannel: Channel | null = null;
