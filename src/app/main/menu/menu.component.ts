@@ -169,7 +169,6 @@ export class MenuComponent {
     // Abonniere die ungelesenen Zähler für alle Chats
     this.chatService.unreadCount$.subscribe((counts) => {
       this.unreadCounts = counts;
-      console.log(this.unreadCounts)
     });
   }
 

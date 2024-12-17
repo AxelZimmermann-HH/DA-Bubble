@@ -248,7 +248,6 @@ export class ChatService {
 
   //Counter ungelesene Nachrichten
   async initializeUnreadCounts(currentUserId: string) {
-    console.log('initializeUnreadCounts aufgerufen');
     const chatsCollection = collection(this.firestore, 'chats');
     const userChatsQuery = query(chatsCollection, where('users', 'array-contains', currentUserId));
   
@@ -268,14 +267,17 @@ export class ChatService {
         onSnapshot(unreadMessagesQuery, (messageSnapshot) => {
           const unreadCount = messageSnapshot.size; // Anzahl ungelesener Nachrichten
           
-          if (unreadCount > 0) {
+          if (this.openedChat === chatId) {
+            
+            // Wenn der aktuelle Chat geöffnet ist, setze den Zähler auf 0 und verlasse die Funktion
+            this.unreadCountMap.set(chatId, 0);
+            this.markMessagesAsRead(chatId)
+          } else if (unreadCount > 0) {
+            // Andernfalls füge den Chat mit der Anzahl der ungelesenen Nachrichten hinzu
             this.unreadCountMap.set(chatId, unreadCount);
           } else {
-            this.unreadCountMap.delete(chatId); // Entferne Chats ohne ungelesene Nachrichten
-          }
-
-          if (this.openedChat === chatId) {
-            this.unreadCountMap.set(chatId, 0); // Wenn der aktuelle Chat geöffnet ist, setze den Zähler auf 0
+            // Entferne den Chat, wenn es keine ungelesenen Nachrichten mehr gibt
+            this.unreadCountMap.delete(chatId);
           }
   
           this.unreadCount$.next(new Map(this.unreadCountMap)); // Aktualisiere die Map, um Abonnenten zu benachrichtigen
