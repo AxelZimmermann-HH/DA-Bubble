@@ -96,13 +96,9 @@ export class DialogUserProfilComponent {
     const currentEmail = this.auth.currentUser?.email; 
   
     if (enteredEmail === currentEmail) {
-      console.log('Die eingegebene E-Mail-Adresse stimmt mit der aktuellen überein.');
       this.emailChanged = false;
-      console.log(this.emailChanged);
     } else {
-      console.log('Die eingegebene E-Mail-Adresse ist anders als die aktuelle.');
       this.emailChanged = true;
-      console.log(this.emailChanged);
     }
   }
 

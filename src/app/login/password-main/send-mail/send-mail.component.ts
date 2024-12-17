@@ -26,7 +26,6 @@ export class SendMailComponent {
   success: boolean = false;
 
   constructor(private firestore: Firestore, private http: HttpClient, private userService: UserService, private auth: Auth, private router: Router) {
-    console.log('Komponente wurde initialisiert');
   }
 
   validateEmail(email: string) {
@@ -66,7 +65,6 @@ export class SendMailComponent {
   }
   
   private handleUserNotFound(): void {
-    console.log('Benutzer nicht gefunden');
     this.emailNotFound = true;
   }  
   

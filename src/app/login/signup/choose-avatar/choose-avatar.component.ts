@@ -56,9 +56,7 @@ export class ChooseAvatarComponent {
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
-      this.selectedFile = input.files[0];
-      console.log(this.selectedFile);
-      
+      this.selectedFile = input.files[0];    
       this.selectedFileName = this.selectedFile.name;
     }
   }
@@ -83,7 +81,6 @@ export class ChooseAvatarComponent {
   getBack() {
     this.openFirstPage.emit(true);
     this.closeAvatarPage.emit(false);
-    console.log('check');
   }
 
   onSubmit(ngForm: NgForm) {
