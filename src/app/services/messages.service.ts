@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Message } from '../models/message.class';
-import { addDoc, collection, doc, Firestore, getDocs, onSnapshot, orderBy, query, Timestamp, updateDoc, writeBatch } from '@angular/fire/firestore';
+import { addDoc, collection, doc, Firestore, getDoc, getDocs, onSnapshot, orderBy, query, Timestamp, updateDoc, writeBatch } from '@angular/fire/firestore';
 import { UserService } from './user.service';
 import { FileService } from './file.service';
 import { ChatService } from './chat.service';
@@ -340,14 +340,14 @@ export class MessagesService {
         }
     }
 
-    updateUserInMessages(message: any,channelId:string|any) {
+    updateUserInMessages(message: any, channelId: string | any) {
         if (typeof message.user === 'string') {
             const updatedUser = this.userService.userData.find(
                 user => user.name === message.user
             );
             if (updatedUser) {
                 message.user = updatedUser;
-                this.saveUpdatedMessage(message,channelId)
+                this.saveUpdatedMessage(message, channelId)
             }
         } else if (message.user && message.user.userId) {
             const updatedUser = this.userService.userData.find(
@@ -355,17 +355,24 @@ export class MessagesService {
             );
             if (updatedUser) {
                 message.user = updatedUser;
-                this.saveUpdatedMessage(message,channelId)
+                this.saveUpdatedMessage(message, channelId)
             }
         }
     }
     async saveUpdatedMessage(message: any, channelId: string): Promise<void> {
+        const messageRef = doc(this.firestore, `channels/${channelId}/messages/${message.messageId}`);
+
         try {
-            const messageRef = doc(this.firestore, `channels/${channelId}/messages/${message.messageId}`);
-            await updateDoc(messageRef, { user: message.user.toJson() });
+            const docSnap = await getDoc(messageRef);
+
+            if (docSnap.exists()) {
+                await updateDoc(messageRef, { user: message.user.toJson() });
+              
+            }
         } catch (error) {
             console.error('Fehler beim Aktualisieren der Nachricht:', error);
         }
+
     }
 
 }
