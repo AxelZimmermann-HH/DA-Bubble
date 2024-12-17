@@ -39,14 +39,14 @@
                         <span class="emoji-container"
                             *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0"
                             (click)="toggleEmojiReaction(message, emojiData)">
-                            <img [src]="getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" />
+                            <img [src]="emojiService.getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" />
                             <span>{{ emojiData.userIds.length }}</span>
                             <div class="emoji-tooltip"
                                 *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0">
                                 <span style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                                    <img [src]="getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" width="30px" />
+                                    <img [src]="emojiService.getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" width="30px" />
                                     <span class="emoji-reaction-text">
-                                        {{ getEmojiReactionText(emojiData) }}
+                                        {{emojiService.getEmojiReactionText(emojiData,userId) }}
                                     </span>
                                     <span style="font-size: 16px; font-weight: 400;text-align: center;">
                                         {{emojiData.userIds.length > 1 ? 'haben reagiert' : 'hat reagiert' }}</span>
@@ -70,7 +70,7 @@
             <div class="reaction-hover" *ngIf="!message.isEditing && emojiService.getRecentEmojis(message).length>0"
                 [ngClass]="{'reaction-left': userService.isCurrentUser(message.user.name, userId)}">
                 <ng-container *ngFor="let emojiData of emojiService.getRecentEmojis(message)">
-                    <img [src]="getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji"
+                    <img [src]="emojiService.getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji"
                         (click)="toggleUserEmoji(message, emojiData.emoji, userId)" />
                 </ng-container>
             </div>
@@ -84,7 +84,7 @@
         </div>
         <!-- Answer list -->
         <div class="message-main" [ngClass]="{'current-user': userService.isCurrentUser(answer.user.name,userId)}"
-            *ngFor="let answer of selectedAnswers" #answersContainer>
+            *ngFor="let answer of selectedAnswers">
             <img [src]="userService.getAvatarForUser(answer.user.name)" alt="Avatar" class="avatar">
             <div class="message-content" *ngIf="!answer.isEditing"
                 [ngClass]="{'a-flex': userService.isCurrentUser(answer.user.name,userId)}">
@@ -118,14 +118,14 @@
                         <span class="emoji-container"
                             *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0"
                             (click)="toggleEmojiReactionForAnswer(answer, emojiData)">
-                            <img [src]="getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" />
+                            <img [src]="emojiService.getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" />
                             <span>{{ emojiData.userIds.length }}</span>
                             <div class="emoji-tooltip"
                                 *ngIf="emojiData && emojiData.userIds && emojiData.userIds.length > 0">
                                 <span style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                                    <img [src]="getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" width="30px" />
+                                    <img [src]="emojiService.getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji" width="30px" />
                                     <span class="emoji-reaction-text">
-                                        {{ getEmojiReactionText(emojiData) }}
+                                        {{ emojiService.getEmojiReactionText(emojiData, userId) }}
                                     </span>
                                     <span style="font-size: 16px; font-weight: 400;text-align: center;">
                                         {{ emojiData.userIds.length > 1 ? 'haben reagiert' : 'hat reagiert' }}
@@ -155,8 +155,8 @@
                 <img src="./assets/icons/more_vert.png" alt="" *ngIf="userService.isCurrentUser(answer.user.name, userId)"
                     (click)=" editDirectAnswer(answer)">
                 <div style="display: flex;">
-                    <ng-container *ngFor="let emojiData of getRecentEmojis(answer)">
-                        <img [src]="getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji"
+                    <ng-container *ngFor="let emojiData of emojiService.getRecentEmojisAnswers(answer)">
+                        <img [src]="emojiService.getEmojiSrc(emojiData.emoji)" [alt]="emojiData.emoji"
                             (click)="toggleUserEmojiAnswer(answer, emojiData.emoji, userId)" />
                     </ng-container>
                 </div>

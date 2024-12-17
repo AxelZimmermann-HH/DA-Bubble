@@ -14,6 +14,9 @@ export class UserService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
 
+  private userDataSubject = new BehaviorSubject<User[]>([]);
+  userData$ = this.userDataSubject.asObservable();
+
   userData: User[] = [];
   user = new User();
   userId!: string;
@@ -83,6 +86,7 @@ export class UserService {
           let user = new User({ ...doc.data(), id: doc.id });
           this.userData.push(user);
         });
+        this.userDataSubject.next(this.userData);
         resolve();
       });
     });

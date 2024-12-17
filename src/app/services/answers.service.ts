@@ -15,8 +15,8 @@ export class AnswersService {
   allAnswers: Answer[] = [];
   latestAnswerTimes = new Map<string, string | null>();
   selectedFile: File | null = null;
-  enableScroll: boolean = true;
   constructor(public firestore: Firestore, public sharedService: SharedService, public fileService: FileService, public userService: UserService) { }
+  shouldScrollToBottom: boolean = false;
 
 
   getAnswers(channelId: string | null, messageId: string, callback: () => void) {

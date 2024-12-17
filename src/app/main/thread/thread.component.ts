@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { User } from '../../models/user.class';
 import { Message } from '../../models/message.class';
 import { doc, Firestore, Timestamp, updateDoc } from '@angular/fire/firestore';
@@ -17,7 +17,6 @@ import { AnswersService } from '../../services/answers.service';
 import { SharedService } from '../../services/shared.service';
 import { FileService } from '../../services/file.service';
 import { EmojisService } from '../../services/emojis.service';
-import { user } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-thread',
@@ -49,7 +48,9 @@ export class ThreadComponent {
   @Input() selectedChannelId: string | null = null;
   @Input() channelName: string | undefined;
   @Input() message!: Message;
-  selectedAnswers: Answer[] = []
+  selectedAnswers: Answer[] = [];
+
+ mutationObserver!: MutationObserver;
 
   constructor(
     public firestore: Firestore,
@@ -67,10 +68,8 @@ export class ThreadComponent {
   ngOnInit(): void {
     this.route.params.subscribe(params => { this.userId = params['userId']; });
     this.subscribeToSearch();
-
-    this.userService.getAllUsers().then(() => {
-      this.answersService.updateUserInAnswers(this.selectedAnswers, this.selectedChannelId, this.message.messageId);
-
+    this.userService.userData$.subscribe(() => {
+    this.answersService.updateUserInAnswers(this.selectedAnswers, this.selectedChannelId, this.message.messageId);
     });
   }
 
@@ -92,7 +91,6 @@ export class ThreadComponent {
       this.answersService.getAnswers(this.selectedChannelId, this.message.messageId, () => {
         this.selectedAnswers = this.answersService.allAnswers;
         this.originalAnswers = [...this.selectedAnswers];
-        
         this.answersService.updateUserInAnswers(
           this.selectedAnswers,
           this.selectedChannelId,
@@ -141,9 +139,8 @@ export class ThreadComponent {
       this.editingAnswerId = null;
 
     } else {
-      if (this.newAnswerText.trim() === '' && this.selectedFile === null) {
-        return;
-      }
+      if (this.newAnswerText.trim() === '' && this.selectedFile === null) return;
+
       const answerData = {
         messageId,
         text: this.newAnswerText,
@@ -155,8 +152,10 @@ export class ThreadComponent {
       };
       await this.answersService.addNewAnswer(messageId, this.selectedChannelId, this.newAnswerText, this.userId, answerData);
       this.resetAnswerData();
+      this.scrollToBottom()
     }
   }
+
   resetAnswerData() {
     this.newAnswerText = '';
     this.selectedFile = null;
@@ -196,7 +195,6 @@ export class ThreadComponent {
 
   }
 
-
   toggleEmojiReaction(message: Message, emojiData: EmojiData) {
     const currentUserId = this.userId; // Aktuelle Benutzer-ID
     const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
@@ -231,10 +229,7 @@ export class ThreadComponent {
   }
 
   toggleEmojiReactionForAnswer(answer: Answer, emojiData: EmojiData) {
-    if (!emojiData || !emojiData.userIds) {
-      console.error('Ungültige Emoji-Daten:', emojiData);
-      return;
-    }
+    if (!emojiData || !emojiData.userIds) return;
     const currentUserId = this.userId;
     const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
     if (currentUserIndex > -1) {
@@ -242,69 +237,18 @@ export class ThreadComponent {
     } else {
       emojiData.userIds.push(currentUserId);
     }
-    this.updateEmojisInAnswer(answer);
-  }
-
-  updateEmojisInAnswer(answer: Answer) {
-    if (!this.selectedChannelId || !answer.messageId || !answer.id) return;
-    const answerRef = doc(this.firestore, `channels/${this.selectedChannelId}/messages/${answer.messageId}/answers/${answer.id}`);
-    updateDoc(answerRef, { emojis: answer.emojis });
+    this.emojiService.updateEmojisInAnswer(answer, this.selectedChannelId);
   }
 
   toggleUserEmojiAnswer(answer: Answer, emoji: string, userId: string) {
-    const emojiData = answer.emojis.find((e: EmojiData) => e.emoji === emoji);
-    if (!emojiData) {
-      answer.emojis.push({ emoji, userIds: [userId] });
-    } else {
-      const userIdIndex = emojiData.userIds.indexOf(userId);
-      if (userIdIndex === -1) {
-        emojiData.userIds.push(userId);
-      } else {
-        emojiData.userIds.splice(userIdIndex, 1);
-      }
-    }
-    this.updateEmojisInAnswer(answer)
-  }
-
-  getEmojiSrc(emoji: string): string {
-    const emojiMap: { [key: string]: string } = {
-      'nerd face': './assets/icons/emoji _nerd face_.png',
-      'raising both hands': './assets/icons/emoji _person raising both hands in celebration_.png',
-      'heavy check mark': './assets/icons/emoji _white heavy check mark_.png',
-      'rocket': './assets/icons/emoji _rocket_.png'
-    };
-    return emojiMap[emoji] || '';
-  }
-
-  getEmojiReactionText(emojiData: EmojiData): string {
-    const currentUserId = this.userId;
-    const userNames = emojiData.userIds.map(userId => this.userService.findUserNameById(userId));
-    const currentUserIndex = emojiData.userIds.indexOf(currentUserId);
-    if (currentUserIndex > -1) {
-      const currentUserName = this.userService.findUserNameById(currentUserId);
-      const filteredUserNames = userNames.filter(name => name !== currentUserName);
-      let nameList = filteredUserNames.join(", ");
-      if (nameList.length > 0) {
-        return `Du und ${nameList}` + (filteredUserNames.length > 1 ? "..." : "");
-      } else {
-        return "Du";
-      }
-    }
-    return userNames.length > 0 ? userNames.join(", ") : "Keine Reaktionen";
-  }
-
-  getRecentEmojis(answer: Answer): EmojiData[] {
-    return answer.emojis
-      .filter(emojiData => emojiData.userIds.length > 0)
-      .sort((a, b) => b.userIds.length - a.userIds.length)
-      .slice(0, 2);
+    this.emojiService.toggleUserEmojiAnswer(answer, emoji, userId, this.selectedChannelId)
   }
 
   toggleShowEmoji() { this.showEmoji = !this.showEmoji }
 
   toggleAllEmojitoAnswer(event: any, clickedAnswer: string) {
     event.stopPropagation();
-    this.clickedAnswer = clickedAnswer
+    this.clickedAnswer = clickedAnswer;
     this.showAllAnswerEmoji = !this.showAllAnswerEmoji;
   }
 
@@ -319,14 +263,12 @@ export class ThreadComponent {
   }
 
   addEmoji(event: any) {
-    const emoji = event.emoji.native;
-    this.newAnswerText += emoji
+    this.newAnswerText += event.emoji.native;
     this.showEmojiPicker = false;
   }
 
   addEmojiToAnswer(event: any, answer: Answer) {
-    const emoji = event.emoji.native;
-    answer.editedText += emoji;
+    answer.editedText += event.emoji.native;
     this.showAnswerEmoji = false;
   }
 
@@ -357,9 +299,7 @@ export class ThreadComponent {
     }
   }
 
-  resetErrorMessage(): void {
-    this.errorMessage = null;
-  }
+  resetErrorMessage(): void { this.errorMessage = null; }
 
   closePreview() {
     this.fileUrl = null;
@@ -387,10 +327,18 @@ export class ThreadComponent {
     this.taggedUser = false;
   }
 
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
     if (this.answersContainer?.nativeElement) {
-      const observer = new MutationObserver(() => { this.scrollToBottom(); });
-      observer.observe(this.answersContainer.nativeElement, { childList: true, subtree: true });
+      this.mutationObserver = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+          if (mutation.type === 'childList' && this.answersService.shouldScrollToBottom) {
+            this.scrollToBottom();
+            this.answersService.shouldScrollToBottom = false; // Nach dem Scrollen zurücksetzen
+          }
+        }
+      });
+  
+      this.mutationObserver.observe(this.answersContainer.nativeElement, { childList: true, subtree: false });
     }
   }
 
@@ -398,14 +346,12 @@ export class ThreadComponent {
     if (this.answersContainer?.nativeElement) {
       try {
         this.answersContainer.nativeElement.scrollTop = this.answersContainer.nativeElement.scrollHeight;
-        this.answersService.enableScroll = false;
+        this.answersService.shouldScrollToBottom = false;
       } catch (err) {
         console.error('Scrollen fehlgeschlagen:', err);
       }
     }
   }
 
-  closeThread() {
-    this.threadClosed.emit();
-  }
+  closeThread() { this.threadClosed.emit(); }
 }

@@ -3,6 +3,7 @@ import { Message } from '../models/message.class';
 import { EmojiData } from '../models/emoji-data.models';
 import { doc, Firestore, updateDoc } from '@angular/fire/firestore';
 import { UserService } from './user.service';
+import { Answer } from '../models/answer.class';
 
 
 @Injectable({
@@ -94,5 +95,30 @@ export class EmojisService {
     .slice(0, 2); 
   }
   
+ getRecentEmojisAnswers(answer: Answer): EmojiData[] {
+    return answer.emojis
+      .filter(emojiData => emojiData.userIds.length > 0)
+      .sort((a, b) => b.userIds.length - a.userIds.length)
+      .slice(0, 2);
+  }
+  toggleUserEmojiAnswer(answer: Answer, emoji: string, userId: string,channelId:string|null) {
+    const emojiData = answer.emojis.find((e: EmojiData) => e.emoji === emoji);
+    if (!emojiData) {
+      answer.emojis.push({ emoji, userIds: [userId] });
+    } else {
+      const userIdIndex = emojiData.userIds.indexOf(userId);
+      if (userIdIndex === -1) {
+        emojiData.userIds.push(userId);
+      } else {
+        emojiData.userIds.splice(userIdIndex, 1);
+      }
+    }  this.updateEmojisInAnswer(answer,channelId)
+  }
 
+
+    updateEmojisInAnswer(answer: Answer,channelId:string|null) {
+      if (!channelId || !answer.messageId || !answer.id) return;
+      const answerRef = doc(this.firestore, `channels/${channelId}/messages/${answer.messageId}/answers/${answer.id}`);
+      updateDoc(answerRef, { emojis: answer.emojis });
+    }
 }
