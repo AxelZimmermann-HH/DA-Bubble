@@ -29,7 +29,6 @@ export class UserService {
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       this.setUser(new User(parsedUser));
-      console.log('User restored from localStorage:', parsedUser);
   }
   }
 
@@ -37,7 +36,6 @@ export class UserService {
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
       if (this.userId) {
-        console.log('Initialized userId:', this.userId);
         this.loadUsers().then(() => {
           this.loadCurrentUser(this.userId);
         });
