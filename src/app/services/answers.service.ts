@@ -4,6 +4,7 @@ import { Answer } from '../models/answer.class';
 import { SharedService } from './shared.service';
 import { FileService } from './file.service';
 import { UserService } from './user.service';
+import { deleteObject, getStorage, ref } from 'firebase/storage';
 
 
 @Injectable({
@@ -89,19 +90,17 @@ export class AnswersService {
       console.error('Fehler beim Löschen der Antwort:', error);
     }
   }
+
   cancelEditAnswer(answer: Answer) {
     answer.isEditing = false;
     answer.editedText = answer.text;
   }
 
-  async addNewAnswer(messageId: string, channelId: string | null, newAnswerText: string, userId: string, answerData:any) {
+  async addNewAnswer(messageId: string, channelId: string | null, newAnswerText: string, userId: string, answerData: any) {
     try {
       const user = this.userService.userData.find(u => u.userId === userId);
-
       if (!user) return;
-      const userJson = user.toJson();
       const answersCollectionRef = collection(this.firestore, `channels/${channelId}/messages/${messageId}/answers`);
-      
       await addDoc(answersCollectionRef, answerData);
       newAnswerText = '';
       this.selectedFile = null;
@@ -112,23 +111,19 @@ export class AnswersService {
 
   async deleteEditedAnswer(messageId: string, channelId: string | null, editingAnswerId: string | null) {
     if (!channelId || !messageId || !editingAnswerId) {
-      console.error('Fehlende Parameter beim Löschen der Antwort');
       return;
     }
     try {
-      const answerRef = doc(
-        this.firestore,
-        `channels/${channelId}/messages/${messageId}/answers/${editingAnswerId}`
-      );
+      const answerRef = doc(this.firestore, `channels/${channelId}/messages/${messageId}/answers/${editingAnswerId}` );
       await deleteDoc(answerRef);  // Löschen der Antwort
     } catch (error) {
       console.error('Fehler beim Löschen der Antwort:', error);
     }
   }
 
-  async editAnswer(messageId: string, newAnswerText: string, channelId: string|null, selectedAnswers: Answer[], editingAnswerId: string | null) {
+  async editAnswer(messageId: string, newAnswerText: string, channelId: string|null, selectedAnswers: Answer[], editingAnswerId: string | null, fileUrl:string|null) {
     const updateData: any = { text: newAnswerText.trim() };
-    if (!this.selectedFile) {
+    if (!fileUrl) {
       updateData.fileUrl = null;
       updateData.fileType = null;
       updateData.fileName = null;
@@ -140,7 +135,7 @@ export class AnswersService {
       if (answer) {
         answer.text = newAnswerText.trim();
         answer.isEditing = false;
-        if (!answer.text && !answer.fileUrl) {
+        if (!answer.text && !fileUrl) {
           await this.deleteEditedAnswer(messageId, channelId, editingAnswerId);
         }
       }
@@ -151,6 +146,7 @@ export class AnswersService {
       console.error('Fehler beim Bearbeiten der Antwort:', error);
     }
   }
+  
 
   deleteFile(answer: Answer) {
     if (!answer.fileUrl) return;
@@ -160,19 +156,19 @@ export class AnswersService {
     this.selectedFile = null;
   }
 
-  updateUserInAnswers(answers: Answer[], channelId: string|null, messageId: string): void {
+  updateUserInAnswers(answers: Answer[], channelId: string | null, messageId: string): void {
     answers.forEach(answer => {
       const updatedUser = this.userService.userData.find(
         user => user.userId === answer.user?.userId
       );
-  
+
       if (updatedUser) {
         answer.user = updatedUser;
         this.saveUpdatedAnswer(answer, channelId, messageId); // Speichern in Firebase
       }
     });
   }
-  async saveUpdatedAnswer(answer: Answer, channelId: string|null, messageId: string): Promise<void> {
+  async saveUpdatedAnswer(answer: Answer, channelId: string | null, messageId: string): Promise<void> {
     try {
       const answerRef = doc(
         this.firestore,

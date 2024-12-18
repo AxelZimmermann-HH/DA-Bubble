@@ -8,7 +8,6 @@ export class Channel {
     members!: User[];
     creatorName!: string;
     creator: User | undefined;
-    creatorId!: User;
 
     constructor(obj?: any) {
         this.channelName = obj ? obj.channelName : '';

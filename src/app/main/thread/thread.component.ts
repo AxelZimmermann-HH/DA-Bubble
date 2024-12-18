@@ -50,7 +50,7 @@ export class ThreadComponent {
   @Input() message!: Message;
   selectedAnswers: Answer[] = [];
 
- mutationObserver!: MutationObserver;
+  mutationObserver!: MutationObserver;
 
   constructor(
     public firestore: Firestore,
@@ -69,7 +69,7 @@ export class ThreadComponent {
     this.route.params.subscribe(params => { this.userId = params['userId']; });
     this.subscribeToSearch();
     this.userService.userData$.subscribe(() => {
-    this.answersService.updateUserInAnswers(this.selectedAnswers, this.selectedChannelId, this.message.messageId);
+      this.answersService.updateUserInAnswers(this.selectedAnswers, this.selectedChannelId, this.message.messageId);
     });
   }
 
@@ -134,7 +134,7 @@ export class ThreadComponent {
     const userJson = user?.toJson();
 
     if (this.editingAnswerId) {
-      await this.answersService.editAnswer(messageId, this.newAnswerText, this.selectedChannelId, this.selectedAnswers, this.editingAnswerId);
+      await this.answersService.editAnswer(messageId, this.newAnswerText, this.selectedChannelId, this.selectedAnswers, this.editingAnswerId, fileUrl);
       this.newAnswerText = '';
       this.editingAnswerId = null;
 
@@ -189,10 +189,9 @@ export class ThreadComponent {
         });
         this.selectedFile = fakeFile;
       } else {
-        this.fileService.closePreview();
+        this.closePreview();
       }
     }
-
   }
 
   toggleEmojiReaction(message: Message, emojiData: EmojiData) {
@@ -301,6 +300,7 @@ export class ThreadComponent {
 
   resetErrorMessage(): void { this.errorMessage = null; }
 
+
   closePreview() {
     this.fileUrl = null;
     this.selectedFile = null;
@@ -337,7 +337,7 @@ export class ThreadComponent {
           }
         }
       });
-  
+
       this.mutationObserver.observe(this.answersContainer.nativeElement, { childList: true, subtree: false });
     }
   }

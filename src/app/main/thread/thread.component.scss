@@ -100,7 +100,7 @@
     padding: 0 20px;
 
     .label-answers {
-        font-size: 14px;
+        font-size: 17px;
         font-weight: 400;
         color: rgba(83, 90, 241, 1);
         width: 40%;
@@ -600,10 +600,7 @@
 
 
 @media (max-width:1024px) {
-    .separator .label-answers {
-        font-size: 14px;
-    }
-
+   
     .thread-container .thread-header {
         height: 45px;
         padding: 20px;
@@ -633,6 +630,6 @@
     }
 
     .speech-bubble {
-        font-size: 14px;
+        font-size: 17px;
     }
 }

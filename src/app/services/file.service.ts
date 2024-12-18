@@ -22,9 +22,7 @@ export class FileService {
   private _errorMessage = new BehaviorSubject<string | null>(null);
   errorMessage$ = this._errorMessage.asObservable();
 
-  constructor(
-    private sanitizer: DomSanitizer) { }
-
+  constructor(private sanitizer: DomSanitizer) { }
 
   extractFileName(fileUrl: string): string {
     if (!fileUrl) return '';
@@ -58,11 +56,6 @@ export class FileService {
     }
   }
 
-
-
-
-
-
   resetErrorMessage(): void {
     this._errorMessage.next(null);
   }
@@ -86,16 +79,11 @@ export class FileService {
     return fileUrl.split('/').pop() || 'Datei';
   }
 
-  // closePreview(key: string, fileInput: HTMLInputElement): void {
-  //   this.resetFileKey(key); 
-  //   if (fileInput) {
-  //     fileInput.value = ''; 
-  //   }
-  // }
   closePreview() {
-    this.fileUrl = null; console.log('this fileurl', this.fileUrl);
-    this.selectedFile = null; console.log('this fileurl', this.selectedFile);
+    this.fileUrl = null; 
+    this.selectedFile = null; 
   }
+  
   async uploadFiles(): Promise<string | null> {
     if (!this.selectedFile) return null;
     const filePath = `files/${this.selectedFile.name}`;
@@ -131,8 +119,6 @@ export class FileService {
     }
   }
   
-
-
   removeFile(message: any) {
     message.fileUrl = '';
     message.fileName = '';

@@ -71,7 +71,7 @@ export class DialogAddUserComponent {
   }
 
   async addMember() {
-    const channelRef = doc(this.firestore, 'channels', this.channel.id);
+    const channelRef = doc(this.firestore, `channels/${this.channel.id}`);
 
     try {
       const currentMembers = this.channel.members || [];
@@ -116,20 +116,15 @@ export class DialogAddUserComponent {
   }
 
   async addSelectedUsers(currentMembers: any[], channelRef: any) {
-
     const newMembers = this.selectedUsers.filter(
       (user: any) => !currentMembers.some(member => member.userId === user.userId)
     );
-
-    console.log('Neue Benutzer nach Filterung:', newMembers);
 
     if (newMembers.length === 0) {
       this.dialogRef.close(false);
       return;
     }
-
     const updatedMembers = [...currentMembers, ...newMembers.map((user: any) => user.toJson())];
-
     try {
       await updateDoc(channelRef, { members: updatedMembers });
       this.selectedUsers = [];

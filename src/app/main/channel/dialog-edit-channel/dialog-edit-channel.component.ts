@@ -27,7 +27,7 @@ export class DialogEditChannelComponent {
   channel!: Channel;
   userData: any = [];
   user = new User();
-  currentUser: string | undefined;
+  currentUser!: string;
   userId!: string;
   isEditing = false;
   isHovered = false;
@@ -38,8 +38,8 @@ export class DialogEditChannelComponent {
   errorMessage: string | null = null;
 
 
-  creatorName!: string;
-  creator!: any;
+  // creatorName!: string;
+  // creator!: any;
 
   constructor(
     public dialogRef: MatDialogRef<DialogEditChannelComponent>,
@@ -58,18 +58,10 @@ export class DialogEditChannelComponent {
   }
 
   ngOnInit() {
-    this.userService.getAllUsers()
-      .then(() => {
-        this.creatorName = this.userService.findUserNameById(this.data.userId);
-        this.creator = this.userService.findUserByName(this.creatorName);
-        if (!this.creator || !this.creatorName) return;
-        this.channel.creatorName = this.creator.name;
-        this.refreshChannelMembers();
-        this.updateChannelInFirebase();
-      })
-      .catch(error => {
-        console.error('Fehler beim Laden der Benutzerdaten:', error);
-      });
+    this.userService.getAllUsers().then(() => {
+      const currentUser = this.userService.findUserNameById(this.userId);
+      console.log('current user,', currentUser);
+    });
   }
 
   async updateChannelInFirebase() {
@@ -78,8 +70,6 @@ export class DialogEditChannelComponent {
     try {
       const channelRef = doc(this.firestore, `channels/${this.channel.id}`);
       const updatedChannel = {
-        creatorName: this.creatorName,
-        creator: this.creator ? this.creator.toJson() : null, // Falls Creator fehlt, null setzen
         members: this.channel.members || [],
       };
       await updateDoc(channelRef, updatedChannel);
@@ -90,10 +80,9 @@ export class DialogEditChannelComponent {
 
   refreshChannelMembers() {
     if (!this.channelService.selectedChannel)       return;
-
     this.channelService.selectedChannel.members = this.channel.members.map((member: { name: string }) => {
       const user = this.userService.findUserByName(member.name);
-      return user ? user.toJson() : member; // Wenn Benutzer gefunden, aktualisiere Daten
+      return user ? user.toJson() : member; 
     });
   }
 
@@ -139,7 +128,7 @@ export class DialogEditChannelComponent {
 
   saveChannelDescription() {
     if (this.newChannelDescription && this.newChannelDescription.trim()) {
-      const channelDocRef = doc(this.firestore, 'channels', this.channel.id);
+      const channelDocRef = doc(this.firestore, `channels/${this.channel.id}`);
       updateDoc(channelDocRef, { channelDescription: this.newChannelDescription })
         .then(() => {
           this.channel.channelDescription = this.newChannelDescription
@@ -187,8 +176,7 @@ export class DialogEditChannelComponent {
 
   async deleteChannel(channelId: string) {
     try {
-      if (this.channel.creatorName !== this.currentUser) return;
-      const channelDocRef = doc(this.firestore, 'channels', channelId);
+      const channelDocRef = doc(this.firestore, `channels/${channelId}`);
       await deleteDoc(channelDocRef);
       this.channelService.getAllChannels();
     } catch (error) {

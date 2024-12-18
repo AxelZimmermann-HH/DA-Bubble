@@ -672,7 +672,6 @@ td:hover .b-radius {
     height: 40px;
     object-fit: contain;
     border-radius: 40px;
-  
 }
 
 .error-message {
@@ -802,7 +801,10 @@ td:hover .b-radius {
 .mobile-channel-content {
     height: calc(100% - 300px);
 }
-
+.mobile-channel-container{
+ 
+    height: calc(100vh - 77px);
+}
 app-thread {
     width: 485px;
 }
@@ -854,15 +856,15 @@ app-thread {
     }
 
     .speech-bubble {
-        font-size: 14px;
+        font-size: 18px;
     }
 
     .channel-content .chat-table .message-content .time {
-        font-size: 12px;
+        font-size: 14px;
     }
 
     .channel-content .chat-table .message-main span {
-        font-size: 12px;
+        font-size: 17px;
     }
 
     .member-preview,
@@ -885,7 +887,7 @@ app-thread {
     }
 
     .channel-content .chat-table .message-content .label-answers {
-        font-size: 12px;
+        font-size: 14px;
         font-weight: 700;
     }
 

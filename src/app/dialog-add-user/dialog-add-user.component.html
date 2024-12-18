@@ -41,8 +41,7 @@
     <div class="flex-direction" [ngClass]="sharedService.isMobile ? 'flex-direction m-20' : 'flex-direction'">
       <div class="d-flex">
         <input type="radio" name="options" (change)="selectedOption = 'channel' ">
-        Alle Mitglieder von <span [ngClass]="sharedService.isMobile ? 'channel-name' : 'channel-name'">#
-          {{channel.channelName}}</span> hinzufügen
+        Alle Mitglieder von <span style="color: rgba(121, 126, 243, 1);;">Devspace</span> hinzufügen
       </div>
       <div class="d-flex">
         <input type="radio" name="options" (change)="selectedOption = 'user'">

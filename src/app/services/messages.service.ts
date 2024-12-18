@@ -281,6 +281,9 @@ export class MessagesService {
                     updateData.fileType = null;
                     updateData.fileName = null;
                 }
+                if (!editingMessageId || !selectedChannelId) {
+                    return;
+                }
                 // Nachricht aktualisieren
                 const messageRef = doc(this.firestore, `channels/${selectedChannelId}/messages/${editingMessageId}`);
                 await updateDoc(messageRef, updateData);
@@ -289,6 +292,7 @@ export class MessagesService {
                 if (message) {
                     message.text = messageText;
                     if (!message.text.trim() && !message.fileUrl) {
+                     
                         // Lösche Nachricht, wenn sie leer ist
                         await this.deleteMessage(editingMessageId, selectedChannelId);
                     } else {
