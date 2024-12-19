@@ -39,8 +39,6 @@ export class DialogAddChannelComponent {
 
   @Output() channelCreated = new EventEmitter<any>();
 
- 
-
   async createNewChannel() {
     const enteredName = this.channelName.value?.trim();
     if (!enteredName || await this.channelService.checkChannelExists(enteredName)) return;

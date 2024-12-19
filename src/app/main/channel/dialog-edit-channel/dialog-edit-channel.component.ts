@@ -55,7 +55,6 @@ export class DialogEditChannelComponent {
   }
 
   ngOnInit(): void {
-    // Abonnieren der Benutzerdaten
     this.userService.userData$.subscribe((users) => {
       const creatorUserId = this.channel.creator?.userId;
   
@@ -66,9 +65,7 @@ export class DialogEditChannelComponent {
         }
       }
     });
-  
-    // Sicherstellen, dass alle Benutzer geladen sind
-    this.userService.getAllUsers().then(() => {
+      this.userService.getAllUsers().then(() => {
       this.currentUser = this.userService.findUserNameById(this.userId);
    
     });
@@ -95,8 +92,7 @@ export class DialogEditChannelComponent {
       return user ? user.toJson() : member; 
     });
   }
-
-
+  
   toggleInputName() {
     this.isEditing = true;
   }
