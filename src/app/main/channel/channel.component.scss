@@ -604,7 +604,7 @@ td:hover .b-radius {
     border-radius: 0px 20px 20px 20px;
     padding: 10px 20px;
     position: absolute;
-    top: 100px;
+    bottom: 0;
 
     &:empty {
         display: none;
@@ -615,7 +615,7 @@ td:hover .b-radius {
     width: 300px;
     height: auto;
     border-radius: 30px;
-    position: absolute;
+    // position: absolute;
     z-index: 111;
     bottom: 40px;
     left: 50px;
