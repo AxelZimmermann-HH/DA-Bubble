@@ -260,6 +260,7 @@ export class MenuComponent {
 
   //öffnet den Channel hinzufügen Dialog
   openDialogAddChannel() {
+    debugger
     const isMobile = this.breakpointObserver.isMatched('(max-width: 600px)');
     const dialogConfig = {
       width: isMobile ? '100vw' : '600px',

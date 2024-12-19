@@ -28,31 +28,19 @@ export class PasswordResetComponent {
   passwordPlaceholder: string = 'Neues Passwort (min. 6 Zeichen)';
   isPasswordError: boolean = false;
 
-
   constructor(private userService: UserService, private route: ActivatedRoute, private auth: Auth, private router: Router) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       this.oobCode = params['oobCode'];  // Der einmalige Code von Firebase
       this.mode = params['mode'];        // Der Modus (z.B. 'resetPassword')
-  
-      console.log('Query-Parameter:', params);  // Debugging: Logge die Query-Parameter in der Konsole
       this.verifyPasswordResetCode();
-  
-      // // Überprüfe, ob der Modus 'resetPassword' ist
-      // if (this.mode === 'resetPassword') {
-      //   this.verifyPasswordResetCode();  // Verifiziere den Code
-      // } else {
-      //   console.error('Ungültiger Modus:', this.mode);  // Falls der Modus nicht korrekt ist
-      // }
     });
   }
 
   verifyPasswordResetCode() {
     verifyPasswordResetCode(this.auth, this.oobCode)
       .then(email => {
-        console.log('Code verifiziert, Benutzer kann Passwort zurücksetzen.');
-        // Hier kannst du nun das Formular anzeigen, um das neue Passwort einzugeben
       })
       .catch(error => {
         console.error('Fehler beim Verifizieren des Codes', error);
@@ -62,7 +50,6 @@ export class PasswordResetComponent {
   resetPassword(newPassword: string) {
     confirmPasswordReset(this.auth, this.oobCode, newPassword)
       .then(() => {
-        console.log('Passwort erfolgreich zurückgesetzt');
         this.success = true;  // Erfolgsmeldung anzeigen
         setTimeout(() => {
           this.router.navigate(['/']);
@@ -83,8 +70,6 @@ export class PasswordResetComponent {
 
   minLength(): void {
     if (!this.password1 || this.password1.length < 6) {
-      console.log('ok');
-      
       this.password1 = ''; // Eingabe zurücksetzen
       this.passwordPlaceholder = 'Mindestens 6 Zeichen erforderlich'; // Placeholder setzen
       this.isPasswordError = true;
@@ -103,7 +88,6 @@ export class PasswordResetComponent {
         // Ändere das Passwort des Benutzers in Firebase
         await updatePassword(currentUser, this.password1);
         this.success = true;  // Erfolgsmeldung anzeigen
-        console.log('Passwort erfolgreich geändert!');
       } catch (error) {
         console.error('Fehler beim Ändern des Passworts:', error);
       }
@@ -112,7 +96,6 @@ export class PasswordResetComponent {
     }
   }
   
-
   getBack() {
     this.switchToMail.emit(true);
   }

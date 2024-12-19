@@ -111,7 +111,6 @@ export class FileService {
     try {
       const snapshot = await uploadBytes(storageRef, this.selectedFile);
       const downloadURL = await getDownloadURL(snapshot.ref);
-      console.log('Firebase-Datei-URL:', downloadURL);
       return downloadURL;
     } catch (error) {
       console.error('Fehler beim Hochladen der Datei:', error);
@@ -233,7 +232,6 @@ export class FileService {
 
   async loadPdfPreview() {
     if (this.selectedFileType == 'application/pdf') {
-      console.log('Lade die Datei von URL:', this.fileDownloadUrl);
       await this.loadSafeFile(this.fileDownloadUrl, this.selectedFileType)
     }
   }
@@ -257,7 +255,6 @@ export class FileService {
     const fileRef = ref(storage, '/files/' + fileName);
 
     deleteObject(fileRef).then(() => {
-      console.log('Datei erfolgreich gelöscht');
     }).catch((error) => {
       console.error('Fehler beim Löschen der Datei:', error);
     });

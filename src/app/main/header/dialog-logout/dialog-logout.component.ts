@@ -28,8 +28,6 @@ export class DialogLogoutComponent implements OnInit {
   currentUser: User | null = null;
   isLogoutContainerActive = false;
 
-  
-
   constructor(public firestore: Firestore, 
     public dialog: MatDialog, 
     public dialogRef: MatDialogRef<DialogLogoutComponent>, 
@@ -51,7 +49,6 @@ export class DialogLogoutComponent implements OnInit {
   }
 
   addUser() {
-    console.log('user erstellt');
     this.dialogRef.close();
   }
 
@@ -78,7 +75,7 @@ export class DialogLogoutComponent implements OnInit {
     this.dialog.open(DialogUserProfilComponent, { 
       data: { user: this.currentUser, isEditable: true } 
     });
-
-}}
+  }
+}
 
   
