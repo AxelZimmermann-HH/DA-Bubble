@@ -105,11 +105,12 @@ export class DialogAddUserComponent {
   }
 
   async addAllUsers(currentMembers: any[], channelRef: any): Promise<number> {
+    const currentMembersJson = currentMembers.map((member: any) => member.toJson())
     const newMembers = this.userService.userData
       .filter((user: any) => !currentMembers.some(member => member.userId === user.userId))
       .map((user: any) => user.toJson());
     if (newMembers.length > 0) {
-      const updatedMembers = [...currentMembers, ...newMembers];
+      const updatedMembers = [...currentMembersJson, ...newMembers];
       await updateDoc(channelRef, { members: updatedMembers });
       return newMembers.length;
     }
