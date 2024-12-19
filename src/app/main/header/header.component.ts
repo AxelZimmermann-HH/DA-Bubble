@@ -89,8 +89,6 @@ export class HeaderComponent implements OnInit {
     getDoc(userDoc).then((doc) => {
       if (doc.exists()) {
         this.currentUser = new User({ ...doc.data(), userId: doc.id });
-      } else {
-        console.log('Keine Benutzerdaten gefunden');
       }
     }).catch(error => {
       console.error('Fehler beim Abrufen des Benutzers:', error);
@@ -274,8 +272,6 @@ export class HeaderComponent implements OnInit {
     try {
       const channelsCollectionRef = collection(this.firestore, channels);
       this.getChannelDataOnSnapshot(channelsCollectionRef);
-      console.log(this.channelData);
-      
     } catch (error) {
       console.error('Fehler beim Aktualisieren der Daten:', error);
     }

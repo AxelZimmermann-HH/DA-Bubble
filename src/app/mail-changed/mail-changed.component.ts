@@ -9,7 +9,6 @@ import { Router } from '@angular/router';
 import { Auth, confirmPasswordReset, verifyPasswordResetCode } from '@angular/fire/auth';
 import { Firestore, collection, getDocs } from '@angular/fire/firestore';
 
-
 @Component({
   selector: 'app-mail-changed',
   standalone: true,
@@ -17,6 +16,7 @@ import { Firestore, collection, getDocs } from '@angular/fire/firestore';
   templateUrl: './mail-changed.component.html',
   styleUrl: './mail-changed.component.scss'
 })
+
 export class MailChangedComponent {
   @Output() switchToMail = new EventEmitter<boolean>();
   buttonEnabled: boolean = false;
@@ -27,7 +27,6 @@ export class MailChangedComponent {
   user: User | null = null;
   oobCode: string = '';
   mode: string = '';
-
 
   constructor(private firestore: Firestore, private userService: UserService, private route: ActivatedRoute, private auth: Auth, private router: Router) {}
 

@@ -125,7 +125,6 @@ export class AudioService {
     const storage = getStorage();
     const fileRef = ref(storage, audioName);
     deleteObject(fileRef).then(() => {
-      console.log('Datei erfolgreich gelöscht');
     }).catch((error) => {
       console.error('Fehler beim Löschen der Datei:', error);
     });

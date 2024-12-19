@@ -123,7 +123,6 @@ export class UserService {
       if (docSnap.exists()) {
         const user = new User(docSnap.data());
         this.setUser(user);
-        console.log('Current user loaded:', user);
       } else {
         console.error('No such user!');
       }
@@ -138,9 +137,6 @@ export class UserService {
     if (currentUser) {
       const userRef = doc(this.firestore, `users/${currentUser.userId}`);
 
-      console.log('Avatar in updatedUser before saving:', updatedUser.avatar);
-
-
       updateDoc(userRef, updatedUser.toJson())
         .then(() => {
 
@@ -149,7 +145,6 @@ export class UserService {
             ...currentUser
           });
           this.setUser(updatedUserInstance);
-          console.log('User profile updated in Firestore:', updatedUserInstance);
         })
         .catch((error) => {
           console.error('Error updating user profile:', error);
@@ -181,23 +176,19 @@ export class UserService {
   }
 
   getUserIdByname(userName: string): string | undefined {
-
     const nameParts = userName.trim().split(' ');
-  
-
     const user = this.userData.find((user: User) => {
         const userParts = user.name.toLowerCase().split(' ');
-
         return nameParts.every(part => userParts.some(userPart => userPart.toLowerCase().includes(part.toLowerCase())));
     });
     
     return user ? user.userId : undefined;
-}
+  }
 
-getUserNameById(userId: string): string | undefined {
-  const user = this.userData.find((user: User) => user.userId === userId);
-  return user ? user.name : undefined;
-}
+  getUserNameById(userId: string): string | undefined {
+    const user = this.userData.find((user: User) => user.userId === userId);
+    return user ? user.name : undefined;
+  }
 
   findUserByName(userName: string): User | undefined {
     return this.userData.find(user => user.name === userName);
@@ -211,9 +202,9 @@ getUserNameById(userId: string): string | undefined {
     this.dialog.open(DialogUserProfilComponent, {
       data: { user: member, isEditable: false } // Not editable from "Add Channel User"
     });
-    console.log('add channel user ', member.name);
   }
+
   findUserById(userId: string): User | undefined {
     return this.userData.find(user => user.userId === userId);
-}
+  }
 }

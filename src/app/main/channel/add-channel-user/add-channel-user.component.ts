@@ -35,10 +35,8 @@ export class AddChannelUserComponent {
   ) {
     this.userService.getAllUsers();
     this.channel = new Channel(data.channel);
-
   }
  
-  
   openDialogAddUser() {
     this.dialogRef.close()
     this.dialog.open(DialogAddUserComponent, {

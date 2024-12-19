@@ -42,7 +42,6 @@ export class AppComponent {
   //Prüft, ob das Browserfenster kleiner als 810px ist und setzt die isMobile - Variable true/false.
   checkForMobile(){
     this.sharedService.isMobile = window.innerWidth <= 1024; // Example breakpoint for mobile screens
-      console.log('Responsive Ansicht = ',this.sharedService.isMobile)
   }
 
   changeToMobile(){
