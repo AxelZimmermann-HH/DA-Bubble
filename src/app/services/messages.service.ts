@@ -11,11 +11,11 @@ import { SharedService } from './shared.service';
 @Injectable({
     providedIn: 'root'
 })
+
 export class MessagesService {
     allMessages: any[] = [];
     message = new Message();
     emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
     constructor(
         public firestore: Firestore,
         public userService: UserService,
@@ -26,9 +26,7 @@ export class MessagesService {
         public sharedService: SharedService
     ) { }
 
-
     getAllMessages(channelId: string | null, callback: () => void) {
-
         const messagesQuery = query(
             collection(this.firestore, `channels/${channelId}/messages`),
             orderBy('timestamp', 'asc')
@@ -65,7 +63,6 @@ export class MessagesService {
                 date,
                 messages: groupedMessages[date]
             }));
-
             callback()
         });
     }
@@ -74,7 +71,6 @@ export class MessagesService {
         if (!channelId || !message.messageId) return;
         const messageRef = doc(this.firestore, `channels/${channelId}/messages/${message.messageId}`);
         try {
-            // Nachricht aktualisieren
             const updateData: any = { text: message.editedText };
             if (!message.fileUrl) {
                 updateData.fileUrl = null;
@@ -97,6 +93,7 @@ export class MessagesService {
         message.isEditing = false;
         message.editedText = message.text;
     }
+
     removeFile(message: Message) {
         message.fileName = null;
         message.fileUrl = null;
@@ -105,7 +102,6 @@ export class MessagesService {
     async sendChannelMessage(channelId: string | null, message: string, fileUrl: string | null, userId: string) {
         if (message.trim() === '' && !fileUrl) return;
         const user = this.userService.findUserById(userId);
-
         if (!user) return;
         const userJson = user.toJson();
         const messageData = {
@@ -141,6 +137,7 @@ export class MessagesService {
             console.error('Fehler beim Senden der Nachricht:', error);
         }
     }
+
     async sendDirectMessage(recipientName: string, messageText: string, fileUrl: string | null, userId: string) {
         if (!messageText.trim() && !fileUrl) {
             return;
@@ -170,7 +167,6 @@ export class MessagesService {
     }
 
     async updateMessages(channelId: string | null, messageId: string | null, newMessage: string) {
-
         const messageRef = doc(this.firestore, `channels/${channelId}/messages/${messageId}`);
         if (!channelId || !messageId) return;
         try {
@@ -221,7 +217,6 @@ export class MessagesService {
     async handleDirectMessageOrEmail(fileUrl: string | null, value: string, messageText: string, userId: string) {
         const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         const inputValue = value.trim();
-
         if (emailPattern.test(inputValue)) {
             await this.sendEmail(inputValue, messageText, fileUrl, userId);
         } else if (inputValue.startsWith('@')) {
@@ -234,8 +229,8 @@ export class MessagesService {
                 await this.sendChannelMessage(channelId, messageText, fileUrl, userId);
             }
         }
-
     }
+
     async sendEmail(email: string, message: string, fileUrl: string | null, userId: string) {
         try {
             const user = this.userService.findUserByEmail(email);
@@ -249,7 +244,6 @@ export class MessagesService {
     async sendMessage(messageText: string, value: string, userId: string, selectedChannelId: string | null, editingMessageId: string | null) {
         const fileUrl = await this.fileService.uploadFiles();
         if (messageText.trim() === '' && !this.fileService.selectedFile) return;
-
         await this.editMessageForMobile(messageText, editingMessageId, selectedChannelId);
         if (!fileUrl && !messageText.trim()) return;
         if (this.channelService.selectedChannel) {
@@ -284,16 +278,12 @@ export class MessagesService {
                 if (!editingMessageId || !selectedChannelId) {
                     return;
                 }
-                // Nachricht aktualisieren
                 const messageRef = doc(this.firestore, `channels/${selectedChannelId}/messages/${editingMessageId}`);
                 await updateDoc(messageRef, updateData);
-                // Lokale Nachricht aktualisieren
                 const message = this.allMessages.find(m => m.messageId === editingMessageId);
                 if (message) {
                     message.text = messageText;
                     if (!message.text.trim() && !message.fileUrl) {
-                     
-                        // Lösche Nachricht, wenn sie leer ist
                         await this.deleteMessage(editingMessageId, selectedChannelId);
                     } else {
                         message.isEditing = false;
@@ -316,6 +306,7 @@ export class MessagesService {
         }
         return taggedUsernames;
     }
+
     async editMessage(message: Message, newText: string, editingId: string | null, channelId: string | null) {
         if (this.sharedService.isMobile) {
             await this.editMessageForMobile(newText, editingId, channelId);
@@ -324,6 +315,7 @@ export class MessagesService {
             message.editedText = newText;
         }
     }
+
     async editDirectMessage(message: Message, newMessage: string, editingMessageId: string | null) {
         if (!this.sharedService.isMobile) {
             message.isEditing = true;
@@ -331,7 +323,6 @@ export class MessagesService {
         } else {
             newMessage = message.text;
             editingMessageId = message.messageId;
-
             if (message.fileUrl) {
                 this.fileService.fileUrl = this.fileService.getSafeUrl(message.fileUrl);
                 const fakeFile = new File([''], message.fileName || 'Unbenannte Datei', {
@@ -363,20 +354,17 @@ export class MessagesService {
             }
         }
     }
+
     async saveUpdatedMessage(message: any, channelId: string): Promise<void> {
         const messageRef = doc(this.firestore, `channels/${channelId}/messages/${message.messageId}`);
-
         try {
             const docSnap = await getDoc(messageRef);
-
             if (docSnap.exists()) {
                 await updateDoc(messageRef, { user: message.user.toJson() });
-              
             }
         } catch (error) {
             console.error('Fehler beim Aktualisieren der Nachricht:', error);
         }
-
     }
 
 }

@@ -109,10 +109,12 @@
             cursor: pointer;
         }
     }
-    .delete-btn{
+
+    .delete-btn {
         background-color: rgb(255, 0, 0);
+
         &:hover {
-            background-color:  rgba(255, 0, 0, 0.5);
+            background-color: rgba(255, 0, 0, 0.5);
             cursor: pointer;
         }
     }
@@ -159,7 +161,8 @@
         padding: 6px;
         background: rgba(236, 238, 254, 1);
         transition: transform 0.3s ease;
-        &:hover{
+
+        &:hover {
             cursor: pointer;
             transform: scale(1.1);
         }
@@ -295,30 +298,55 @@
         }
     }
 }
+
 .edit-textarea {
-    width:auto;
+    width: auto;
     padding: 10px;
     font-size: 16px;
     line-height: 1.5;
     border-radius: 20px;
-    border:1px solid rgb(173, 176, 217);
-    resize: vertical; 
-  
+    border: 1px solid rgb(173, 176, 217);
+    resize: vertical;
+
     &::placeholder {
-      text-align: left;
-      vertical-align: top;
+        text-align: left;
+        vertical-align: top;
     }
-  }
-  
+}
+
 .isMobile {
     margin: 20px;
 }
+
 .error-message {
     color: red;
     font-size: 14px;
     margin-top: 10px;
     font-weight: bold;
-  }
+}
+.online-point{
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    top: 16px;
+    right: 16px;
+    border: 2px solid #FFFFFF;
+    background-color: #92C83E;
+    z-index: 11;
+    position: relative;
+}
+.offline-point{
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    top: 16px;
+    right: 16px;
+    border: 2px solid #FFFFFF;
+    background-color: rgba(104, 104, 104, 1);
+    z-index: 11;
+    position: relative;
+}
+
 @media (max-width: 768px) {
     .channel-container {
         width: 100%;

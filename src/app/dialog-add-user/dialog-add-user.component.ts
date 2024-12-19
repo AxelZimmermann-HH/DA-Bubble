@@ -72,7 +72,6 @@ export class DialogAddUserComponent {
 
   async addMember() {
     const channelRef = doc(this.firestore, `channels/${this.channel.id}`);
-
     try {
       const currentMembers = this.channel.members || [];
       if (this.selectedOption === 'channel') {
@@ -84,7 +83,10 @@ export class DialogAddUserComponent {
         );
 
         if (newMembers.length > 0) {
-          const updatedMembers = [...currentMembers, ...newMembers.map((user: any) => user.toJson())];
+          const updatedMembers = [
+            ...currentMembers.map((member: any) => member.toJson ? member.toJson() : member),
+            ...newMembers.map((user: any) => user.toJson())
+          ];
           await updateDoc(channelRef, { members: updatedMembers });
         }
 
@@ -102,39 +104,18 @@ export class DialogAddUserComponent {
     return this.selectedUsers.some((selected: any) => selected.userId === user.userId);
   }
 
-  async addAllUsers(currentMembers: any[], channelRef: any) {
+  async addAllUsers(currentMembers: any[], channelRef: any): Promise<number> {
     const newMembers = this.userService.userData
       .filter((user: any) => !currentMembers.some(member => member.userId === user.userId))
       .map((user: any) => user.toJson());
     if (newMembers.length > 0) {
       const updatedMembers = [...currentMembers, ...newMembers];
       await updateDoc(channelRef, { members: updatedMembers });
-      this.dialogRef.close(true);
-    } else {
-      this.dialogRef.close(false);
+      return newMembers.length;
     }
+    return 0;
   }
-
-  async addSelectedUsers(currentMembers: any[], channelRef: any) {
-    const newMembers = this.selectedUsers.filter(
-      (user: any) => !currentMembers.some(member => member.userId === user.userId)
-    );
-
-    if (newMembers.length === 0) {
-      this.dialogRef.close(false);
-      return;
-    }
-    const updatedMembers = [...currentMembers, ...newMembers.map((user: any) => user.toJson())];
-    try {
-      await updateDoc(channelRef, { members: updatedMembers });
-      this.selectedUsers = [];
-      this.dialogRef.close(true);
-    } catch (error) {
-      console.error('Fehler beim Hinzufügen der Mitglieder:', error);
-      this.dialogRef.close(false);
-    }
-  }
-
+  
   toggleDropdown() {
     this.dropdownOpen = !this.dropdownOpen;
   }

@@ -21,7 +21,6 @@ import { EmojisService } from '../../services/emojis.service';
 import { DialogEditChannelComponent } from './dialog-edit-channel/dialog-edit-channel.component';
 import { SafeResourceUrl } from '@angular/platform-browser';
 import { AnswersService } from '../../services/answers.service';
-import { user } from '@angular/fire/auth';
 
 interface MessageGroup {
   date: string;
@@ -41,18 +40,15 @@ export class ChannelComponent {
   newMessageText: string = '';
   isLoading = false;
   editingMessageId: string | null = null;
-
   inputValue: string = '';
   selectedChannel!: Channel;
   filteredUsers: User[] = [];
   userData: User[] = [];
-
   filteredMessages: Message[] = [];
   filteredSearchMessages: MessageGroup[] = [];
   showAutocomplete: boolean = false;
   filteredChannels: Channel[] = [];
   selectedUser: User | null = null;
-
   taggedUser: boolean = false;
   showEmojiPicker: boolean = false;
   showEditEmojiPicker: boolean = false;
@@ -94,25 +90,22 @@ export class ChannelComponent {
     this.subscribeToSearch();
     this.subscribeToFilteredData();
     this.loadAnswersForMessages();
-    this.channelService.getAllChannels()
+    this.channelService.getAllChannels();
   }
 
   async ngOnChanges(): Promise<void> {
     this.isLoading = true;
     if (this.selectedChannelId) {
-      await this.loadChannelData(); // Stelle sicher, dass die Daten vollständig geladen sind
+      await this.loadChannelData();
       this.userService.currentUser$.subscribe(updatedUser => {
         if (updatedUser) {
-          this.updateUserInMessages();
-          this.channelService.updateMembers();
-          this.refreshChannelMembers();
+          this.updateUserInMessages();    
         }
       });
     } else {
       this.resetChannelState();
     }
   }
-
 
   async loadChannelData(): Promise<void> {
     if (this.selectedChannelId) {
@@ -121,22 +114,11 @@ export class ChannelComponent {
         await this.userService.getAllUsers();
         this.loadMessages();
         this.updateUserInMessages();
-        this.channelService.updateMembers()
-        this.refreshChannelMembers();
-
       } catch (error) {
         console.error('Fehler beim Laden der Daten:', error);
       } finally {
         this.isLoading = false;
       }
-    }
-  }
-
-  refreshChannelMembers() {
-    if (this.channelService.selectedChannel) {
-      this.channelService.selectedChannel.members = this.channelService.selectedChannel.members.map((member: { name: string; }) => {
-        return this.userService.findUserByName(member.name) || member;
-      });
     }
   }
 
@@ -148,16 +130,15 @@ export class ChannelComponent {
       this.focusInputField();
       this.loadAnswersForMessages();
       if (this.channelService.enableScroll) {
-        setTimeout(() => {
-          this.scrollToBottom();
-        }, 100);
+        setTimeout(() => { this.scrollToBottom() }, 100);
       }
     });
   }
+
   updateUserInMessages(): void {
     this.filteredSearchMessages.forEach(group => {
       group.messages.forEach(message => {
-      this.messagesService.updateUserInMessages(message,this.selectedChannelId)
+        this.messagesService.updateUserInMessages(message, this.selectedChannelId)
       });
     });
   }
@@ -281,9 +262,7 @@ export class ChannelComponent {
 
   async saveMessage(message: Message) {
     this.messagesService.saveMessageEdit(message, this.selectedChannelId);
-    if (this.selectedMessage.messageId === message.messageId) {
-      this.isThreadOpen = false;
-    }
+    if (this.selectedMessage.messageId === message.messageId) { this.isThreadOpen = false; }
   }
 
   resetInput() {
@@ -323,17 +302,12 @@ export class ChannelComponent {
     return false;
   }
 
-  onThreadClosed() {
-    this.isThreadOpen = false;
-  }
+  onThreadClosed() { this.isThreadOpen = false; }
 
   openThread(message: Message) {
     this.isThreadOpen = true;
     this.selectedMessage = message;
-
-    if (this.sharedService.isMobile) {
-      this.dialog.closeAll();
-    }
+    if (this.sharedService.isMobile) { this.dialog.closeAll(); }
   }
 
   toggleEmojiPicker(event: MouseEvent) {

@@ -25,9 +25,9 @@ export class Channel {
             channelDescription: this.channelDescription,
             id: this.id,
             tagIcon: this.tagIcon,
-            members: this.members,
+            members: this.members.map(member => member instanceof User ? member.toJson() : member ),
             creatorName: this.creatorName,
-            creator: this.creator?.toJson()// Vollständige Benutzerdaten
+            creator: this.creator ? this.creator.toJson() : null // Creator in JSON-Format umwandeln
         }
     }
 } 

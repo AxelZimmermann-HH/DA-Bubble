@@ -20,6 +20,7 @@
                 </div>
                 <div class="speech-bubble"
                     [ngClass]="{'border-radius': userService.isCurrentUser(message.user.name, userId)}">
+                    <div style="display: flex;flex-direction: column;gap: 20px;">
                     {{ message.text }}
                     <div *ngIf="message.fileUrl" class="fileUrl">
                         <div *ngIf="message.fileType?.startsWith('image/')">
@@ -33,6 +34,7 @@
                         <a [href]="fileService.getSafeUrl(message.fileUrl)" class="open-file-button"
                             target="_blank">Anhang öffnen</a>
                     </div>
+                </div>
                 </div>
                 <div style="display: flex;align-items: center;gap: 8px;flex-direction: row-reverse;">
                     <div *ngFor="let emojiData of message.emojis">
@@ -142,8 +144,7 @@
                     </div>
                 </div>
             </div>
-            <div class="reaction-hover"
-                *ngIf="!answer.isEditing "
+            <div class="reaction-hover" *ngIf="!answer.isEditing "
                 [ngClass]="{
                     'reaction-left': userService.isCurrentUser(answer.user.name, userId),
                     'b-radius': !userService.isCurrentUser(answer.user.name, userId)

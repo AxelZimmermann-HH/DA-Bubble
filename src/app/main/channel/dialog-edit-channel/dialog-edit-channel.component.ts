@@ -38,9 +38,6 @@ export class DialogEditChannelComponent {
   errorMessage: string | null = null;
 
 
-  // creatorName!: string;
-  // creator!: any;
-
   constructor(
     public dialogRef: MatDialogRef<DialogEditChannelComponent>,
     public firestore: Firestore,
@@ -57,10 +54,23 @@ export class DialogEditChannelComponent {
     this.channelService.getAllChannels();
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
+    // Abonnieren der Benutzerdaten
+    this.userService.userData$.subscribe((users) => {
+      const creatorUserId = this.channel.creator?.userId;
+  
+      if (creatorUserId) {
+        const creatorUser = users.find((user) => user.userId === creatorUserId);
+        if (creatorUser) {
+          this.channel.creatorName = creatorUser.name;
+        }
+      }
+    });
+  
+    // Sicherstellen, dass alle Benutzer geladen sind
     this.userService.getAllUsers().then(() => {
-      const currentUser = this.userService.findUserNameById(this.userId);
-      console.log('current user,', currentUser);
+      this.currentUser = this.userService.findUserNameById(this.userId);
+   
     });
   }
 

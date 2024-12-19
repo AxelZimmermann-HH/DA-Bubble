@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { addDoc, collection, doc, Firestore, setDoc} from '@angular/fire/firestore';
+import { addDoc, collection, doc, Firestore, setDoc } from '@angular/fire/firestore';
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Channel } from '../models/channel.class';
 import { ChannelService } from '../services/channel.service';
@@ -8,6 +8,7 @@ import { ChatService } from '../services/chat.service';
 import { CommonModule } from '@angular/common';
 import { DialogAddUserComponent } from '../dialog-add-user/dialog-add-user.component';
 import { UserService } from '../services/user.service';
+import { User } from '../models/user.class';
 
 @Component({
   selector: 'app-dialog-add-channel',
@@ -33,43 +34,40 @@ export class DialogAddChannelComponent {
   channelDescription = new FormControl('', [Validators.required, Validators.minLength(2)]);
 
   channel: Channel = new Channel();
-  channelData: any;
-
-  creatorName!: string;
-  creatorId!: string;
-  creator:any;
 
   channelExists: boolean = false;
 
   @Output() channelCreated = new EventEmitter<any>();
 
-  ngOnInit() {
-    this.userService.getAllUsers().then(() => {
-      this.creatorName = this.userService.findUserNameById(this.data.userId);
-      this.creator = this.userService.findUserByName(this.creatorName);
-      console.log('creator',this.creator);
-      
-    });
-  }
+ 
 
   async createNewChannel() {
     const enteredName = this.channelName.value?.trim();
     if (!enteredName || await this.channelService.checkChannelExists(enteredName)) return;
     this.setChannelData(enteredName);
-    console.log('Creator loaded',this.channel.toJson(), this.creator.name);
     await this.saveNewChannel(this.channel.toJson());
     this.channelCreated.emit(this.channel);
     this.resetAndCloseDialog();
     this.dialog.open(DialogAddUserComponent, { data: { channel: this.channel, source: 'createNewChannel' } });
   }
 
-  setChannelData(channelName: string) {
+  setChannelData(channelName: string) { 
+    if (!channelName) {
+      return;
+    }
     this.channel.channelName = channelName;
     this.channel.channelDescription = this.channelDescription.value!;
     this.channel.tagIcon = 'tag.png';
-    this.channel.creatorName = this.creator.name;
-    this.channel.creator = this.creator;
-    this.channel.members.push(this.creator.toJson())
+    if (this.data.userId) {
+      const creator = this.userService.findUserById(this.data.userId);
+      if (creator) {
+        this.channel.creator = creator;
+        this.channel.creatorName= creator.name;
+        this.channel.members.push(creator); 
+      } 
+    } else {
+      console.error('Creator-ID fehlt in den Daten.');
+    }
   }
 
   async saveNewChannel(channelData: any) {

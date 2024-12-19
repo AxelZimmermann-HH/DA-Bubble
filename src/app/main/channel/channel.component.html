@@ -1,7 +1,7 @@
 <div class="channel-body">
     <div *ngIf="channelService.selectedChannel else loadingTemplate" class="channel-container">
         <div class="channel-header">
-            <button class="edit-channel" (click)="openDialogEditChannel(channelService.selectedChannel)">
+            <button class="edit-channel" (click)="openDialogEditChannel(channelService.selectedChannel)" >
                 <p># {{channelService.selectedChannel.channelName}}</p>
                 <img src="./assets/icons/keyboard_arrow_down_1.png" alt="">
             </button>

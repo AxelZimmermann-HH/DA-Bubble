@@ -2,7 +2,7 @@ import { Injectable, Input } from '@angular/core';
 import { User } from '../models/user.class';
 import { Channel } from '../models/channel.class';
 import { Message } from '../models/message.class';
-import { collection, doc, Firestore, getDoc, getDocs, onSnapshot, query, updateDoc, where } from '@angular/fire/firestore';
+import { collection, doc, Firestore, getDocs, onSnapshot, query, updateDoc, where } from '@angular/fire/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { SearchService } from './search.service';
 import { DialogAddUserComponent } from '../dialog-add-user/dialog-add-user.component';
@@ -33,7 +33,6 @@ export class ChannelService {
         public searchService: SearchService,
         public userService: UserService,
         public sharedService: SharedService,
-
     ) { }
 
     async loadChannel(id: string): Promise<void> {
@@ -42,62 +41,51 @@ export class ChannelService {
             onSnapshot(channelDocRef, (docSnapshot) => {
                 if (docSnapshot.exists()) {
                     const data = docSnapshot.data();
-                    this.selectedChannel = new Channel({ ...data, id });
+                    const channel = new Channel({ ...data, id });
+                    const creator = this.userService.userData.find(
+                        (user: User) => user.userId === channel.creator?.userId
+                    );
+                    if (creator) {
+                        channel.creator = creator;
+                        channel.creatorName = creator.name;
+                    }
+                    const membersWithDetails = channel.members.map((member: User) => {
+                        const memberDetails = this.userService.userData.find(
+                            (user: User) => user.userId === member.userId
+                        );
+                        return memberDetails || member; 
+                    });
+                    channel.members = membersWithDetails;
+                    this.selectedChannel = channel;
+                    this.saveUpdatedChannel(channel)
                 } else {
                     this.selectedChannel = null;
                 }
             });
         } catch (error) {
-            console.error('Fehler beim Laden des Channels:', error);
+            console.error('Fehler beim Laden des Kanals:', error);
             this.selectedChannel = null;
         }
     }
-
-    updateMembers(): void {
-        if (this.selectedChannel && this.selectedChannel.members) {
-            const updatedMembers = this.selectedChannel.members.map((member: any) => {
-                const user = this.userService.userData.find(
-                    (user) => user.userId === member.userId
-                );
-                if (user) {
-                    const updatedUser = new User(user);
-                    return updatedUser;
-                }
-                return member;
+    async saveUpdatedChannel(channel: Channel): Promise<void> {
+        const channelDocRef = doc(this.firestore, `channels/${channel.id}`);
+        try {
+            await updateDoc(channelDocRef, {
+                creatorName: channel.creatorName,
+                creator: channel.creator ? channel.creator.toJson() : null,
+                members: channel.members.map(member => member instanceof User ? member.toJson() : member),
+                channelName: channel.channelName,
+                channelDescription: channel.channelDescription,
+                tagIcon: channel.tagIcon
             });
-            this.selectedChannel.members = updatedMembers;
+          
+        } catch (error) {
+            console.error("Fehler beim Aktualisieren des Kanals:", error);
         }
     }
 
-    async updateChannelMembers() {
-        if (this.selectedChannel && this.userService.userData?.length > 0) {
-            const currentMemberIds = this.selectedChannel.members.map((member: any) => member.userId);
-            const updatedMembers = this.selectedChannel.members.filter((member: any) =>
-                this.userService.userData.some((user: User) => user.userId === member.userId)
-            );
-            if (updatedMembers.length !== currentMemberIds.length) {
-                try {
-                    const channelRef = doc(this.firestore, 'channels', this.selectedChannelId!);
-                    await updateDoc(channelRef, { members: updatedMembers });
-                    this.selectedChannel.members = updatedMembers;
-                    console.log('updated members,', updatedMembers);
-                    
-                } catch (error) {
-                    console.error('Error updating channel members:', error);
-                }
-            }
-        }
-    }
 
-    filterOwnChannels(channels:Channel |any, currentUserId: string, currentUserName: string): Channel[] {
-        return channels.filter((channel:any) => {
-            const isCreator = channel.creatorName === currentUserName;
-            const isMember = channel.members?.some((member:any) => member.userId === currentUserId);
-            return isCreator || isMember;
-        });
-    }
-
-    getAllChannels() {
+    getAllChannels(): void {
         const channelCollection = collection(this.firestore, 'channels');
         onSnapshot(channelCollection, (snapshot) => {
             this.channelData = [];
@@ -117,7 +105,6 @@ export class ChannelService {
     }
 
     openUsersList(channelId: string) {
-        this.updateChannelMembers();
         this.dialog.open(AddChannelUserComponent, {
             data: {
                 channelId: channelId,
@@ -137,16 +124,11 @@ export class ChannelService {
         }
     }
 
-    getChannelMembers(channelId: string|null) {
+    getChannelMembers(channelId: string | null) {
         const channelRef = doc(this.firestore, `channels/${channelId}`);
         onSnapshot(channelRef, (doc) => {
             if (doc.exists()) {
                 this.channel.members = doc.data()?.['members'] || [];
-                console.log('Aktualisierte Mitglied Liste', this.channel.members);
-              this.updateChannelMembers();
-            }
-            else {
-                console.log('channel-Dokument existiert nicht ');
             }
         })
     }
@@ -157,6 +139,4 @@ export class ChannelService {
         const querySnapshot = await getDocs(q);
         return !querySnapshot.empty;
     }
-
-   
 }
