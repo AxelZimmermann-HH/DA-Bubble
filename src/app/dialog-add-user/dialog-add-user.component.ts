@@ -76,6 +76,7 @@ export class DialogAddUserComponent {
       const currentMembers = this.channel.members || [];
       if (this.selectedOption === 'channel') {
         await this.addAllUsers(currentMembers, channelRef);
+        this.dialogRef.close(true);
       }
       else if (this.selectedOption == 'user' || this.selectedUsers) {
         const newMembers = this.selectedUsers.filter(
