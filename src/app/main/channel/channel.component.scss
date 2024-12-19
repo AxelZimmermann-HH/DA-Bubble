@@ -621,6 +621,14 @@ td:hover .b-radius {
     left: 50px;
 }
 
+.tagged-user-list-new {  width: 300px;
+    height: auto;
+    border-radius: 30px;
+    // position: absolute;
+    z-index: 111;
+    bottom: 40px;
+    left: 50px;}
+
 .selectedUser {
     display: flex;
     align-items: center;
@@ -801,10 +809,12 @@ td:hover .b-radius {
 .mobile-channel-content {
     height: calc(100% - 300px);
 }
-.mobile-channel-container{
- 
+
+.mobile-channel-container {
+
     height: calc(100vh - 77px);
 }
+
 app-thread {
     width: 485px;
 }
