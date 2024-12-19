@@ -217,7 +217,7 @@
                 <input class="inputChannel" type="text" placeholder="An #channel, oder @jemand oder E-Mail Adresse"
                     (input)="onInput($event)" [(ngModel)]="inputValue" />
                 <div *ngIf="showAutocomplete">
-                    <ul class="searchListe"  *ngIf=" filteredChannels.length || filteredUsers.length || inputValue.startsWith('@')" >
+                    <ul class="searchListe"  *ngIf=" filteredChannels.length || filteredUsers.length || inputValue.startsWith('@')" style="top:100px;height:auto;">
                         <ng-container *ngIf="inputValue.startsWith('#')" class="channel_liste">
                             <li *ngFor="let channel of filteredChannels" (click)="selectValue(channel.channelName)">
                                 <div >{{
@@ -265,7 +265,7 @@
                         (click)="onClosePreview()" style="cursor: pointer;">
                 </div>
                 <div *ngIf="taggedUser" class="tagged-user-list">
-                    <ul class="searchListe">
+                    <ul class="searchListe" >
                         <li *ngFor="let user of userService.userData">
                             <div class="selectedUser" (click)="selectUser(user)">
                                 <img [src]="userService.getAvatarForUser(user.name)" alt="" >
