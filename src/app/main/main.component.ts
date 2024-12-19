@@ -26,6 +26,10 @@ export class MainComponent {
     this.sharedService.mailChangeSuccess$.subscribe((state) => {
       this.showSuccessDialog = state;
     });
+    this.checkForMobile();
+    if(this.sharedService.isMobile){
+      this.changeToMobile();
+    }
   }
 
   showSuccessDialogHandler(): void {
@@ -35,5 +39,16 @@ export class MainComponent {
   toggleSuccessDialog(show: boolean): void {
     this.showSuccessDialog = show;
   }
+
+    //Prüft, ob das Browserfenster kleiner als 810px ist und setzt die isMobile - Variable true/false.
+    checkForMobile(){
+      this.sharedService.isMobile = window.innerWidth <= 1024; // Example breakpoint for mobile screens
+    }
+  
+    changeToMobile(){
+      this.chatService.showMenu = true;
+      this.chatService.showChat = false;
+      this.chatService.showChannel = false;
+    }
 
 }

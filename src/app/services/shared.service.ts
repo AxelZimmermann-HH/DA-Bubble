@@ -71,6 +71,4 @@ export class SharedService {
   setMailChangeSuccess(state: boolean): void {
     this.mailChangeSuccessSubject.next(state);
   }
-
-
 }
