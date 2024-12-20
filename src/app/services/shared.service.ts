@@ -11,6 +11,7 @@ export class SharedService {
   //Variablen für Mobile Ansicht, word in der app.component gecheckt
   isMobile: boolean = false;
   goBackHeader: boolean = false;
+  term2!:string;
 
   // Observable für den Suchbegriff
   private searchTermSubject = new BehaviorSubject<string>('');

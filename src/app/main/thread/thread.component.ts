@@ -67,15 +67,18 @@ export class ThreadComponent {
 
   ngOnInit(): void {
     this.route.params.subscribe(params => { this.userId = params['userId']; });
-    this.subscribeToSearch();
+    
     this.userService.userData$.subscribe(() => {
       this.answersService.updateUserInAnswers(this.selectedAnswers, this.selectedChannelId, this.message.messageId);
     });
+      this.subscribeToSearch();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['message'] && this.message && this.message.messageId) {
       this.loadAnswers();
+      this.subscribeToSearch();
+
     }
     if (changes['selectedChannelId'] && !changes['selectedChannelId'].isFirstChange()) {
       Promise.resolve().then(() => {
@@ -104,7 +107,7 @@ export class ThreadComponent {
   subscribeToSearch(): void {
     this.sharedService.searchTerm$.subscribe((term) => {
       if (term.length >= 3) {
-        this.filterAnswers(term);
+        this.filterAnswers(term);   
       } else {
         this.resetFilteredAnswers();
       }
@@ -127,7 +130,9 @@ export class ThreadComponent {
     this.answersService.deleteFile(answer);
     this.fileInput.nativeElement.value = '';
   }
-
+  deleteAnswer(answer:Answer){
+    this.answersService.deleteAnswer(answer,this.selectedChannelId)
+  }
   async addAnswer(messageId: string) {
     const fileUrl = await this.uploadFileIfSelected();
     const user = this.userService.userData.find(u => u.userId === this.userId);

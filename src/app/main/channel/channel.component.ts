@@ -190,9 +190,12 @@ export class ChannelComponent {
   }
 
   subscribeToSearch() {
-    this.sharedService.searchTerm$.subscribe((term) => {
+    
+     this.sharedService.searchTerm$.subscribe((term) => {
       if (term.length >= 3) {
         this.filterMessages(term);
+        this.sharedService.term2 =term;
+        console.log('term',term);   
       } else {
         this.filteredSearchMessages = this.messagesService.allMessages;
       }
@@ -311,6 +314,7 @@ export class ChannelComponent {
   openThread(message: Message) {
     this.isThreadOpen = true;
     this.selectedMessage = message;
+
     if (this.sharedService.isMobile) { this.dialog.closeAll(); }
   }
 
@@ -369,7 +373,7 @@ export class ChannelComponent {
     this.taggedUser = false;
   }
 
-  toggleAutoListe(event: MouseEvent) {
+  toggleAutoListe(event: Event) {
     event.stopPropagation();
     this.taggedUser = !this.taggedUser;
   }
