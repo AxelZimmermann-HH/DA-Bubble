@@ -7,7 +7,7 @@ import { Channel } from '../../models/channel.class';
 import { ChatService } from '../../services/chat.service';
 import { UserService } from '../../services/user.service';
 import { SharedService } from '../../services/shared.service';
-import { FormsModule, NgForm } from '@angular/forms';
+import { FormControl, FormsModule, NgForm, ReactiveFormsModule } from '@angular/forms';
 import { Auth, verifyBeforeUpdateEmail, EmailAuthProvider, reauthenticateWithCredential } from '@angular/fire/auth';
 import { doc, setDoc } from '@angular/fire/firestore';
 import { ChangeDetectorRef } from '@angular/core';
@@ -16,7 +16,7 @@ import { ChannelService } from '../../services/channel.service';
 @Component({
   selector: 'app-dialog-user-profil',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, FormsModule],
+  imports: [CommonModule, MatDialogModule, FormsModule, ReactiveFormsModule],
   templateUrl: './dialog-user-profil.component.html',
   styleUrl: './dialog-user-profil.component.scss'
 })
@@ -64,6 +64,9 @@ export class DialogUserProfilComponent {
 
   selectedChannel: Channel | null = null;
 
+  name = new FormControl('');
+  email = new FormControl('');
+
   ngOnInit() {
     this.userService.currentUser$.subscribe(currentUser => {
       this.currentUser = currentUser;
@@ -71,6 +74,9 @@ export class DialogUserProfilComponent {
         this.currentUserId = currentUser.userId;
       }
     });
+    this.editedUser = this.currentUser;
+    this.name.setValue(this.currentUser.name);
+    this.email.setValue(this.currentUser.mail)
   }
 
   getAvatarForUser(user: any) {
@@ -87,12 +93,12 @@ export class DialogUserProfilComponent {
   async selectAvatar(avatar: string) {
     this.selectedAvatar = avatar;
     const avatarId = parseInt(avatar.match(/\d+/)?.[0] || '0', 10);
-    this.data.user.avatar = avatarId;
+    this.editedUser.avatar = avatarId;
   }
 
 
   checkEmailBlur() {
-    const enteredEmail = this.data.user.mail; 
+    const enteredEmail = this.email.value; 
     const currentEmail = this.auth.currentUser?.email; 
   
     if (enteredEmail === currentEmail) {
@@ -141,12 +147,15 @@ export class DialogUserProfilComponent {
       .then(() => this.finalizeUpdate());
   }
 
-  
-  private updateUserDataSmall(): void {
-    this.data.user = new User({ ...this.data.user });
-    this.userService.updateUser(this.data.user);
-    localStorage.setItem('currentUser', JSON.stringify(this.data.user));
+  editedUser!: User;
 
+  private updateUserDataSmall(): void { 
+    this.editedUser.name = this.name.value!;
+    this.editedUser.mail = this.email.value!;
+    this.editedUser.online = true;
+    this.editedUser = new User({ ...this.editedUser });
+    this.userService.updateUser(this.editedUser);
+    localStorage.setItem('currentUser', JSON.stringify(this.editedUser));
   }
   
   private finalizeUpdate(): void {
@@ -169,8 +178,9 @@ export class DialogUserProfilComponent {
       alert('Sie müssen angemeldet sein, um diese Aktion auszuführen.');
       return;
     }
+    debugger
     this.reauthenticateUser(user, this.currentPassword)
-      .then(() => this.verifyEmailUpdate(user, this.data.user.mail))
+      .then(() => this.verifyEmailUpdate(user, this.email.value!))
       .then(() => this.updateUserData())
       .then(() => this.onEmailChangeSuccess())
       .catch(error => this.handleEmailChangeError(error));
@@ -189,9 +199,9 @@ export class DialogUserProfilComponent {
   }
 
   private updateUserData(): Promise<void> {
-    this.data.user = new User({ ...this.data.user }); 
-    localStorage.setItem('currentUser', JSON.stringify(this.data.user)); 
-    return this.userService.updateUserWithPromise(this.data.user);
+    this.editedUser = new User({ ...this.editedUser }); 
+    localStorage.setItem('currentUser', JSON.stringify(this.editedUser)); 
+    return this.userService.updateUserWithPromise(this.editedUser);
   }
   
   private onEmailChangeSuccess(): void {
