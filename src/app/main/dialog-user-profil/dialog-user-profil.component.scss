@@ -53,9 +53,9 @@ button {
 }
 
 .profilImg {
-    width: 200px;
-    height: 200px;
-    border-radius: 500px;
+    width:150px;
+    height: 150px;
+    border-radius: 300px;
     gap: 20px;
 }
 
@@ -115,7 +115,7 @@ button {
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 20px 0;
+    padding: 10px 0 0 0;
 
     >span {
         font-size: 20px;

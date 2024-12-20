@@ -73,11 +73,11 @@ export class FirstpageComponent implements OnInit {
   async onSubmit(ngForm: NgForm) {
     if (this.buttonEnabled) {
       try {
-        if (this.user.userId) {
-          await this.updateExistingUser();
-        } else {
-          await this.addNewUser();
-        }
+        // if (this.user.userId) {
+        //   await this.updateExistingUser();
+        // } else {
+        //   await this.addNewUser();
+        // }
         this.handleSuccess();
       } catch (error) {
         console.error('Error saving document: ', error);
