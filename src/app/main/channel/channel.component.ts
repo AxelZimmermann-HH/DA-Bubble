@@ -99,7 +99,7 @@ export class ChannelComponent {
       await this.loadChannelData();
       this.userService.currentUser$.subscribe(updatedUser => {
         if (updatedUser) {
-          this.updateUserInMessages();    
+          this.updateUserInMessages();
         }
       });
     } else {
@@ -263,6 +263,10 @@ export class ChannelComponent {
   async saveMessage(message: Message) {
     this.messagesService.saveMessageEdit(message, this.selectedChannelId);
     if (this.selectedMessage.messageId === message.messageId) { this.isThreadOpen = false; }
+  }
+
+ async deleteMessage(message: Message) {
+    await this.messagesService.deleteMessage(message.messageId, this.selectedChannelId);
   }
 
   resetInput() {
