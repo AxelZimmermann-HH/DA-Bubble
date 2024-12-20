@@ -12,6 +12,6 @@ export class ImprintComponent {
   constructor(private router: Router) { }
 
   getBack() {
-    this.router.navigate(['/login']);
+    this.router.navigate(['/login'], { queryParams: { skipLoading: 'true' } });
   }
 }

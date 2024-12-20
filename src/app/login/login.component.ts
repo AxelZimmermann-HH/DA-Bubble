@@ -26,9 +26,15 @@ export class LoginComponent {
       this.password = true;
     }
 
-    setTimeout(() => {
-      this.showLoading = false;
-    }, 3000); 
+    this.route.queryParams.subscribe(params => {
+      if (params['skipLoading'] === 'true') {
+        this.showLoading = false; // Ladeanimation überspringen
+      } else {
+        setTimeout(() => {
+          this.showLoading = false; // Ladeanimation nach 3 Sekunden ausblenden
+        }, 3000);
+      }
+    }); 
   }
 
   onSignUpChange(newSignUpValue: boolean) {

@@ -71,4 +71,15 @@ export class SharedService {
   setMailChangeSuccess(state: boolean): void {
     this.mailChangeSuccessSubject.next(state);
   }
+
+
+  private _loadingShown: boolean = false;
+
+  set loadingShown(value: boolean) {
+    this._loadingShown = value;
+  }
+
+  get loadingShown(): boolean {
+    return this._loadingShown;
+  }
 }

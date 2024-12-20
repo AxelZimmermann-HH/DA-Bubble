@@ -13,6 +13,6 @@ export class PrivacyPolicyComponent {
   constructor(private router: Router) { }
 
   getBack() {
-    this.router.navigate(['/login']);
+    this.router.navigate(['/login'], { queryParams: { skipLoading: 'true' } });
   }
 }
