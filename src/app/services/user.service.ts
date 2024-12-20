@@ -136,7 +136,6 @@ export class UserService {
     const currentUser = this.getUser();
     if (currentUser) {
       const userRef = doc(this.firestore, `users/${currentUser.userId}`);
-
       updateDoc(userRef, updatedUser.toJson())
         .then(() => {
 

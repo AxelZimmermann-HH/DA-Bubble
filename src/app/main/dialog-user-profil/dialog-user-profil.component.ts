@@ -198,6 +198,10 @@ export class DialogUserProfilComponent {
   }
 
   private updateUserData(): Promise<void> {
+    this.editedUser.name = this.name.value!;
+    this.editedUser.mail = this.email.value!;
+    this.editedUser.online = true;
+
     this.editedUser = new User({ ...this.editedUser }); 
     localStorage.setItem('currentUser', JSON.stringify(this.editedUser)); 
     return this.userService.updateUserWithPromise(this.editedUser);
