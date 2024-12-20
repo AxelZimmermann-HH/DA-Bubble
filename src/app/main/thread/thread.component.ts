@@ -104,7 +104,9 @@ export class ThreadComponent {
   subscribeToSearch(): void {
     this.sharedService.searchTerm$.subscribe((term) => {
       if (term.length >= 3) {
-        this.filterAnswers(term);
+        setTimeout(() => {
+          this.filterAnswers(term);
+        }, 100);
       } else {
         this.resetFilteredAnswers();
       }
