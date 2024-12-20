@@ -144,7 +144,7 @@
                     </div>
                 </div>
             </div>
-            <div class="reaction-hover" *ngIf="!answer.isEditing "
+            <div class="reaction-hover" *ngIf="!answer.isEditing&&answer.emojis.length>0 "
                 [ngClass]="{
                     'reaction-left': userService.isCurrentUser(answer.user.name, userId),
                     'b-radius': !userService.isCurrentUser(answer.user.name, userId)
