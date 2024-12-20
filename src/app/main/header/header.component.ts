@@ -64,12 +64,31 @@ export class HeaderComponent implements OnInit {
       }
     this.route.params.subscribe(params => {
       this.userId = params['userId'];
-      this.getUserById(this.userId);
+      if(this.userId){
+        this.subscribeToUserChanges(this.userId)
+      }
     });
     this.filteredUserList = [];  
     if (this.userData) {
       this.chatService.initializeUnreadCounts(this.userId);
     }
+  }
+
+  subscribeToUserChanges(userId: string): void {
+    const userDocRef = doc(this.firestore, `users/${userId}`);
+
+    // Abonniere Firestore-Daten mit onSnapshot
+    onSnapshot(userDocRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        // Aktuelle Benutzerdaten übernehmen
+        this.currentUser = new User({ ...docSnapshot.data(), userId: docSnapshot.id });
+        this.cdr.detectChanges(); // Ansicht manuell aktualisieren
+      } else {
+        console.error('Benutzer nicht gefunden');
+      }
+    }, (error) => {
+      console.error('Fehler beim Abonnieren der Benutzerdaten:', error);
+    });
   }
 
   getAllUsers() {

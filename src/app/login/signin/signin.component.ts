@@ -121,6 +121,7 @@ export class SigninComponent {
     this.validPassword = true;
     const userDocRef = doc(this.firestore, `users/${user.userId}`);
     await updateDoc(userDocRef, { online: true });
+    user.online = true;
     this.userService.setUser(user);
     this.router.navigate(['/login',user.userId]);
   }

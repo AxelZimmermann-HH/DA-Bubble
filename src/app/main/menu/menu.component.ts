@@ -153,7 +153,6 @@ export class MenuComponent {
       if (user) {
         this.currentUserId = user.userId;
         this.chatService.currentUserId = this.currentUserId;
-        
       }
     });
   }
