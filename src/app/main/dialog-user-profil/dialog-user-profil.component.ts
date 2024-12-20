@@ -178,7 +178,6 @@ export class DialogUserProfilComponent {
       alert('Sie müssen angemeldet sein, um diese Aktion auszuführen.');
       return;
     }
-    debugger
     this.reauthenticateUser(user, this.currentPassword)
       .then(() => this.verifyEmailUpdate(user, this.email.value!))
       .then(() => this.updateUserData())
