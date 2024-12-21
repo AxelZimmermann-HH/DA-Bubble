@@ -249,7 +249,7 @@
             </div>
             <div class="custom-input">
                 <textarea placeholder="Starte eine neue Nachricht" class="text-area" [(ngModel)]="newMessageText"
-                    placeholder="Nachricht eingeben" (keydown.enter)="sendMessage(selectedChannelId,editingMessageId); $event.preventDefault()"></textarea>
+                    placeholder="Nachricht eingeben"  [disabled]="!isValidInput()" (keydown.enter)="sendMessage(selectedChannelId,editingMessageId); $event.preventDefault()"></textarea>
                 <div *ngIf="fileService.selectedFile" class="selectedFileStyle">
                     <div *ngIf="fileService.selectedFile.type.startsWith('image/') && fileService.fileUrl"
                         class="file-preview">
@@ -293,7 +293,7 @@
                         <img src="./assets/icons/alternate_email-1.png" alt="" class="add-mail"
                             (click)="toggleAutoListe($event)">
                     </div>
-                    <button class="send-btn" [disabled]="!isValidInput() ||!newMessageText " (click)="sendMessage(selectedChannelId,editingMessageId)">
+                    <button class="send-btn"  (click)="sendMessage(selectedChannelId,editingMessageId)">
                          <img src="./assets/icons/Send icon.png"  >
                     </button>
                    
